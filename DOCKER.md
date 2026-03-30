@@ -109,13 +109,14 @@ The production Dockerfile uses a multi-stage build for optimal image size:
 
 ### Environment Variables
 
-You can customize the build with environment variables:
+You can customize the container at runtime with environment variables:
 
 ```bash
-# Build with custom settings
-docker build \
-  --build-arg NODE_ENV=production \
-  -t forge-portal .
+# Run with custom environment settings
+docker run \
+  -e NODE_ENV=production \
+  -p 8080:80 \
+  forge-portal
 ```
 
 ### Docker Compose
