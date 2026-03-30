@@ -202,6 +202,12 @@ export interface Permission {
   canAccessNetwork: boolean;
 }
 
+export interface UserPreferences {
+  theme: 'dark' | 'light' | 'system';
+  accentColor: string;
+  greeting: 'time-based' | 'simple';
+}
+
 export interface UserAccount {
   id: string;
   username: string;
@@ -212,6 +218,7 @@ export interface UserAccount {
   role: UserRole;
   permissions: Permission;
   dashboardWidgets?: string[];  // per-user dashboard layout
+  preferences?: UserPreferences;
   createdAt: string;
   lastLogin?: string;
 }

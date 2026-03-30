@@ -35,8 +35,8 @@ export const DocList = ({ onImport }: DocListProps) => {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2.5" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-        <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'rgba(0,0,0,0.5)' }}>
+      <div className="flex items-center justify-between px-3 py-2.5" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+        <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
           Documents ({docs.length})
         </span>
         <div className="flex items-center gap-1">
@@ -44,9 +44,9 @@ export const DocList = ({ onImport }: DocListProps) => {
             <button
               onClick={onImport}
               className="p-1 rounded transition-colors"
-              style={{ color: 'rgba(0,0,0,0.4)' }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#2a6fff'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(0,0,0,0.4)'}
+              style={{ color: 'var(--text-muted)' }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
               title="Import from repository"
             >
               <Download size={13} />
@@ -55,9 +55,9 @@ export const DocList = ({ onImport }: DocListProps) => {
           <button
             onClick={() => setShowAdd(!showAdd)}
             className="p-1 rounded transition-colors"
-            style={{ color: 'rgba(0,0,0,0.4)' }}
-            onMouseEnter={(e) => e.currentTarget.style.color = '#2a6fff'}
-            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(0,0,0,0.4)'}
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent)'}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
           >
             {showAdd ? <X size={14} /> : <Plus size={14} />}
           </button>
@@ -66,7 +66,7 @@ export const DocList = ({ onImport }: DocListProps) => {
 
       {/* Add doc form */}
       {showAdd && (
-        <div className="p-2.5 space-y-2 animate-[fadeIn_0.15s_ease]" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+        <div className="p-2.5 space-y-2 animate-[fadeIn_0.15s_ease]" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
           <input
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
@@ -75,9 +75,9 @@ export const DocList = ({ onImport }: DocListProps) => {
             autoFocus
             className="w-full rounded-lg px-2.5 py-1.5 text-[11px] outline-none"
             style={{
-              background: 'rgba(255,255,255,0.6)',
-              border: '1px solid rgba(0,0,0,0.1)',
-              color: 'rgba(0,0,0,0.9)',
+              background: 'var(--bg-input)',
+              border: '1px solid var(--border-input)',
+              color: 'var(--text-primary)',
             }}
           />
           <input
@@ -87,9 +87,9 @@ export const DocList = ({ onImport }: DocListProps) => {
             placeholder="Source URL (optional)"
             className="w-full rounded-lg px-2.5 py-1.5 text-[11px] outline-none"
             style={{
-              background: 'rgba(255,255,255,0.6)',
-              border: '1px solid rgba(0,0,0,0.1)',
-              color: 'rgba(0,0,0,0.9)',
+              background: 'var(--bg-input)',
+              border: '1px solid var(--border-input)',
+              color: 'var(--text-primary)',
             }}
           />
           <Button variant="primary" size="sm" onClick={handleCreate} disabled={!newTitle.trim()}>
@@ -108,39 +108,39 @@ export const DocList = ({ onImport }: DocListProps) => {
               onClick={() => setActiveDoc(doc.id)}
               className="flex items-start gap-2.5 px-3 py-2.5 cursor-pointer transition-all mx-1 rounded-lg"
               style={{
-                background: isActive ? 'rgba(42,111,255,0.1)' : 'transparent',
-                borderLeft: isActive ? '2px solid #2a6fff' : '2px solid transparent',
+                background: isActive ? 'var(--accent-bg)' : 'transparent',
+                borderLeft: isActive ? '2px solid var(--accent)' : '2px solid transparent',
               }}
               onMouseEnter={(e) => {
-                if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.03)';
+                if (!isActive) e.currentTarget.style.background = 'var(--bg-hover)';
               }}
               onMouseLeave={(e) => {
                 if (!isActive) e.currentTarget.style.background = 'transparent';
               }}
             >
               <FileText size={14} className="flex-shrink-0 mt-0.5" style={{
-                color: isActive ? '#2a6fff' : 'rgba(0,0,0,0.3)',
+                color: isActive ? 'var(--accent)' : 'var(--text-faint)',
               }} />
               <div className="flex-1 min-w-0">
                 <div className="text-[12px] font-semibold truncate" style={{
-                  color: isActive ? '#2a6fff' : 'rgba(0,0,0,0.8)',
+                  color: isActive ? 'var(--accent)' : 'var(--text-primary)',
                 }}>
                   {doc.title}
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[10px]" style={{ color: 'rgba(0,0,0,0.35)' }}>
+                  <span className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
                     {formatDistanceToNow(new Date(doc.updatedAt), { addSuffix: true })}
                   </span>
                   {doc.sourceUrl && (
-                    <Link size={9} style={{ color: 'rgba(0,0,0,0.25)' }} />
+                    <Link size={9} style={{ color: 'var(--text-faint)' }} />
                   )}
                 </div>
                 {doc.tags && doc.tags.length > 0 && (
                   <div className="flex gap-1 mt-1">
                     {doc.tags.map((t) => (
                       <span key={t} className="text-[9px] px-1 py-0.5 rounded" style={{
-                        background: 'rgba(42,111,255,0.08)',
-                        color: 'rgba(42,111,255,0.6)',
+                        background: 'var(--code-bg)',
+                        color: 'var(--accent-text)',
                       }}>
                         {t}
                       </span>
@@ -151,9 +151,9 @@ export const DocList = ({ onImport }: DocListProps) => {
               <button
                 onClick={(e) => { e.stopPropagation(); removeDoc(doc.id); }}
                 className="p-0.5 opacity-0 hover:opacity-100 transition-opacity text-transparent hover:text-[#ff4757]"
-                style={{ color: 'rgba(0,0,0,0.2)' }}
+                style={{ color: 'var(--text-faint)' }}
                 onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = '#ff4757'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.opacity = '0'; e.currentTarget.style.color = 'rgba(0,0,0,0.2)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = '0'; e.currentTarget.style.color = 'var(--text-faint)'; }}
               >
                 <Trash2 size={12} />
               </button>

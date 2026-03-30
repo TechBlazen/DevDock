@@ -31,8 +31,8 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
       <h1
         className="text-[24px] font-bold mt-6 mb-4 pb-2"
         style={{
-          color: 'rgba(0,0,0,0.95)',
-          borderBottom: '2px solid rgba(0,0,0,0.08)',
+          color: 'var(--text-primary)',
+          borderBottom: '2px solid var(--border-subtle)',
         }}
         {...props}
       >
@@ -42,7 +42,7 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
     h2: ({ children, ...props }) => (
       <h2
         className="text-[20px] font-bold mt-5 mb-3"
-        style={{ color: 'rgba(0,0,0,0.9)' }}
+        style={{ color: 'var(--text-primary)' }}
         {...props}
       >
         {children}
@@ -51,7 +51,7 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
     h3: ({ children, ...props }) => (
       <h3
         className="text-[16px] font-bold mt-4 mb-2"
-        style={{ color: 'rgba(0,0,0,0.85)' }}
+        style={{ color: 'var(--text-primary)' }}
         {...props}
       >
         {children}
@@ -60,7 +60,7 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
     h4: ({ children, ...props }) => (
       <h4
         className="text-[14px] font-bold mt-3 mb-1"
-        style={{ color: 'rgba(0,0,0,0.85)' }}
+        style={{ color: 'var(--text-primary)' }}
         {...props}
       >
         {children}
@@ -69,7 +69,7 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
     h5: ({ children, ...props }) => (
       <h5
         className="text-[13px] font-bold mt-3 mb-1"
-        style={{ color: 'rgba(0,0,0,0.8)' }}
+        style={{ color: 'var(--text-primary)' }}
         {...props}
       >
         {children}
@@ -78,7 +78,7 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
     h6: ({ children, ...props }) => (
       <h6
         className="text-[12px] font-bold mt-2 mb-1"
-        style={{ color: 'rgba(0,0,0,0.75)' }}
+        style={{ color: 'var(--text-secondary)' }}
         {...props}
       >
         {children}
@@ -88,7 +88,7 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
     p: ({ children, ...props }) => (
       <p
         className="text-[13px] leading-relaxed my-3"
-        style={{ color: 'rgba(0,0,0,0.75)' }}
+        style={{ color: 'var(--text-secondary)' }}
         {...props}
       >
         {children}
@@ -101,7 +101,7 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
         target="_blank"
         rel="noopener noreferrer"
         className="font-medium hover:underline transition-colors"
-        style={{ color: '#2a6fff' }}
+        style={{ color: 'var(--accent)' }}
         {...props}
       >
         {children}
@@ -125,8 +125,8 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
           <code
             className="px-1.5 py-0.5 rounded text-[11px] font-mono"
             style={{
-              background: 'rgba(42,111,255,0.08)',
-              color: 'rgba(42,111,255,0.9)',
+              background: 'var(--code-bg)',
+              color: 'var(--code-text)',
             }}
             {...props}
           >
@@ -142,9 +142,9 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
             <div
               className="px-4 py-2 text-[10px] font-mono uppercase tracking-wider font-semibold"
               style={{
-                background: 'rgba(0,0,0,0.06)',
-                color: 'rgba(0,0,0,0.5)',
-                borderBottom: '1px solid rgba(0,0,0,0.06)',
+                background: 'var(--bg-inset)',
+                color: 'var(--text-muted)',
+                borderBottom: '1px solid var(--border-subtle)',
               }}
             >
               {lang}
@@ -154,8 +154,8 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
             <pre
               className="p-4 overflow-x-auto text-[12px] font-mono leading-relaxed"
               style={{
-                background: 'rgba(0,0,0,0.04)',
-                color: 'rgba(0,0,0,0.7)',
+                background: 'var(--bg-inset)',
+                color: 'var(--text-secondary)',
                 margin: 0,
               }}
             >
@@ -167,9 +167,9 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
               onClick={() => handleCopy(codeString, blockId)}
               className="absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
               style={{
-                background: 'rgba(255,255,255,0.9)',
-                border: '1px solid rgba(0,0,0,0.1)',
-                color: 'rgba(0,0,0,0.5)',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                color: 'var(--text-muted)',
               }}
               title="Copy code"
             >
@@ -184,9 +184,9 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
       <blockquote
         className="pl-4 py-2 my-3 rounded-r-lg"
         style={{
-          borderLeft: '4px solid rgba(42,111,255,0.4)',
-          background: 'rgba(42,111,255,0.03)',
-          color: 'rgba(0,0,0,0.65)',
+          borderLeft: '4px solid var(--accent)',
+          background: 'var(--accent-bg)',
+          color: 'var(--text-secondary)',
         }}
         {...props}
       >
@@ -216,14 +216,14 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
       <li
         className="text-[13px] leading-relaxed flex gap-2"
         style={{
-          color: 'rgba(0,0,0,0.75)',
+          color: 'var(--text-secondary)',
           counterIncrement: ordered ? 'item' : undefined,
         }}
         {...props}
       >
         <span
           className="flex-shrink-0 font-mono text-[12px]"
-          style={{ color: 'rgba(42,111,255,0.7)' }}
+          style={{ color: 'var(--accent-text)' }}
         >
           {ordered ? (
             <span style={{ display: 'inline-block', minWidth: '20px' }}>
@@ -238,7 +238,7 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
     ),
     // Tables
     table: ({ children, ...props }) => (
-      <div className="my-4 rounded-lg overflow-hidden" style={{ border: '1px solid rgba(0,0,0,0.08)' }}>
+      <div className="my-4 rounded-lg overflow-hidden" style={{ border: '1px solid var(--border-subtle)' }}>
         <table
           className="w-full text-[12px]"
           style={{ borderCollapse: 'collapse' }}
@@ -251,7 +251,7 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
     thead: ({ children, ...props }) => (
       <thead
         style={{
-          background: 'rgba(0,0,0,0.04)',
+          background: 'var(--bg-inset)',
           fontWeight: 600,
         }}
         {...props}
@@ -263,8 +263,8 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
       <th
         className="px-4 py-2 text-left"
         style={{
-          color: 'rgba(0,0,0,0.8)',
-          borderBottom: '2px solid rgba(0,0,0,0.1)',
+          color: 'var(--text-primary)',
+          borderBottom: '2px solid var(--border-subtle)',
         }}
         {...props}
       >
@@ -275,8 +275,8 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
       <td
         className="px-4 py-2"
         style={{
-          color: 'rgba(0,0,0,0.75)',
-          borderBottom: '1px solid rgba(0,0,0,0.06)',
+          color: 'var(--text-secondary)',
+          borderBottom: '1px solid var(--border-subtle)',
         }}
         {...props}
       >
@@ -289,7 +289,7 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
         className="my-6"
         style={{
           border: 'none',
-          borderTop: '1px solid rgba(0,0,0,0.08)',
+          borderTop: '1px solid var(--border-subtle)',
         }}
         {...props}
       />
@@ -297,7 +297,7 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
     // Strong and emphasis
     strong: ({ children, ...props }) => (
       <strong
-        style={{ color: 'rgba(0,0,0,0.9)', fontWeight: 700 }}
+        style={{ color: 'var(--text-primary)', fontWeight: 700 }}
         {...props}
       >
         {children}

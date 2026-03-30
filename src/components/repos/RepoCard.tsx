@@ -56,27 +56,27 @@ const CloneMenu = ({ repo, onClose }: { repo: Repository; onClose: () => void })
       ref={menuRef}
       className="absolute bottom-full right-0 mb-2 w-[320px] rounded-[18px] p-4 z-50 animate-[fadeIn_0.15s_ease]"
       style={{
-        background: 'rgba(245, 247, 250, 0.92)',
-        border: '1px solid rgba(255, 255, 255, 0.6)',
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
         backdropFilter: 'blur(60px) saturate(200%)',
         WebkitBackdropFilter: 'blur(60px) saturate(200%)',
-        boxShadow: '0 16px 48px rgba(31, 38, 135, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+        boxShadow: 'var(--shadow-lg)',
       }}
     >
-      <div className="text-[11px] font-bold mb-3" style={{ color: 'rgba(0,0,0,0.7)' }}>
+      <div className="text-[11px] font-bold mb-3" style={{ color: 'var(--text-secondary)' }}>
         Clone Repository
       </div>
 
       {/* HTTPS */}
       <div className="mb-3">
-        <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'rgba(0,0,0,0.4)' }}>
+        <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
           HTTPS
         </div>
         <div className="flex gap-1.5">
           <div className="flex-1 rounded-xl px-2.5 py-1.5 text-[11px] font-mono truncate" style={{
-            background: 'rgba(255,255,255,0.15)',
-            border: '1px solid rgba(255,255,255,0.3)',
-            color: 'rgba(0,0,0,0.7)',
+            background: 'var(--bg-input)',
+            border: '1px solid var(--border-subtle)',
+            color: 'var(--text-secondary)',
           }}>
             {httpsUrl}
           </div>
@@ -84,9 +84,9 @@ const CloneMenu = ({ repo, onClose }: { repo: Repository; onClose: () => void })
             onClick={() => handleCopy(httpsUrl, 'https')}
             className="px-2 rounded-xl transition-all duration-200 flex-shrink-0"
             style={{
-              background: copiedType === 'https' ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.15)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              color: copiedType === 'https' ? '#10b981' : 'rgba(0,0,0,0.5)',
+              background: copiedType === 'https' ? 'rgba(16,185,129,0.12)' : 'var(--bg-input)',
+              border: '1px solid var(--border-subtle)',
+              color: copiedType === 'https' ? '#10b981' : 'var(--text-muted)',
             }}
           >
             {copiedType === 'https' ? <Check size={12} /> : <Copy size={12} />}
@@ -97,14 +97,14 @@ const CloneMenu = ({ repo, onClose }: { repo: Repository; onClose: () => void })
       {/* SSH (GitHub only) */}
       {sshUrl && (
         <div className="mb-3">
-          <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'rgba(0,0,0,0.4)' }}>
+          <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
             SSH
           </div>
           <div className="flex gap-1.5">
             <div className="flex-1 rounded-xl px-2.5 py-1.5 text-[11px] font-mono truncate" style={{
-              background: 'rgba(255,255,255,0.15)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              color: 'rgba(0,0,0,0.7)',
+              background: 'var(--bg-input)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-secondary)',
             }}>
               {sshUrl}
             </div>
@@ -112,9 +112,9 @@ const CloneMenu = ({ repo, onClose }: { repo: Repository; onClose: () => void })
               onClick={() => handleCopy(sshUrl, 'ssh')}
               className="px-2 rounded-xl transition-all duration-200 flex-shrink-0"
               style={{
-                background: copiedType === 'ssh' ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.15)',
-                border: '1px solid rgba(255,255,255,0.3)',
-                color: copiedType === 'ssh' ? '#10b981' : 'rgba(0,0,0,0.5)',
+                background: copiedType === 'ssh' ? 'rgba(16,185,129,0.12)' : 'var(--bg-input)',
+                border: '1px solid var(--border-subtle)',
+                color: copiedType === 'ssh' ? '#10b981' : 'var(--text-muted)',
               }}
             >
               {copiedType === 'ssh' ? <Check size={12} /> : <Copy size={12} />}
@@ -126,14 +126,14 @@ const CloneMenu = ({ repo, onClose }: { repo: Repository; onClose: () => void })
       {/* GitHub CLI (GitHub only) */}
       {ghCliCmd && (
         <div className="mb-3">
-          <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'rgba(0,0,0,0.4)' }}>
+          <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
             GitHub CLI
           </div>
           <div className="flex gap-1.5">
             <div className="flex-1 rounded-xl px-2.5 py-1.5 text-[11px] font-mono truncate" style={{
-              background: 'rgba(255,255,255,0.15)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              color: 'rgba(0,0,0,0.7)',
+              background: 'var(--bg-input)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-secondary)',
             }}>
               {ghCliCmd}
             </div>
@@ -141,9 +141,9 @@ const CloneMenu = ({ repo, onClose }: { repo: Repository; onClose: () => void })
               onClick={() => handleCopy(ghCliCmd, 'cli')}
               className="px-2 rounded-xl transition-all duration-200 flex-shrink-0"
               style={{
-                background: copiedType === 'cli' ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.15)',
-                border: '1px solid rgba(255,255,255,0.3)',
-                color: copiedType === 'cli' ? '#10b981' : 'rgba(0,0,0,0.5)',
+                background: copiedType === 'cli' ? 'rgba(16,185,129,0.12)' : 'var(--bg-input)',
+                border: '1px solid var(--border-subtle)',
+                color: copiedType === 'cli' ? '#10b981' : 'var(--text-muted)',
               }}
             >
               {copiedType === 'cli' ? <Check size={12} /> : <Copy size={12} />}
@@ -153,7 +153,7 @@ const CloneMenu = ({ repo, onClose }: { repo: Repository; onClose: () => void })
       )}
 
       {/* Quick actions */}
-      <div className="flex gap-2 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+      <div className="flex gap-2 pt-2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
         <Button variant="success" size="sm" onClick={() => openInVSCode(repo.cloneUrl)}>
           <Code2 size={11} /> Clone in VS Code
         </Button>
@@ -182,7 +182,7 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
       <div style={{ padding: '12px 16px 12px 28px' }}>
         {/* Top row */}
         <div className="flex items-start justify-between gap-2 mb-1.5">
-          <span className="text-sm font-bold truncate" style={{ color: 'rgba(0,0,0,0.85)' }}>{repo.name}</span>
+          <span className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{repo.name}</span>
           <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end">
             {repo.isPrivate ? (
               <Pill color="#f59e0b"><Lock size={9} className="inline mr-0.5" />private</Pill>
@@ -194,7 +194,7 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
         </div>
 
         {/* Description */}
-        <p className="text-xs mb-2.5 leading-relaxed line-clamp-2" style={{ color: 'rgba(0, 0, 0, 0.55)' }}>{repo.description}</p>
+        <p className="text-xs mb-2.5 leading-relaxed line-clamp-2" style={{ color: 'var(--text-muted)' }}>{repo.description}</p>
 
         {/* Topics */}
         {repo.topics && repo.topics.length > 0 && (
@@ -212,7 +212,7 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
         )}
 
         {/* Meta row */}
-        <div className="flex items-center gap-3 text-[11px]" style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
+        <div className="flex items-center gap-3 text-[11px]" style={{ color: 'var(--text-muted)' }}>
           <span className="flex items-center gap-1"><GitBranch size={11} />{repo.defaultBranch}</span>
           {repo.stars !== undefined && (
             <span className="flex items-center gap-1"><Star size={11} />{repo.stars}</span>
@@ -224,7 +224,7 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
         {expanded && (
           <div
             className="mt-3 pt-3 flex flex-wrap gap-2 relative"
-            style={{ borderTop: '1px solid rgba(255, 255, 255, 0.2)' }}
+            style={{ borderTop: '1px solid var(--border-subtle)' }}
             onClick={(e) => e.stopPropagation()}
           >
             <Tooltip tip="Open repo in a new browser tab">

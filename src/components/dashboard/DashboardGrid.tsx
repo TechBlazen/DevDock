@@ -59,6 +59,7 @@ const widgetMeta = (id: WidgetId, catalog: DashboardWidget[]) => catalog.find((w
 interface WidgetWrapperProps {
   id: WidgetId;
   editMode: boolean;
+  isDragging: boolean;
   isDragOver: boolean;
   onRemove: () => void;
   catalog: DashboardWidget[];
@@ -66,13 +67,14 @@ interface WidgetWrapperProps {
   dragHandleProps: {
     draggable: boolean;
     onDragStart: (e: React.DragEvent) => void;
+    onDragEnd: () => void;
     onDragOver: (e: React.DragEvent) => void;
     onDragLeave: () => void;
     onDrop: (e: React.DragEvent) => void;
   };
 }
 
-const WidgetWrapper = ({ id, editMode, isDragOver, onRemove, catalog, pluginComponents, dragHandleProps }: WidgetWrapperProps) => {
+const WidgetWrapper = ({ id, editMode, isDragging, isDragOver, onRemove, catalog, pluginComponents, dragHandleProps }: WidgetWrapperProps) => {
   const meta = widgetMeta(id, catalog);
 
   return (
@@ -80,12 +82,13 @@ const WidgetWrapper = ({ id, editMode, isDragOver, onRemove, catalog, pluginComp
       {...dragHandleProps}
       className="rounded-lg flex flex-col overflow-hidden transition-all duration-200"
       style={{
-        background: '#ffffff',
-        border: isDragOver ? '2px solid #005DAA' : '1px solid #e0e0e0',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+        background: 'var(--bg-surface)',
+        border: isDragOver ? '2px solid var(--accent)' : '1px solid var(--border-color)',
+        boxShadow: 'var(--shadow-sm)',
+        opacity: isDragging ? 0.4 : 1,
         transform: isDragOver ? 'scale(1.01)' : 'scale(1)',
         ...(editMode && !isDragOver && {
-          border: '2px dashed #ccc',
+          border: '2px dashed var(--border-input)',
         })
       }}
     >
@@ -93,9 +96,9 @@ const WidgetWrapper = ({ id, editMode, isDragOver, onRemove, catalog, pluginComp
       <CardHeader className="justify-between">
         <div className="flex items-center gap-2 min-w-0">
           {editMode && (
-            <GripVertical size={14} className="cursor-grab flex-shrink-0" style={{ color: 'rgba(0, 0, 0, 0.3)' }} />
+            <GripVertical size={14} className="cursor-grab flex-shrink-0" style={{ color: 'var(--text-faint)' }} />
           )}
-          <span className="text-[11px] font-bold uppercase tracking-wider truncate" style={{ color: 'rgba(0, 0, 0, 0.6)' }}>
+          <span className="text-[11px] font-bold uppercase tracking-wider truncate" style={{ color: 'var(--text-secondary)' }}>
             {meta?.title ?? id}
           </span>
         </div>
@@ -124,17 +127,17 @@ const AddWidgetPlaceholder = ({ onOpen }: { onOpen: () => void }) => (
     onClick={onOpen}
     className="rounded-lg border-2 border-dashed bg-transparent flex flex-col items-center justify-center gap-2 min-h-[200px] transition-all duration-200 group"
     style={{
-      borderColor: '#ddd',
-      color: '#aaa',
+      borderColor: 'var(--border-input)',
+      color: 'var(--text-muted)',
     }}
     onMouseEnter={(e) => {
-      e.currentTarget.style.borderColor = '#005DAA';
-      e.currentTarget.style.color = '#005DAA';
-      e.currentTarget.style.background = '#f5f9ff';
+      e.currentTarget.style.borderColor = 'var(--accent)';
+      e.currentTarget.style.color = 'var(--accent)';
+      e.currentTarget.style.background = 'var(--bg-hover)';
     }}
     onMouseLeave={(e) => {
-      e.currentTarget.style.borderColor = '#ddd';
-      e.currentTarget.style.color = '#aaa';
+      e.currentTarget.style.borderColor = 'var(--border-input)';
+      e.currentTarget.style.color = 'var(--text-muted)';
       e.currentTarget.style.background = 'transparent';
     }}
   >
@@ -156,19 +159,19 @@ const CatalogModal = ({
   onClose: () => void;
 }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose} style={{
-    background: 'rgba(0, 0, 0, 0.4)',
+    background: 'var(--overlay)',
   }}>
     <div
       className="rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto"
       onClick={(e) => e.stopPropagation()}
       style={{
-        background: '#ffffff',
-        border: '1px solid #e0e0e0',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.2)',
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-color)',
+        boxShadow: 'var(--shadow-lg)',
       }}
     >
-      <h3 className="text-base font-bold font-mono mb-1" style={{ color: 'rgba(0, 0, 0, 0.9)' }}>Widget Catalog</h3>
-      <p className="text-xs mb-5" style={{ color: 'rgba(0, 0, 0, 0.5)' }}>Add or remove widgets from your dashboard.</p>
+      <h3 className="text-base font-bold font-mono mb-1" style={{ color: 'var(--text-primary)' }}>Widget Catalog</h3>
+      <p className="text-xs mb-5" style={{ color: 'var(--text-secondary)' }}>Add or remove widgets from your dashboard.</p>
 
       <div className="space-y-2">
         {catalog.map((w) => {
@@ -178,14 +181,14 @@ const CatalogModal = ({
               key={w.id}
               className="flex items-center gap-3 p-3 rounded-md transition-all duration-200"
               style={{
-                border: active ? '1px solid #005DAA' : '1px solid #eee',
-                background: active ? '#f5f9ff' : '#fafafa',
+                border: active ? '1px solid var(--accent)' : '1px solid var(--border-subtle)',
+                background: active ? 'var(--accent-bg)' : 'var(--bg-inset)',
               }}
             >
               <span className="text-xl">{w.icon}</span>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold" style={{ color: active ? '#005DAA' : '#333' }}>{w.title}</div>
-                <div className="text-[10px]" style={{ color: '#888' }}>{w.description}</div>
+                <div className="text-xs font-bold" style={{ color: active ? 'var(--accent)' : 'var(--text-primary)' }}>{w.title}</div>
+                <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{w.description}</div>
               </div>
               <Button
                 variant={active ? 'danger' : 'outline'}
@@ -266,16 +269,18 @@ export const DashboardGrid = ({ editMode }: { editMode: boolean }) => {
             key={id}
             id={id}
             editMode={editMode}
-            isDragOver={dragOver === id}
+            isDragging={dragSrc === id}
+            isDragOver={dragOver === id && dragSrc !== id}
             onRemove={() => saveWidgets(widgets.filter((w) => w !== id))}
             catalog={allWidgetCatalog}
             pluginComponents={widgetComponents}
             dragHandleProps={{
               draggable: editMode,
-              onDragStart: () => setDragSrc(id),
-              onDragOver: (e) => { e.preventDefault(); setDragOver(id); },
+              onDragStart: (e) => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', id); setDragSrc(id); },
+              onDragEnd: () => { setDragSrc(null); setDragOver(null); },
+              onDragOver: (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOver(id); },
               onDragLeave: () => setDragOver(null),
-              onDrop: () => handleDrop(id),
+              onDrop: (e) => { e.preventDefault(); handleDrop(id); },
             }}
           />
         ))}

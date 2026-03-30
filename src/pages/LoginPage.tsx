@@ -101,35 +101,35 @@ export const LoginPage = () => {
     <div
       className="min-h-screen flex items-center justify-center p-6"
       style={{
-        background: '#f0f2f5',
+        background: 'var(--bg-primary)',
       }}
     >
       <div className="w-full max-w-md">
         {/* Logo / Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg mb-4" style={{
-            background: '#005DAA',
+            background: 'var(--accent)',
           }}>
             <Zap size={28} color="#fff" strokeWidth={2.5} />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'rgba(0, 0, 0, 0.9)' }}>
+          <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
             FORGE
           </h1>
-          <p className="text-xs uppercase tracking-[2px] mt-1" style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
+          <p className="text-xs uppercase tracking-[2px] mt-1" style={{ color: 'var(--text-muted)' }}>
             Developer Portal
           </p>
         </div>
 
         {/* Sign-in Card */}
         <div className="rounded-lg p-6" style={{
-          background: '#ffffff',
-          border: '1px solid #e0e0e0',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-color)',
+          boxShadow: 'var(--shadow-md)',
         }}>
-          <h2 className="text-sm font-semibold mb-1" style={{ color: 'rgba(0, 0, 0, 0.8)' }}>
+          <h2 className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
             Sign in to Forge Portal
           </h2>
-          <p className="text-[11px] mb-5" style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
+          <p className="text-[11px] mb-5" style={{ color: 'var(--text-muted)' }}>
             Choose an authentication method to get started.
           </p>
 
@@ -155,13 +155,12 @@ export const LoginPage = () => {
               autoFocus
               className="w-full rounded-2xl px-3.5 py-2.5 text-xs outline-none transition-all duration-300"
               style={{
-                background: 'rgba(255,255,255,0.15)',
-                border: '1px solid rgba(255,255,255,0.3)',
-                color: 'rgba(0,0,0,0.85)',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
+                background: 'var(--bg-input)',
+                border: '1px solid var(--border-input)',
+                color: 'var(--text-primary)',
               }}
               onFocus={(e) => { e.currentTarget.style.border = '1px solid rgba(59,130,246,0.5)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.1)'; }}
-              onBlur={(e) => { e.currentTarget.style.border = '1px solid rgba(255,255,255,0.3)'; e.currentTarget.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.3)'; }}
+              onBlur={(e) => { e.currentTarget.style.border = '1px solid var(--border-input)'; e.currentTarget.style.boxShadow = 'none'; }}
             />
             <input
               type="password"
@@ -171,13 +170,12 @@ export const LoginPage = () => {
               placeholder="Password"
               className="w-full rounded-2xl px-3.5 py-2.5 text-xs outline-none transition-all duration-300"
               style={{
-                background: 'rgba(255,255,255,0.15)',
-                border: '1px solid rgba(255,255,255,0.3)',
-                color: 'rgba(0,0,0,0.85)',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
+                background: 'var(--bg-input)',
+                border: '1px solid var(--border-input)',
+                color: 'var(--text-primary)',
               }}
               onFocus={(e) => { e.currentTarget.style.border = '1px solid rgba(59,130,246,0.5)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.1)'; }}
-              onBlur={(e) => { e.currentTarget.style.border = '1px solid rgba(255,255,255,0.3)'; e.currentTarget.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.3)'; }}
+              onBlur={(e) => { e.currentTarget.style.border = '1px solid var(--border-input)'; e.currentTarget.style.boxShadow = 'none'; }}
             />
             <button
               onClick={handleLocalSignIn}
@@ -197,9 +195,9 @@ export const LoginPage = () => {
 
           {/* Divider */}
           <div className="flex items-center gap-3 my-4">
-            <div className="flex-1 h-px" style={{ background: 'rgba(255, 255, 255, 0.25)' }} />
-            <span className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(0, 0, 0, 0.25)' }}>or continue with</span>
-            <div className="flex-1 h-px" style={{ background: 'rgba(255, 255, 255, 0.25)' }} />
+            <div className="flex-1 h-px" style={{ background: 'var(--border-subtle)' }} />
+            <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-faint)' }}>or continue with</span>
+            <div className="flex-1 h-px" style={{ background: 'var(--border-subtle)' }} />
           </div>
 
           {/* OAuth Provider Buttons */}
@@ -210,8 +208,8 @@ export const LoginPage = () => {
                 onClick={() => handleOAuthSignIn(provider.id)}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.5)',
-                  border: '1px solid rgba(0, 0, 0, 0.08)',
+                  background: 'var(--bg-elevated)',
+                  border: '1px solid var(--border-subtle)',
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
                 }}
@@ -221,8 +219,8 @@ export const LoginPage = () => {
                   e.currentTarget.style.boxShadow = `0 4px 16px ${provider.color}15`;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.5)';
-                  e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.08)';
+                  e.currentTarget.style.background = 'var(--bg-elevated)';
+                  e.currentTarget.style.borderColor = 'var(--border-subtle)';
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
@@ -233,10 +231,10 @@ export const LoginPage = () => {
                   {iconMap[provider.icon]}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[12px] font-semibold" style={{ color: 'rgba(0, 0, 0, 0.85)' }}>
+                  <div className="text-[12px] font-semibold" style={{ color: 'var(--text-primary)' }}>
                     {provider.name}
                   </div>
-                  <div className="text-[10px]" style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
+                  <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
                     {provider.description}
                   </div>
                 </div>
@@ -246,17 +244,17 @@ export const LoginPage = () => {
 
           {/* Divider */}
           <div className="flex items-center gap-3 my-4">
-            <div className="flex-1 h-px" style={{ background: 'rgba(0, 0, 0, 0.08)' }} />
-            <span className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(0, 0, 0, 0.3)' }}>or</span>
-            <div className="flex-1 h-px" style={{ background: 'rgba(0, 0, 0, 0.08)' }} />
+            <div className="flex-1 h-px" style={{ background: 'var(--border-subtle)' }} />
+            <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-faint)' }}>or</span>
+            <div className="flex-1 h-px" style={{ background: 'var(--border-subtle)' }} />
           </div>
 
           {/* Token Entry Toggle */}
           <button
             onClick={() => setShowTokenEntry(!showTokenEntry)}
             className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-[11px] font-medium transition-colors"
-            style={{ color: 'rgba(0, 0, 0, 0.5)' }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0, 0, 0, 0.03)'}
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
             onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
           >
             <span>Sign in with access token</span>
@@ -284,8 +282,8 @@ export const LoginPage = () => {
                             }
                           : {
                               background: 'transparent',
-                              color: 'rgba(0, 0, 0, 0.4)',
-                              border: '1px solid rgba(0, 0, 0, 0.08)',
+                              color: 'var(--text-muted)',
+                              border: '1px solid var(--border-subtle)',
                             }
                       }
                     >
@@ -311,9 +309,9 @@ export const LoginPage = () => {
                   }
                   className="flex-1 rounded-xl px-3 py-2 text-xs outline-none transition-all duration-200"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.5)',
-                    border: '1px solid rgba(0, 0, 0, 0.1)',
-                    color: 'rgba(0, 0, 0, 0.9)',
+                    background: 'var(--bg-input)',
+                    border: '1px solid var(--border-input)',
+                    color: 'var(--text-primary)',
                     backdropFilter: 'blur(10px)',
                     WebkitBackdropFilter: 'blur(10px)',
                   }}
@@ -322,7 +320,7 @@ export const LoginPage = () => {
                     e.currentTarget.style.boxShadow = '0 0 0 3px rgba(42, 111, 255, 0.12)';
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+                    e.currentTarget.style.border = '1px solid var(--border-input)';
                     e.currentTarget.style.boxShadow = 'none';
                   }}
                 />
@@ -343,7 +341,7 @@ export const LoginPage = () => {
                 </button>
               </div>
 
-              <p className="text-[10px]" style={{ color: 'rgba(0, 0, 0, 0.35)' }}>
+              <p className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
                 {selectedProvider === 'github'
                   ? 'Enter a GitHub Personal Access Token with read:user and repo scopes.'
                   : selectedProvider === 'microsoft'
@@ -354,34 +352,34 @@ export const LoginPage = () => {
           )}
 
           {/* Guest Access */}
-          <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(0, 0, 0, 0.06)' }}>
+          <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border-subtle)' }}>
             <button
               onClick={signInAsGuest}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200"
               style={{
                 background: 'transparent',
-                border: '1px dashed rgba(0, 0, 0, 0.12)',
+                border: '1px dashed var(--border-subtle)',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.02)';
-                e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.2)';
+                e.currentTarget.style.background = 'var(--bg-hover)';
+                e.currentTarget.style.borderColor = 'var(--border-color)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.12)';
+                e.currentTarget.style.borderColor = 'var(--border-subtle)';
               }}
             >
               <div
                 className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ background: 'rgba(0, 0, 0, 0.05)', color: 'rgba(0, 0, 0, 0.4)' }}
+                style={{ background: 'var(--bg-inset)', color: 'var(--text-muted)' }}
               >
                 <UserCircle size={20} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[12px] font-semibold" style={{ color: 'rgba(0, 0, 0, 0.6)' }}>
+                <div className="text-[12px] font-semibold" style={{ color: 'var(--text-secondary)' }}>
                   Continue as Guest
                 </div>
-                <div className="text-[10px]" style={{ color: 'rgba(0, 0, 0, 0.35)' }}>
+                <div className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
                   Limited access — configure API tokens in Settings later
                 </div>
               </div>
@@ -390,7 +388,7 @@ export const LoginPage = () => {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-[10px] mt-6" style={{ color: 'rgba(0, 0, 0, 0.3)' }}>
+        <p className="text-center text-[10px] mt-6" style={{ color: 'var(--text-faint)' }}>
           Built with ⚡ by Terry Ashley · TechBlazen
         </p>
       </div>

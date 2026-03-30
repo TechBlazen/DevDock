@@ -41,16 +41,16 @@ export const SessionList = ({ sessions, maxItems }: SessionListProps) => {
             onClick={() => setActiveSession(session.id)}
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all"
             style={{
-              background: 'rgba(255, 255, 255, 0.5)',
-              border: '1px solid rgba(0, 0, 0, 0.06)',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)';
+              e.currentTarget.style.background = 'var(--bg-hover)';
               e.currentTarget.style.borderColor = `${color}33`;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.5)';
-              e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.06)';
+              e.currentTarget.style.background = 'var(--bg-surface)';
+              e.currentTarget.style.borderColor = 'var(--border-subtle)';
             }}
           >
             <div
@@ -60,10 +60,10 @@ export const SessionList = ({ sessions, maxItems }: SessionListProps) => {
               <Icon size={13} style={{ color }} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-[12px] font-semibold truncate" style={{ color: 'rgba(0, 0, 0, 0.8)' }}>
+              <div className="text-[12px] font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
                 {session.title}
               </div>
-              <div className="text-[10px]" style={{ color: 'rgba(0, 0, 0, 0.4)' }}>
+              <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
                 {agent?.name} · {formatDistanceToNow(new Date(session.updatedAt), { addSuffix: true })}
               </div>
             </div>

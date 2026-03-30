@@ -80,7 +80,7 @@ const StatusPageComponent = () => {
             <div className="p-4">
               <div className="flex items-center gap-2 mb-2">
                 <StatusDot color={m.color === '#00e5a0' ? 'green' : m.color === '#ff4757' ? 'red' : 'blue'} pulse />
-                <span className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: 'rgba(0,0,0,0.5)' }}>
+                <span className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: 'var(--text-muted)' }}>
                   {m.label}
                 </span>
               </div>
@@ -94,10 +94,10 @@ const StatusPageComponent = () => {
       <div className="mt-6">
         <Card>
           <div className="p-4">
-            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'rgba(0,0,0,0.5)' }}>
+            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
               Environment
             </div>
-            <div className="space-y-2 text-xs font-mono" style={{ color: 'rgba(0,0,0,0.7)' }}>
+            <div className="space-y-2 text-xs font-mono" style={{ color: 'var(--text-secondary)' }}>
               <div className="flex justify-between"><span>OTel Endpoint</span><span>{settings.otel.endpoint}</span></div>
               <div className="flex justify-between"><span>OTel Enabled</span><Badge variant={settings.otel.enabled ? 'running' : 'stopped'} /></div>
               <div className="flex justify-between"><span>Theme</span><Pill>{settings.theme}</Pill></div>
@@ -122,7 +122,7 @@ const NotesWidgetComponent = () => {
         onChange={(e) => setPluginSetting('forge-notes', 'notes.content', e.target.value)}
         placeholder="Scratch notes — persisted to localStorage..."
         className="w-full h-full min-h-[140px] bg-transparent border-none outline-none text-xs resize-none font-mono leading-relaxed"
-        style={{ color: 'rgba(0,0,0,0.7)' }}
+        style={{ color: 'var(--text-secondary)' }}
       />
     </div>
   );
@@ -150,13 +150,13 @@ const EnvInspectorComponent = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <div className="p-4">
-            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'rgba(0,0,0,0.5)' }}>
+            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
               API Key Status
             </div>
             <div className="space-y-2">
               {apiKeys.map((k) => (
                 <div key={k.name} className="flex items-center justify-between text-xs">
-                  <span style={{ color: 'rgba(0,0,0,0.7)' }}>{k.name}</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>{k.name}</span>
                   <Badge variant={k.configured ? 'running' : 'stopped'} />
                 </div>
               ))}
@@ -166,10 +166,10 @@ const EnvInspectorComponent = () => {
 
         <Card>
           <div className="p-4">
-            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'rgba(0,0,0,0.5)' }}>
+            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
               AI Configuration
             </div>
-            <div className="space-y-2 text-xs font-mono" style={{ color: 'rgba(0,0,0,0.7)' }}>
+            <div className="space-y-2 text-xs font-mono" style={{ color: 'var(--text-secondary)' }}>
               <div className="flex justify-between"><span>Provider</span><Pill color="#2a6fff">{settings.ai.provider}</Pill></div>
               <div className="flex justify-between"><span>Model</span><span>{settings.ai.model}</span></div>
               <div className="flex justify-between"><span>Temperature</span><span>{settings.ai.temperature}</span></div>
@@ -181,13 +181,13 @@ const EnvInspectorComponent = () => {
 
         <Card>
           <div className="p-4">
-            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'rgba(0,0,0,0.5)' }}>
+            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
               MCP Servers ({servers.length})
             </div>
             <div className="space-y-2">
               {servers.map((s) => (
                 <div key={s.id} className="flex items-center justify-between text-xs">
-                  <span className="font-mono" style={{ color: 'rgba(0,0,0,0.7)' }}>{s.name}</span>
+                  <span className="font-mono" style={{ color: 'var(--text-secondary)' }}>{s.name}</span>
                   <div className="flex items-center gap-2">
                     <Pill color={s.transport === 'stdio' ? '#2a6fff' : s.transport === 'sse' ? '#f5a623' : '#b388ff'}>{s.transport}</Pill>
                     <Badge variant={s.status === 'running' ? 'running' : s.status === 'idle' ? 'idle' : 'stopped'} />
@@ -200,10 +200,10 @@ const EnvInspectorComponent = () => {
 
         <Card>
           <div className="p-4">
-            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'rgba(0,0,0,0.5)' }}>
+            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
               GitHub Config
             </div>
-            <div className="space-y-2 text-xs font-mono" style={{ color: 'rgba(0,0,0,0.7)' }}>
+            <div className="space-y-2 text-xs font-mono" style={{ color: 'var(--text-secondary)' }}>
               <div className="flex justify-between"><span>Token</span><Badge variant={settings.github.accessToken ? 'running' : 'stopped'} /></div>
               <div className="flex justify-between"><span>Organizations</span><span>{settings.github.orgs.length > 0 ? settings.github.orgs.join(', ') : 'none'}</span></div>
               <div className="flex justify-between"><span>Include Personal</span><span>{settings.github.includePersonal ? 'yes' : 'no'}</span></div>

@@ -112,13 +112,13 @@ export const RegisterRepo = ({ source }: RegisterRepoProps) => {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             {source === 'github' ? <GitFork size={14} style={{ color: '#2a6fff' }} /> : <GitBranch size={14} style={{ color: '#2a6fff' }} />}
-            <span className="text-[12px] font-bold" style={{ color: 'rgba(0,0,0,0.8)' }}>
+            <span className="text-[12px] font-bold" style={{ color: 'var(--text-primary)' }}>
               Register {source === 'github' ? 'GitHub' : 'Azure DevOps'} Repository
             </span>
           </div>
-          <button onClick={handleClose} className="p-1 transition-colors" style={{ color: 'rgba(0,0,0,0.3)' }}
-            onMouseEnter={(e) => e.currentTarget.style.color = 'rgba(0,0,0,0.7)'}
-            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(0,0,0,0.3)'}>
+          <button onClick={handleClose} className="p-1 transition-colors" style={{ color: 'var(--text-faint)' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-faint)'}>
             <X size={14} />
           </button>
         </div>
@@ -137,9 +137,9 @@ export const RegisterRepo = ({ source }: RegisterRepoProps) => {
             autoFocus
             className="flex-1 rounded-xl px-3 py-2 text-xs outline-none transition-all"
             style={{
-              background: 'rgba(255,255,255,0.5)',
-              border: '1px solid rgba(0,0,0,0.1)',
-              color: 'rgba(0,0,0,0.9)',
+              background: 'var(--bg-input)',
+              border: '1px solid var(--border-input)',
+              color: 'var(--text-primary)',
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
             }}
@@ -148,7 +148,7 @@ export const RegisterRepo = ({ source }: RegisterRepoProps) => {
               e.currentTarget.style.boxShadow = '0 0 0 3px rgba(42,111,255,0.12)';
             }}
             onBlur={(e) => {
-              e.currentTarget.style.border = '1px solid rgba(0,0,0,0.1)';
+              e.currentTarget.style.border = '1px solid var(--border-input)';
               e.currentTarget.style.boxShadow = 'none';
             }}
           />
@@ -162,7 +162,7 @@ export const RegisterRepo = ({ source }: RegisterRepoProps) => {
           </Button>
         </div>
 
-        <p className="text-[10px] mb-3" style={{ color: 'rgba(0,0,0,0.35)' }}>
+        <p className="text-[10px] mb-3" style={{ color: 'var(--text-faint)' }}>
           Paste a repository URL to fetch its metadata and register it in Forge Portal.
         </p>
 
@@ -190,16 +190,16 @@ export const RegisterRepo = ({ source }: RegisterRepoProps) => {
             </div>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <span className="text-[13px] font-bold" style={{ color: 'rgba(0,0,0,0.9)' }}>{preview.name}</span>
+                <span className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>{preview.name}</span>
                 <Pill color={preview.isPrivate ? '#f5a623' : '#2a6fff'}>
                   {preview.isPrivate ? 'private' : 'public'}
                 </Pill>
                 <Pill color="#3178C6">{preview.language}</Pill>
               </div>
               {preview.description && (
-                <p className="text-[11px]" style={{ color: 'rgba(0,0,0,0.55)' }}>{preview.description}</p>
+                <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{preview.description}</p>
               )}
-              <div className="flex items-center gap-3 text-[10px]" style={{ color: 'rgba(0,0,0,0.4)' }}>
+              <div className="flex items-center gap-3 text-[10px]" style={{ color: 'var(--text-muted)' }}>
                 <span>Branch: {preview.defaultBranch}</span>
                 {preview.stars !== undefined && <span>Stars: {preview.stars}</span>}
                 <span>{preview.fullName}</span>

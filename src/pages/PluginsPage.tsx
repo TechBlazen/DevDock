@@ -58,7 +58,7 @@ export const PluginsPage = () => {
             border: `1px solid ${c.color}25`,
           }}>
             <span className="text-[10px] font-semibold" style={{ color: c.color }}>{c.value}</span>
-            <span className="text-[10px]" style={{ color: 'rgba(0,0,0,0.45)' }}>{c.label}</span>
+            <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{c.label}</span>
           </div>
         ))}
       </div>
@@ -79,8 +79,8 @@ export const PluginsPage = () => {
                   }
                 : {
                     background: 'transparent',
-                    color: 'rgba(0, 0, 0, 0.45)',
-                    border: '1px solid rgba(0, 0, 0, 0.08)',
+                    color: 'var(--text-muted)',
+                    border: '1px solid var(--border-subtle)',
                   }
             }
           >
@@ -110,12 +110,12 @@ export const PluginsPage = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-[13px] font-bold" style={{ color: 'rgba(0,0,0,0.9)' }}>
+                      <span className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>
                         {plugin.name}
                       </span>
                       <Pill color="rgba(0,0,0,0.3)">{plugin.version}</Pill>
                     </div>
-                    <div className="text-[10px] mt-0.5" style={{ color: 'rgba(0,0,0,0.4)' }}>
+                    <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
                       by {plugin.author}
                     </div>
                   </div>
@@ -127,7 +127,7 @@ export const PluginsPage = () => {
                 </div>
 
                 {/* Description */}
-                <p className="text-[11px] mt-2.5 leading-relaxed" style={{ color: 'rgba(0,0,0,0.55)' }}>
+                <p className="text-[11px] mt-2.5 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                   {plugin.description}
                 </p>
 
@@ -137,8 +137,8 @@ export const PluginsPage = () => {
                   <Pill color="rgba(0,0,0,0.3)">{plugin.context}</Pill>
                   {plugin.tags?.slice(0, 3).map((t) => (
                     <span key={t} className="text-[10px] px-1.5 py-0.5 rounded" style={{
-                      background: 'rgba(0,0,0,0.04)',
-                      color: 'rgba(0,0,0,0.4)',
+                      background: 'var(--bg-inset)',
+                      color: 'var(--text-muted)',
                     }}>
                       {t}
                     </span>
@@ -149,19 +149,19 @@ export const PluginsPage = () => {
                 <button
                   onClick={() => setExpanded(isExpanded ? null : plugin.id)}
                   className="flex items-center gap-1 mt-3 text-[10px] font-medium transition-colors"
-                  style={{ color: 'rgba(0,0,0,0.35)' }}
+                  style={{ color: 'var(--text-faint)' }}
                   onMouseEnter={(e) => e.currentTarget.style.color = color}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(0,0,0,0.35)'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-faint)'}
                 >
                   {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                   {isExpanded ? 'Less' : 'Details'}
                 </button>
 
                 {isExpanded && (
-                  <div className="mt-3 pt-3 space-y-2 text-[11px] animate-[fadeIn_0.2s_ease]" style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                  <div className="mt-3 pt-3 space-y-2 text-[11px] animate-[fadeIn_0.2s_ease]" style={{ borderTop: '1px solid var(--border-subtle)' }}>
                     {plugin.pages && plugin.pages.length > 0 && (
                       <div>
-                        <span className="font-semibold" style={{ color: 'rgba(0,0,0,0.6)' }}>Pages: </span>
+                        <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>Pages: </span>
                         {plugin.pages.map((p) => (
                           <Pill key={p.path} color="#2a6fff">{p.path}</Pill>
                         ))}
@@ -169,7 +169,7 @@ export const PluginsPage = () => {
                     )}
                     {plugin.widgets && plugin.widgets.length > 0 && (
                       <div>
-                        <span className="font-semibold" style={{ color: 'rgba(0,0,0,0.6)' }}>Widgets: </span>
+                        <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>Widgets: </span>
                         {plugin.widgets.map((w) => (
                           <Pill key={w.id} color="#b388ff">{w.title}</Pill>
                         ))}
@@ -177,14 +177,14 @@ export const PluginsPage = () => {
                     )}
                     {plugin.navItems && plugin.navItems.length > 0 && (
                       <div>
-                        <span className="font-semibold" style={{ color: 'rgba(0,0,0,0.6)' }}>Nav items: </span>
-                        <span style={{ color: 'rgba(0,0,0,0.5)' }}>{plugin.navItems.map((n) => n.label).join(', ')}</span>
+                        <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>Nav items: </span>
+                        <span style={{ color: 'var(--text-muted)' }}>{plugin.navItems.map((n) => n.label).join(', ')}</span>
                       </div>
                     )}
                     {plugin.settings && plugin.settings.length > 0 && (
                       <div>
-                        <span className="font-semibold" style={{ color: 'rgba(0,0,0,0.6)' }}>Settings: </span>
-                        <span style={{ color: 'rgba(0,0,0,0.5)' }}>{plugin.settings.map((s) => s.label).join(', ')}</span>
+                        <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>Settings: </span>
+                        <span style={{ color: 'var(--text-muted)' }}>{plugin.settings.map((s) => s.label).join(', ')}</span>
                       </div>
                     )}
                   </div>
@@ -197,8 +197,8 @@ export const PluginsPage = () => {
 
       {/* Develop a Plugin section */}
       <div className="mb-6">
-        <h2 className="text-lg font-bold mb-1" style={{ color: 'rgba(0,0,0,0.9)' }}>Develop a Plugin</h2>
-        <p className="text-xs mb-5" style={{ color: 'rgba(0,0,0,0.45)' }}>
+        <h2 className="text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Develop a Plugin</h2>
+        <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
           Extend Forge Portal by creating plugins. Plugins are plain TypeScript objects — no build tooling or npm packaging required.
         </p>
       </div>
@@ -207,13 +207,13 @@ export const PluginsPage = () => {
         {/* Plugin Interface */}
         <Card>
           <div className="p-4">
-            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'rgba(0,0,0,0.5)' }}>
+            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
               Plugin Interface
             </div>
             <pre className="text-[11px] font-mono leading-relaxed p-3 rounded-lg overflow-x-auto" style={{
-              background: 'rgba(0,0,0,0.04)',
-              color: 'rgba(0,0,0,0.7)',
-              border: '1px solid rgba(0,0,0,0.08)',
+              background: 'var(--bg-inset)',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border-subtle)',
             }}>{`interface ForgePlugin {
   id: string;
   name: string;
@@ -238,13 +238,13 @@ export const PluginsPage = () => {
         {/* Starter Template */}
         <Card>
           <div className="p-4">
-            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'rgba(0,0,0,0.5)' }}>
+            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
               Starter Template
             </div>
             <pre className="text-[11px] font-mono leading-relaxed p-3 rounded-lg overflow-x-auto" style={{
-              background: 'rgba(0,0,0,0.04)',
-              color: 'rgba(0,0,0,0.7)',
-              border: '1px solid rgba(0,0,0,0.08)',
+              background: 'var(--bg-inset)',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border-subtle)',
             }}>{`import { createForgePlugin } from './plugins';
 import { MyIcon } from 'lucide-react';
 
@@ -281,10 +281,10 @@ export default createForgePlugin({
         {/* What Plugins Can Do */}
         <Card>
           <div className="p-4">
-            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'rgba(0,0,0,0.5)' }}>
+            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
               What Plugins Can Do
             </div>
-            <ul className="space-y-2 text-[11px]" style={{ color: 'rgba(0,0,0,0.6)' }}>
+            <ul className="space-y-2 text-[11px]" style={{ color: 'var(--text-secondary)' }}>
               {[
                 ['Add Pages', 'Register new routes with full-page React components'],
                 ['Add Widgets', 'Contribute drag-drop dashboard widgets'],
@@ -295,7 +295,7 @@ export default createForgePlugin({
               ].map(([title, desc]) => (
                 <li key={title} className="flex gap-2">
                   <span className="text-[#2a6fff] font-bold flex-shrink-0">›</span>
-                  <span><strong style={{ color: 'rgba(0,0,0,0.8)' }}>{title}</strong> — {desc}</span>
+                  <span><strong style={{ color: 'var(--text-primary)' }}>{title}</strong> — {desc}</span>
                 </li>
               ))}
             </ul>
@@ -305,12 +305,12 @@ export default createForgePlugin({
         {/* Available SDK */}
         <Card>
           <div className="p-4">
-            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'rgba(0,0,0,0.5)' }}>
+            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
               Available SDK
             </div>
             <div className="space-y-3 text-[11px]">
               <div>
-                <div className="font-semibold mb-1" style={{ color: 'rgba(0,0,0,0.7)' }}>UI Components</div>
+                <div className="font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>UI Components</div>
                 <div className="flex gap-1 flex-wrap">
                   {['Button', 'Card', 'CardHeader', 'Input', 'Toggle', 'Badge', 'Pill', 'StatusDot', 'Spinner', 'SectionTitle', 'EmptyState', 'Tooltip'].map((c) => (
                     <Pill key={c} color="#2a6fff">{c}</Pill>
@@ -318,7 +318,7 @@ export default createForgePlugin({
                 </div>
               </div>
               <div>
-                <div className="font-semibold mb-1" style={{ color: 'rgba(0,0,0,0.7)' }}>Zustand Stores</div>
+                <div className="font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>Zustand Stores</div>
                 <div className="flex gap-1 flex-wrap">
                   {['useAuthStore', 'useSettingsStore', 'useMCPStore', 'useChatStore', 'useRepoStore', 'useTelemetryStore', 'usePluginStore'].map((s) => (
                     <Pill key={s} color="#00e5a0">{s}</Pill>
@@ -326,9 +326,9 @@ export default createForgePlugin({
                 </div>
               </div>
               <div>
-                <div className="font-semibold mb-1" style={{ color: 'rgba(0,0,0,0.7)' }}>Registration</div>
-                <p style={{ color: 'rgba(0,0,0,0.5)' }}>
-                  Add your plugin to the <code className="px-1 py-0.5 rounded text-[10px]" style={{ background: 'rgba(0,0,0,0.06)' }}>BUILT_IN_PLUGINS</code> array in <code className="px-1 py-0.5 rounded text-[10px]" style={{ background: 'rgba(0,0,0,0.06)' }}>src/lib/plugins.ts</code>
+                <div className="font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>Registration</div>
+                <p style={{ color: 'var(--text-muted)' }}>
+                  Add your plugin to the <code className="px-1 py-0.5 rounded text-[10px]" style={{ background: 'var(--bg-inset)' }}>BUILT_IN_PLUGINS</code> array in <code className="px-1 py-0.5 rounded text-[10px]" style={{ background: 'var(--bg-inset)' }}>src/lib/plugins.ts</code>
                 </p>
               </div>
             </div>

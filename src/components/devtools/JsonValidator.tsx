@@ -98,7 +98,7 @@ export const JsonValidator = () => {
   return (
     <div className="h-full flex flex-col">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 px-4 py-2.5 flex-shrink-0 flex-wrap" style={{ borderBottom: '1px solid rgba(255,255,255,0.15)' }}>
+      <div className="flex items-center gap-2 px-4 py-2.5 flex-shrink-0 flex-wrap" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <Button variant="primary" size="sm" onClick={handleValidate}>
           <CheckCircle size={12} /> Validate
         </Button>
@@ -115,7 +115,7 @@ export const JsonValidator = () => {
 
         <div className="ml-auto flex items-center gap-3">
           {stats && (
-            <div className="flex gap-2 text-[10px] font-mono" style={{ color: 'rgba(0,0,0,0.4)' }}>
+            <div className="flex gap-2 text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>
               <span>type: {stats.type}</span>
               <span>keys: {stats.keys}</span>
               <span>depth: {stats.depth}</span>
@@ -129,7 +129,7 @@ export const JsonValidator = () => {
       {result && (
         <div className="flex items-center gap-2 px-4 py-2 text-[11px] font-mono flex-shrink-0" style={{
           background: result.valid ? 'rgba(16,185,129,0.08)' : 'rgba(248,113,113,0.08)',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          borderBottom: '1px solid var(--border-subtle)',
           color: result.valid ? '#10b981' : '#ef4444',
         }}>
           {result.valid ? <CheckCircle size={13} /> : <AlertCircle size={13} />}

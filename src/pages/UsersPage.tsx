@@ -87,7 +87,7 @@ export const UsersPage = () => {
           return (
             <div key={role} className="rounded-2xl px-4 py-2.5" style={{ background: `${color}08`, border: `1px solid ${color}20` }}>
               <div className="text-lg font-bold font-mono" style={{ color }}>{count}</div>
-              <div className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: 'rgba(0,0,0,0.4)' }}>{getRoleLabel(role)}s</div>
+              <div className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: 'var(--text-muted)' }}>{getRoleLabel(role)}s</div>
             </div>
           );
         })}
@@ -103,8 +103,8 @@ export const UsersPage = () => {
         <Card className="mb-5">
           <div className="p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[13px] font-bold" style={{ color: 'rgba(0,0,0,0.85)' }}>New User Account</h3>
-              <button onClick={() => setShowAddForm(false)} style={{ color: 'rgba(0,0,0,0.3)' }}><X size={16} /></button>
+              <h3 className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>New User Account</h3>
+              <button onClick={() => setShowAddForm(false)} style={{ color: 'var(--text-faint)' }}><X size={16} /></button>
             </div>
             {error && (
               <div className="text-[11px] px-3 py-2 rounded-xl mb-3" style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', color: '#ef4444' }}>
@@ -112,15 +112,15 @@ export const UsersPage = () => {
               </div>
             )}
             <div className="grid grid-cols-2 gap-3 mb-3">
-              <input value={newUsername} onChange={(e) => setNewUsername(e.target.value)} placeholder="Username" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: 'rgba(0,0,0,0.85)' }} />
-              <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Password" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: 'rgba(0,0,0,0.85)' }} />
-              <input value={newDisplayName} onChange={(e) => setNewDisplayName(e.target.value)} placeholder="Display Name" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: 'rgba(0,0,0,0.85)' }} />
-              <input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Email (optional)" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: 'rgba(0,0,0,0.85)' }} />
+              <input value={newUsername} onChange={(e) => setNewUsername(e.target.value)} placeholder="Username" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
+              <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Password" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
+              <input value={newDisplayName} onChange={(e) => setNewDisplayName(e.target.value)} placeholder="Display Name" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
+              <input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Email (optional)" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
             </div>
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-[11px] font-semibold" style={{ color: 'rgba(0,0,0,0.5)' }}>Role:</span>
+              <span className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>Role:</span>
               {(['admin', 'editor', 'viewer'] as UserRole[]).map((r) => (
-                <button key={r} onClick={() => setNewRole(r)} className="px-3 py-1 rounded-xl text-[11px] font-semibold transition-all" style={newRole === r ? { background: `${getRoleColor(r)}15`, color: getRoleColor(r), border: `1px solid ${getRoleColor(r)}30` } : { color: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                <button key={r} onClick={() => setNewRole(r)} className="px-3 py-1 rounded-xl text-[11px] font-semibold transition-all" style={newRole === r ? { background: `${getRoleColor(r)}15`, color: getRoleColor(r), border: `1px solid ${getRoleColor(r)}30` } : { color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>
                   {getRoleLabel(r)}
                 </button>
               ))}
@@ -150,24 +150,24 @@ export const UsersPage = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-[13px] font-bold" style={{ color: 'rgba(0,0,0,0.85)' }}>{account.displayName}</span>
+                      <span className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>{account.displayName}</span>
                       <Pill color={roleColor}>{getRoleLabel(account.role)}</Pill>
                       {isSelf && <Pill color="#3b82f6">you</Pill>}
                     </div>
-                    <div className="text-[11px] font-mono" style={{ color: 'rgba(0,0,0,0.4)' }}>
+                    <div className="text-[11px] font-mono" style={{ color: 'var(--text-muted)' }}>
                       @{account.username} {account.email && `· ${account.email}`}
                     </div>
                   </div>
                   <div className="flex gap-1">
-                    <button onClick={() => setEditingId(isEditing ? null : account.id)} className="p-1.5 rounded-xl transition-all" style={{ color: 'rgba(0,0,0,0.3)' }}
+                    <button onClick={() => setEditingId(isEditing ? null : account.id)} className="p-1.5 rounded-xl transition-all" style={{ color: 'var(--text-faint)' }}
                       onMouseEnter={(e) => e.currentTarget.style.color = '#3b82f6'}
-                      onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(0,0,0,0.3)'}>
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-faint)'}>
                       {isEditing ? <X size={14} /> : <Pencil size={14} />}
                     </button>
                     {account.username !== 'admin' && !isSelf && (
-                      <button onClick={() => removeAccount(account.id)} className="p-1.5 rounded-xl transition-all" style={{ color: 'rgba(0,0,0,0.3)' }}
+                      <button onClick={() => removeAccount(account.id)} className="p-1.5 rounded-xl transition-all" style={{ color: 'var(--text-faint)' }}
                         onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(0,0,0,0.3)'}>
+                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-faint)'}>
                         <Trash2 size={14} />
                       </button>
                     )}
@@ -176,13 +176,13 @@ export const UsersPage = () => {
 
                 {/* Expanded edit panel */}
                 {isEditing && (
-                  <div className="pt-3 space-y-4 animate-[fadeIn_0.15s_ease]" style={{ borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+                  <div className="pt-3 space-y-4 animate-[fadeIn_0.15s_ease]" style={{ borderTop: '1px solid var(--border-subtle)' }}>
                     {/* Role selector */}
                     <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(0,0,0,0.4)' }}>Role</div>
+                      <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Role</div>
                       <div className="flex gap-2">
                         {(['admin', 'editor', 'viewer'] as UserRole[]).map((r) => (
-                          <button key={r} onClick={() => updateAccount(account.id, { role: r })} className="px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all" style={account.role === r ? { background: `${getRoleColor(r)}15`, color: getRoleColor(r), border: `1px solid ${getRoleColor(r)}30` } : { color: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                          <button key={r} onClick={() => updateAccount(account.id, { role: r })} className="px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all" style={account.role === r ? { background: `${getRoleColor(r)}15`, color: getRoleColor(r), border: `1px solid ${getRoleColor(r)}30` } : { color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>
                             <Shield size={11} className="inline mr-1" />{getRoleLabel(r)}
                           </button>
                         ))}
@@ -191,9 +191,9 @@ export const UsersPage = () => {
 
                     {/* Password change */}
                     <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(0,0,0,0.4)' }}>Password</div>
+                      <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Password</div>
                       <div className="flex gap-2">
-                        <input type="password" value={passwordChange[account.id] ?? ''} onChange={(e) => setPasswordChange({ ...passwordChange, [account.id]: e.target.value })} placeholder="New password" className="flex-1 rounded-2xl px-3 py-1.5 text-xs outline-none" style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: 'rgba(0,0,0,0.85)' }} />
+                        <input type="password" value={passwordChange[account.id] ?? ''} onChange={(e) => setPasswordChange({ ...passwordChange, [account.id]: e.target.value })} placeholder="New password" className="flex-1 rounded-2xl px-3 py-1.5 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
                         <Button variant="outline" size="sm" disabled={!passwordChange[account.id]?.trim()} onClick={() => { updatePassword(account.id, passwordChange[account.id]); setPasswordChange({ ...passwordChange, [account.id]: '' }); }}>
                           <Check size={12} /> Set
                         </Button>
@@ -203,12 +203,12 @@ export const UsersPage = () => {
                     {/* Page permissions */}
                     {account.role !== 'admin' && (
                       <div>
-                        <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(0,0,0,0.4)' }}>Page Access</div>
+                        <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Page Access</div>
                         <div className="flex gap-1.5 flex-wrap">
                           {ALL_PAGES.map(({ path, label }) => {
                             const hasAccess = account.permissions.pages.includes('*') || account.permissions.pages.includes(path);
                             return (
-                              <button key={path} onClick={() => handlePageToggle(account.id, account.permissions, path)} className="px-2 py-1 rounded-lg text-[10px] font-semibold transition-all" style={hasAccess ? { background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)' } : { color: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                              <button key={path} onClick={() => handlePageToggle(account.id, account.permissions, path)} className="px-2 py-1 rounded-lg text-[10px] font-semibold transition-all" style={hasAccess ? { background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)' } : { color: 'var(--text-faint)', border: '1px solid var(--border-subtle)' }}>
                                 {label}
                               </button>
                             );
@@ -220,12 +220,12 @@ export const UsersPage = () => {
                     {/* Widget permissions */}
                     {account.role !== 'admin' && (
                       <div>
-                        <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(0,0,0,0.4)' }}>Widget Access</div>
+                        <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Widget Access</div>
                         <div className="flex gap-1.5 flex-wrap">
                           {ALL_WIDGETS.map((w) => {
                             const hasAccess = account.permissions.widgets.includes('*') || account.permissions.widgets.includes(w);
                             return (
-                              <button key={w} onClick={() => handleWidgetToggle(account.id, account.permissions, w)} className="px-2 py-1 rounded-lg text-[10px] font-mono font-semibold transition-all" style={hasAccess ? { background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.2)' } : { color: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                              <button key={w} onClick={() => handleWidgetToggle(account.id, account.permissions, w)} className="px-2 py-1 rounded-lg text-[10px] font-mono font-semibold transition-all" style={hasAccess ? { background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.2)' } : { color: 'var(--text-faint)', border: '1px solid var(--border-subtle)' }}>
                                 {w}
                               </button>
                             );
@@ -237,7 +237,7 @@ export const UsersPage = () => {
                     {/* Capability toggles */}
                     {account.role !== 'admin' && (
                       <div>
-                        <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(0,0,0,0.4)' }}>Capabilities</div>
+                        <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Capabilities</div>
                         <div className="grid grid-cols-2 gap-2">
                           <Toggle checked={account.permissions.canEditDocs} onChange={(v) => handlePermToggle(account.id, account.permissions, 'canEditDocs', v)} label="Edit Docs" />
                           <Toggle checked={account.permissions.canAccessTerminal} onChange={(v) => handlePermToggle(account.id, account.permissions, 'canAccessTerminal', v)} label="Terminal" />

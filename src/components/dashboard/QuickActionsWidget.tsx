@@ -45,7 +45,7 @@ export const AIMetricsWidget = () => (
       }}>
         <Icon size={13} style={{ color }} className="mb-1.5" />
         <div className="text-base font-black font-mono leading-none" style={{ color }}>{value}</div>
-        <div className="text-[10px] uppercase tracking-wide font-mono mt-1" style={{ color: 'rgba(0,0,0,0.4)' }}>{label}</div>
+        <div className="text-[10px] uppercase tracking-wide font-mono mt-1" style={{ color: 'var(--text-secondary)' }}>{label}</div>
       </div>
     ))}
   </div>

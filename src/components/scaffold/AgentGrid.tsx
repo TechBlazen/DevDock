@@ -23,7 +23,7 @@ export const AgentGrid = ({ onSelect }: AgentGridProps) => {
       {/* Recent sessions */}
       {sessions.length > 0 && (
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
+          <div className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
             Recent Sessions
           </div>
           <SessionList sessions={sessions} maxItems={5} />

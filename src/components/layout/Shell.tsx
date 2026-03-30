@@ -3,7 +3,9 @@ import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { ChatPanel } from '../chat/ChatPanel';
 import { TerminalPanel } from '../terminal/Terminal';
-import { useChatStore } from '../../store';
+import { CommandPalette } from '../search/CommandPalette';
+import { useChatStore, useSearchStore } from '../../store';
+import { useSearchSync } from '../../hooks/useSearchSync';
 
 interface ShellProps {
   children: ReactNode;
@@ -16,6 +18,14 @@ export const Shell = ({ children, editMode = false, onToggleEdit = () => {} }: S
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [terminalOpen, setTerminalOpen] = useState(false);
 
+  // Initialize search engine on mount
+  useEffect(() => {
+    useSearchStore.getState().initialize();
+  }, []);
+
+  // Keep search index in sync with store data
+  useSearchSync();
+
   useEffect(() => {
     const handler = () => setTerminalOpen((v) => !v);
     window.addEventListener('forge:toggle-terminal', handler);
@@ -23,7 +33,8 @@ export const Shell = ({ children, editMode = false, onToggleEdit = () => {} }: S
   }, []);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ color: '#1a1a2e' }}>
+    <div className="flex flex-col h-screen overflow-hidden" style={{ color: 'var(--text-primary)' }}>
+      <CommandPalette />
       {/* Topbar spans full width */}
       <Topbar editMode={editMode} onToggleEdit={onToggleEdit} />
 

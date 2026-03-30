@@ -68,8 +68,8 @@ export const MermaidDiagram = ({ chart }: MermaidDiagramProps) => {
         <div className="font-bold mb-1">Mermaid render error</div>
         <pre className="whitespace-pre-wrap text-[10px]">{error}</pre>
         <details className="mt-2">
-          <summary className="cursor-pointer text-[10px]" style={{ color: 'rgba(0,0,0,0.4)' }}>Source</summary>
-          <pre className="mt-1 p-2 rounded" style={{ background: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.6)' }}>{chart}</pre>
+          <summary className="cursor-pointer text-[10px]" style={{ color: 'var(--text-muted)' }}>Source</summary>
+          <pre className="mt-1 p-2 rounded" style={{ background: 'var(--bg-inset)', color: 'var(--text-secondary)' }}>{chart}</pre>
         </details>
       </div>
     );
@@ -77,26 +77,26 @@ export const MermaidDiagram = ({ chart }: MermaidDiagramProps) => {
 
   return (
     <div className="rounded-xl overflow-hidden group" style={{
-      border: '1px solid rgba(0,0,0,0.08)',
-      background: 'rgba(255,255,255,0.8)',
+      border: '1px solid var(--border-subtle)',
+      background: 'var(--bg-surface)',
     }}>
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-1" style={{
-        background: 'rgba(0,0,0,0.03)',
-        borderBottom: '1px solid rgba(0,0,0,0.06)',
+        background: 'var(--bg-inset)',
+        borderBottom: '1px solid var(--border-subtle)',
       }}>
-        <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: 'rgba(0,0,0,0.4)' }}>
+        <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
           mermaid
         </span>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))} className="p-0.5" style={{ color: 'rgba(0,0,0,0.4)' }}>
+          <button onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))} className="p-0.5" style={{ color: 'var(--text-muted)' }}>
             <ZoomOut size={12} />
           </button>
-          <span className="text-[9px] font-mono" style={{ color: 'rgba(0,0,0,0.3)' }}>{Math.round(zoom * 100)}%</span>
-          <button onClick={() => setZoom((z) => Math.min(2, z + 0.25))} className="p-0.5" style={{ color: 'rgba(0,0,0,0.4)' }}>
+          <span className="text-[9px] font-mono" style={{ color: 'var(--text-faint)' }}>{Math.round(zoom * 100)}%</span>
+          <button onClick={() => setZoom((z) => Math.min(2, z + 0.25))} className="p-0.5" style={{ color: 'var(--text-muted)' }}>
             <ZoomIn size={12} />
           </button>
-          <button onClick={handleCopy} className="p-0.5 ml-1" style={{ color: 'rgba(0,0,0,0.4)' }}>
+          <button onClick={handleCopy} className="p-0.5 ml-1" style={{ color: 'var(--text-muted)' }}>
             {copied ? <Check size={12} /> : <Copy size={12} />}
           </button>
         </div>
