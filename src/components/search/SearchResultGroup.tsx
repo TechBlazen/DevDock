@@ -9,6 +9,7 @@ const CATEGORY_LABELS: Record<SearchCategory, string> = {
   'scaffold-agent': 'Scaffold Agents',
   'telemetry': 'Telemetry',
   'activity': 'Activity',
+  'forum': 'Forum',
 };
 
 interface Props {
