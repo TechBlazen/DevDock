@@ -6,7 +6,7 @@ import {
   PanelLeftClose, PanelLeftOpen, ChevronDown, ChevronRight,
   Wrench, Braces, Send, Search,
 } from 'lucide-react';
-import { useMCPStore, useAuthStore } from '../../store';
+import { useMCPStore, useAuthStore, useSearchStore } from '../../store';
 import { usePluginExtensions } from '../../lib/plugins';
 
 // Group 1: Main navigation (above divider)
@@ -88,7 +88,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
   const isPluginRouteActive = pluginPaths.includes(pathname);
   const isPluginsPageActive = pathname === '/plugins';
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const openSearch = useSearchStore((s) => s.open);
 
   const renderNavLink = (to: string, Icon: React.ComponentType<{ size?: number; className?: string }>, label: string, indent = false) => (
     <NavLink
@@ -124,21 +124,26 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
         borderRight: '1px solid #e0e0e0',
       }}
     >
-      {/* Search */}
-      {!collapsed && (
+      {/* Search trigger */}
+      {!collapsed ? (
         <div style={{ marginLeft: 24, marginRight: 24, marginTop: 16, marginBottom: 8 }}>
-          <div className="flex items-center gap-2.5 rounded-md px-3 py-2.5" style={{
-            border: '2px solid #ccc',
-          }}>
+          <button
+            onClick={openSearch}
+            className="flex items-center gap-2.5 rounded-md px-3 py-2.5 w-full text-left"
+            style={{ border: '2px solid #ccc', background: 'transparent', cursor: 'pointer' }}
+          >
             <Search size={16} style={{ color: '#aaa' }} className="flex-shrink-0" />
-            <input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search repos, MCP, Traces...."
-              className="bg-transparent border-none outline-none text-[14px] flex-1 min-w-0"
-              style={{ color: '#333' }}
-            />
-          </div>
+            <span className="text-[14px] flex-1 min-w-0" style={{ color: '#aaa' }}>Search...</span>
+            <kbd style={{ fontSize: 11, color: '#bbb', background: '#f0f0f0', border: '1px solid #ddd', borderRadius: 4, padding: '1px 6px' }}>
+              {navigator.platform?.includes('Mac') ? '⌘K' : 'Ctrl+K'}
+            </kbd>
+          </button>
+        </div>
+      ) : (
+        <div style={{ marginTop: 16, marginBottom: 8, display: 'flex', justifyContent: 'center' }}>
+          <button onClick={openSearch} title="Search (⌘K)" style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 8 }}>
+            <Search size={18} style={{ color: '#aaa' }} />
+          </button>
         </div>
       )}
 

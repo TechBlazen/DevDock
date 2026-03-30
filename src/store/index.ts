@@ -802,3 +802,6 @@ export const useUserAccountsStore = create<UserAccountsStore>()(
     }
   )
 );
+
+// ─── Search Store (re-export) ────────────────────────────────────────────────
+export { useSearchStore } from './search-store';
