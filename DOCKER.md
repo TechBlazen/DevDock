@@ -52,7 +52,7 @@ The dev container comes pre-configured with:
 
 - **Node.js 22** (latest LTS)
 - **Zsh** with Oh-My-Zsh for a better terminal experience
-- **Git** and **GitHub CLI** (`gh`)
+- **Git**
 - **pnpm** and **yarn** package managers
 - **VS Code extensions:**
   - ESLint, Prettier, Tailwind CSS IntelliSense
