@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    volumes:
+      - ../..:/workspaces:cached
+      
+    command: sleep infinity
+    
+    network_mode: host
+    
+    environment:
+      - NODE_ENV=development

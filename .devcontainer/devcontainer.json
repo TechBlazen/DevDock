@@ -1,0 +1,66 @@
+{
+  "name": "Forge Portal Dev Container",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bullseye",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "latest"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "formulahendry.auto-rename-tag",
+        "dsznajder.es7-react-js-snippets",
+        "christian-kohler.path-intellisense",
+        "ms-azuretools.vscode-docker",
+        "eamodio.gitlens"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "eslint.validate": [
+          "javascript",
+          "javascriptreact",
+          "typescript",
+          "typescriptreact"
+        ],
+        "tailwindCSS.experimental.classRegex": [
+          ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+        ]
+      }
+    }
+  },
+
+  "forwardPorts": [5173, 4173],
+  "portsAttributes": {
+    "5173": {
+      "label": "Vite Dev Server",
+      "onAutoForward": "notify"
+    },
+    "4173": {
+      "label": "Vite Preview Server",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "postCreateCommand": "npm install",
+  "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
+
+  "remoteUser": "node",
+  
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,readonly,type=bind,consistency=cached"
+  ]
+}
