@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Sparkles, Shield, Pencil, Check } from 'lucide-react';
+import { Sparkles, Shield, Pencil, Check, MessageSquare } from 'lucide-react';
 
 interface FooterProps {
   editMode: boolean;
@@ -51,6 +51,17 @@ export const Footer = ({ editMode, onToggleEdit }: FooterProps) => {
         >
           <Shield size={12} />
           Privacy Policy
+        </Link>
+
+        <Link
+          to="/forum"
+          className="flex items-center gap-1 transition-colors"
+          style={{ color: 'var(--text-muted)', textDecoration: 'none' }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+        >
+          <MessageSquare size={12} />
+          Community
         </Link>
 
         <span style={{ color: 'var(--text-faint)' }}>

@@ -1,5 +1,5 @@
 import type { SearchSource } from '../types';
-import { useRepoStore, useMCPStore, useDocsStore, usePluginStore, useTelemetryStore, useActivityStore } from '../../../store';
+import { useRepoStore, useMCPStore, useDocsStore, usePluginStore, useTelemetryStore, useActivityStore, useForumStore } from '../../../store';
 import { createRepoSource } from './repo-source';
 import { createMCPSource } from './mcp-source';
 import { createDocsSource } from './docs-source';
@@ -7,6 +7,7 @@ import { createPluginSource } from './plugin-source';
 import { createScaffoldSource } from './scaffold-source';
 import { createTelemetrySource } from './telemetry-source';
 import { createActivitySource } from './activity-source';
+import { createForumSource } from './forum-source';
 
 export function createSearchSources(): SearchSource[] {
   return [
@@ -17,5 +18,6 @@ export function createSearchSources(): SearchSource[] {
     createScaffoldSource(),
     createTelemetrySource(useTelemetryStore.getState),
     createActivitySource(useActivityStore.getState),
+    createForumSource(useForumStore.getState),
   ];
 }

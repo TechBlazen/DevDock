@@ -15,6 +15,7 @@ const CATEGORIES: { value: SearchCategory | null; label: string }[] = [
   { value: 'scaffold-agent', label: 'Scaffold' },
   { value: 'telemetry', label: 'Telemetry' },
   { value: 'activity', label: 'Activity' },
+  { value: 'forum', label: 'Forum' },
 ];
 
 export function CommandPalette() {

@@ -884,3 +884,6 @@ export const useUserAccountsStore = create<UserAccountsStore>()(
 
 // ─── Search Store (re-export) ────────────────────────────────────────────────
 export { useSearchStore } from './search-store';
+
+// ─── Forum Store (re-export) ─────────────────────────────────────────────────
+export { useForumStore } from './forum-store';

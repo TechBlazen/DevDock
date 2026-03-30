@@ -284,6 +284,62 @@ export interface ForgePlugin {
   settings?: PluginSetting[];
 }
 
+// ─── Forum Types ────────────────────────────────────────────────────────────
+export type ForumCategory = 'bug' | 'feature-request' | 'question' | 'discussion' | 'how-to';
+export type ForumDepartment = 'Engineering' | 'DevOps' | 'Platform' | 'Security' | 'Data';
+export type ForumTechnology =
+  | 'React' | 'TypeScript' | 'Python' | 'Go' | 'Rust' | 'Java'
+  | 'Kubernetes' | 'Terraform' | 'Docker' | 'AWS' | 'Azure' | 'GCP'
+  | 'PostgreSQL' | 'Redis' | 'GraphQL' | 'Node.js' | 'CI/CD' | 'Monitoring';
+export type ReputationTier = 'bronze' | 'silver' | 'gold';
+
+export interface ForumVote {
+  userId: string;
+  value: 1 | -1;
+  createdAt: string;
+}
+
+export interface ForumAnswer {
+  id: string;
+  threadId: string;
+  authorId: string;
+  authorName: string;
+  authorAvatarUrl?: string;
+  body: string;
+  votes: ForumVote[];
+  isAccepted: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ForumThread {
+  id: string;
+  title: string;
+  body: string;
+  category: ForumCategory;
+  tags: string[];
+  authorId: string;
+  authorName: string;
+  authorAvatarUrl?: string;
+  votes: ForumVote[];
+  answers: ForumAnswer[];
+  viewCount: number;
+  acceptedAnswerId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ForumUserReputation {
+  userId: string;
+  displayName: string;
+  avatarUrl?: string;
+  points: number;
+  tier: ReputationTier;
+  questionCount: number;
+  answerCount: number;
+  acceptedCount: number;
+}
+
 // ─── Docs Types ──────────────────────────────────────────────────────────────
 export interface DocEntry {
   id: string;

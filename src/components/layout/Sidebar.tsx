@@ -4,7 +4,7 @@ import {
   LayoutDashboard, GitFork, GitBranch, Cpu, Activity,
   Settings, Layers, Hammer, Puzzle, FileText, Network, Users, LogOut,
   PanelLeftClose, PanelLeftOpen, ChevronDown, ChevronRight,
-  Wrench, Braces, Send, Search, User,
+  Wrench, Braces, Send, Search, User, MessageSquare,
 } from 'lucide-react';
 import { useMCPStore, useAuthStore, useSearchStore } from '../../store';
 import { usePluginExtensions } from '../../lib/plugins';
@@ -24,6 +24,7 @@ const toolsNavItems = [
   { to: '/scaffold',   icon: Hammer,          label: 'Scaffold' },
   { to: '/docs',       icon: FileText,        label: 'Docs' },
   { to: '/network',    icon: Network,         label: 'Network' },
+  { to: '/forum',      icon: MessageSquare,   label: 'Community' },
 ];
 
 const adminNavItems = [
