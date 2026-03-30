@@ -108,19 +108,20 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
       </a>
     ),
     // Code blocks with copy button
-    code: ({ inline, className, children, ...props }) => {
+    code: ({ className, children, ...props }) => {
       const match = /language-(\w+)/.exec(className || '');
       const lang = match ? match[1] : '';
       const codeString = String(children).replace(/\n$/, '');
       const blockId = `code-${codeString.slice(0, 20)}`;
+      const isInline = !className && typeof children === 'string' && !children.includes('\n');
 
       // Handle mermaid diagrams
-      if (!inline && lang === 'mermaid') {
+      if (!isInline && lang === 'mermaid') {
         return <MermaidDiagram chart={codeString} />;
       }
 
       // Inline code
-      if (inline) {
+      if (isInline) {
         return (
           <code
             className="px-1.5 py-0.5 rounded text-[11px] font-mono"
@@ -212,7 +213,11 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
         {children}
       </ol>
     ),
-    li: ({ children, ordered, ...props }) => (
+    li: ({ children, node, ...props }) => {
+      const isOrdered = node?.position ? false : (props as Record<string, unknown>).ordered !== undefined;
+      const parentTag = (node as unknown as { parentNode?: { tagName?: string } })?.parentNode?.tagName;
+      const ordered = parentTag === 'ol' || isOrdered;
+      return (
       <li
         className="text-[13px] leading-relaxed flex gap-2"
         style={{
@@ -235,7 +240,8 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
         </span>
         <span className="flex-1">{children}</span>
       </li>
-    ),
+      );
+    },
     // Tables
     table: ({ children, ...props }) => (
       <div className="my-4 rounded-lg overflow-hidden" style={{ border: '1px solid var(--border-subtle)' }}>
