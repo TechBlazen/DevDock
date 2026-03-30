@@ -10,9 +10,9 @@ services:
       # Mount the workspace
       - ../..:/workspaces:cached
       # Mount SSH keys (read-only)
-      - ~/.ssh:/home/node/.ssh:ro
+      - ${localEnv:HOME}/.ssh:/home/node/.ssh:ro
       # Mount git config
-      - ~/.gitconfig:/home/node/.gitconfig:ro
+      - ${localEnv:HOME}/.gitconfig:/home/node/.gitconfig:ro
       # Persist node_modules for better performance
       - node_modules:/workspaces/${localWorkspaceFolderBasename}/node_modules
       
