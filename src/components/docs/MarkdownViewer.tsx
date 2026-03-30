@@ -1,105 +1,323 @@
 import { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Copy, Check } from 'lucide-react';
 import { MermaidDiagram } from './MermaidDiagram';
+import type { Components } from 'react-markdown';
 
 interface MarkdownViewerProps {
   content: string;
 }
 
 export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
-  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [copiedBlocks, setCopiedBlocks] = useState<Set<string>>(new Set());
 
-  const handleCopy = (code: string, idx: number) => {
+  const handleCopy = (code: string, blockId: string) => {
     navigator.clipboard.writeText(code);
-    setCopiedIdx(idx);
-    setTimeout(() => setCopiedIdx(null), 2000);
+    setCopiedBlocks(new Set([...copiedBlocks, blockId]));
+    setTimeout(() => {
+      setCopiedBlocks((prev) => {
+        const next = new Set(prev);
+        next.delete(blockId);
+        return next;
+      });
+    }, 2000);
   };
 
-  // Split on code fences
-  const parts = content.split(/(```[\s\S]*?```)/g);
+  // Custom components for react-markdown with Backstage-inspired styling
+  const components: Components = {
+    // Headings with proper hierarchy
+    h1: ({ children, ...props }) => (
+      <h1
+        className="text-[24px] font-bold mt-6 mb-4 pb-2"
+        style={{
+          color: 'rgba(0,0,0,0.95)',
+          borderBottom: '2px solid rgba(0,0,0,0.08)',
+        }}
+        {...props}
+      >
+        {children}
+      </h1>
+    ),
+    h2: ({ children, ...props }) => (
+      <h2
+        className="text-[20px] font-bold mt-5 mb-3"
+        style={{ color: 'rgba(0,0,0,0.9)' }}
+        {...props}
+      >
+        {children}
+      </h2>
+    ),
+    h3: ({ children, ...props }) => (
+      <h3
+        className="text-[16px] font-bold mt-4 mb-2"
+        style={{ color: 'rgba(0,0,0,0.85)' }}
+        {...props}
+      >
+        {children}
+      </h3>
+    ),
+    h4: ({ children, ...props }) => (
+      <h4
+        className="text-[14px] font-bold mt-3 mb-1"
+        style={{ color: 'rgba(0,0,0,0.85)' }}
+        {...props}
+      >
+        {children}
+      </h4>
+    ),
+    h5: ({ children, ...props }) => (
+      <h5
+        className="text-[13px] font-bold mt-3 mb-1"
+        style={{ color: 'rgba(0,0,0,0.8)' }}
+        {...props}
+      >
+        {children}
+      </h5>
+    ),
+    h6: ({ children, ...props }) => (
+      <h6
+        className="text-[12px] font-bold mt-2 mb-1"
+        style={{ color: 'rgba(0,0,0,0.75)' }}
+        {...props}
+      >
+        {children}
+      </h6>
+    ),
+    // Paragraphs
+    p: ({ children, ...props }) => (
+      <p
+        className="text-[13px] leading-relaxed my-3"
+        style={{ color: 'rgba(0,0,0,0.75)' }}
+        {...props}
+      >
+        {children}
+      </p>
+    ),
+    // Links with hover effects
+    a: ({ children, href, ...props }) => (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-medium hover:underline transition-colors"
+        style={{ color: '#2a6fff' }}
+        {...props}
+      >
+        {children}
+      </a>
+    ),
+    // Code blocks with copy button
+    code: ({ inline, className, children, ...props }) => {
+      const match = /language-(\w+)/.exec(className || '');
+      const lang = match ? match[1] : '';
+      const codeString = String(children).replace(/\n$/, '');
+      const blockId = `code-${codeString.slice(0, 20)}`;
 
-  return (
-    <div className="prose-forge text-[13px] leading-relaxed space-y-3" style={{ color: 'rgba(0,0,0,0.75)' }}>
-      {parts.map((part, i) => {
-        if (part.startsWith('```')) {
-          const langMatch = part.match(/^```(\w*)\n?/);
-          const lang = langMatch?.[1] ?? '';
-          const code = part.replace(/^```\w*\n?/, '').replace(/```$/, '');
+      // Handle mermaid diagrams
+      if (!inline && lang === 'mermaid') {
+        return <MermaidDiagram chart={codeString} />;
+      }
 
-          // Render mermaid diagrams
-          if (lang === 'mermaid') {
-            return <MermaidDiagram key={i} chart={code} />;
-          }
+      // Inline code
+      if (inline) {
+        return (
+          <code
+            className="px-1.5 py-0.5 rounded text-[11px] font-mono"
+            style={{
+              background: 'rgba(42,111,255,0.08)',
+              color: 'rgba(42,111,255,0.9)',
+            }}
+            {...props}
+          >
+            {children}
+          </code>
+        );
+      }
 
-          return (
-            <div key={i} className="relative group rounded-xl overflow-hidden">
-              {lang && (
-                <div className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider" style={{
-                  background: 'rgba(0,0,0,0.06)',
-                  color: 'rgba(0,0,0,0.4)',
-                  borderBottom: '1px solid rgba(0,0,0,0.06)',
-                }}>
-                  {lang}
-                </div>
-              )}
-              <pre className="p-3 overflow-x-auto text-[12px] font-mono leading-relaxed" style={{
+      // Block code with copy button
+      return (
+        <div className="relative group my-4 rounded-xl overflow-hidden">
+          {lang && (
+            <div
+              className="px-4 py-2 text-[10px] font-mono uppercase tracking-wider font-semibold"
+              style={{
+                background: 'rgba(0,0,0,0.06)',
+                color: 'rgba(0,0,0,0.5)',
+                borderBottom: '1px solid rgba(0,0,0,0.06)',
+              }}
+            >
+              {lang}
+            </div>
+          )}
+          <div className="relative">
+            <pre
+              className="p-4 overflow-x-auto text-[12px] font-mono leading-relaxed"
+              style={{
                 background: 'rgba(0,0,0,0.04)',
                 color: 'rgba(0,0,0,0.7)',
-              }}>
-                {code}
-              </pre>
-              <button
-                onClick={() => handleCopy(code, i)}
-                className="absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
-                style={{
-                  background: 'rgba(255,255,255,0.8)',
-                  border: '1px solid rgba(0,0,0,0.1)',
-                  color: 'rgba(0,0,0,0.5)',
-                }}
-              >
-                {copiedIdx === i ? <Check size={12} /> : <Copy size={12} />}
-              </button>
-            </div>
-          );
-        }
+                margin: 0,
+              }}
+            >
+              <code className={className} {...props}>
+                {children}
+              </code>
+            </pre>
+            <button
+              onClick={() => handleCopy(codeString, blockId)}
+              className="absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+              style={{
+                background: 'rgba(255,255,255,0.9)',
+                border: '1px solid rgba(0,0,0,0.1)',
+                color: 'rgba(0,0,0,0.5)',
+              }}
+              title="Copy code"
+            >
+              {copiedBlocks.has(blockId) ? <Check size={12} /> : <Copy size={12} />}
+            </button>
+          </div>
+        </div>
+      );
+    },
+    // Blockquotes
+    blockquote: ({ children, ...props }) => (
+      <blockquote
+        className="pl-4 py-2 my-3 rounded-r-lg"
+        style={{
+          borderLeft: '4px solid rgba(42,111,255,0.4)',
+          background: 'rgba(42,111,255,0.03)',
+          color: 'rgba(0,0,0,0.65)',
+        }}
+        {...props}
+      >
+        {children}
+      </blockquote>
+    ),
+    // Lists
+    ul: ({ children, ...props }) => (
+      <ul
+        className="my-3 space-y-1 pl-6"
+        style={{ listStyleType: 'none' }}
+        {...props}
+      >
+        {children}
+      </ul>
+    ),
+    ol: ({ children, ...props }) => (
+      <ol
+        className="my-3 space-y-1 pl-6"
+        style={{ listStyleType: 'none', counterReset: 'item' }}
+        {...props}
+      >
+        {children}
+      </ol>
+    ),
+    li: ({ children, ordered, ...props }) => (
+      <li
+        className="text-[13px] leading-relaxed flex gap-2"
+        style={{
+          color: 'rgba(0,0,0,0.75)',
+          counterIncrement: ordered ? 'item' : undefined,
+        }}
+        {...props}
+      >
+        <span
+          className="flex-shrink-0 font-mono text-[12px]"
+          style={{ color: 'rgba(42,111,255,0.7)' }}
+        >
+          {ordered ? (
+            <span style={{ display: 'inline-block', minWidth: '20px' }}>
+              {/* Counter handled by CSS */}
+            </span>
+          ) : (
+            '›'
+          )}
+        </span>
+        <span className="flex-1">{children}</span>
+      </li>
+    ),
+    // Tables
+    table: ({ children, ...props }) => (
+      <div className="my-4 rounded-lg overflow-hidden" style={{ border: '1px solid rgba(0,0,0,0.08)' }}>
+        <table
+          className="w-full text-[12px]"
+          style={{ borderCollapse: 'collapse' }}
+          {...props}
+        >
+          {children}
+        </table>
+      </div>
+    ),
+    thead: ({ children, ...props }) => (
+      <thead
+        style={{
+          background: 'rgba(0,0,0,0.04)',
+          fontWeight: 600,
+        }}
+        {...props}
+      >
+        {children}
+      </thead>
+    ),
+    th: ({ children, ...props }) => (
+      <th
+        className="px-4 py-2 text-left"
+        style={{
+          color: 'rgba(0,0,0,0.8)',
+          borderBottom: '2px solid rgba(0,0,0,0.1)',
+        }}
+        {...props}
+      >
+        {children}
+      </th>
+    ),
+    td: ({ children, ...props }) => (
+      <td
+        className="px-4 py-2"
+        style={{
+          color: 'rgba(0,0,0,0.75)',
+          borderBottom: '1px solid rgba(0,0,0,0.06)',
+        }}
+        {...props}
+      >
+        {children}
+      </td>
+    ),
+    // Horizontal rule
+    hr: (props) => (
+      <hr
+        className="my-6"
+        style={{
+          border: 'none',
+          borderTop: '1px solid rgba(0,0,0,0.08)',
+        }}
+        {...props}
+      />
+    ),
+    // Strong and emphasis
+    strong: ({ children, ...props }) => (
+      <strong
+        style={{ color: 'rgba(0,0,0,0.9)', fontWeight: 700 }}
+        {...props}
+      >
+        {children}
+      </strong>
+    ),
+    em: ({ children, ...props }) => (
+      <em style={{ fontStyle: 'italic' }} {...props}>
+        {children}
+      </em>
+    ),
+  };
 
-        // Parse markdown blocks
-        const html = part
-          // Headers
-          .replace(/^#### (.+)$/gm, '<h4 class="text-[13px] font-bold mt-4 mb-1" style="color:rgba(0,0,0,0.85)">$1</h4>')
-          .replace(/^### (.+)$/gm, '<h3 class="text-[14px] font-bold mt-4 mb-1" style="color:rgba(0,0,0,0.85)">$1</h3>')
-          .replace(/^## (.+)$/gm, '<h2 class="text-[16px] font-bold mt-5 mb-2" style="color:rgba(0,0,0,0.9)">$1</h2>')
-          .replace(/^# (.+)$/gm, '<h1 class="text-[20px] font-bold mt-2 mb-3" style="color:rgba(0,0,0,0.95)">$1</h1>')
-          // Blockquotes
-          .replace(/^> (.+)$/gm, '<div class="pl-3 py-1" style="border-left:3px solid rgba(42,111,255,0.3);color:rgba(0,0,0,0.6)">$1</div>')
-          // Tables (basic)
-          .replace(/^\|(.+)\|$/gm, (match) => {
-            const cells = match.split('|').filter(Boolean).map((c) => c.trim());
-            if (cells.every((c) => /^[-:]+$/.test(c))) return ''; // separator row
-            const cellHtml = cells.map((c) => `<td class="px-3 py-1.5 text-[12px]" style="border:1px solid rgba(0,0,0,0.08)">${c}</td>`).join('');
-            return `<tr>${cellHtml}</tr>`;
-          })
-          // Bold, italic, inline code
-          .replace(/\*\*(.+?)\*\*/g, '<strong style="color:rgba(0,0,0,0.9);font-weight:700">$1</strong>')
-          .replace(/\*(.+?)\*/g, '<em>$1</em>')
-          .replace(/`(.+?)`/g, '<code class="px-1.5 py-0.5 rounded text-[11px] font-mono" style="background:rgba(0,0,0,0.05);color:rgba(42,111,255,0.8)">$1</code>')
-          // Lists
-          .replace(/^(\d+)\. (.+)$/gm, '<div class="flex gap-2 ml-2"><span class="text-[rgba(42,111,255,0.6)] font-mono text-[12px] flex-shrink-0">$1.</span><span>$2</span></div>')
-          .replace(/^- (.+)$/gm, '<div class="flex gap-2 ml-2"><span style="color:rgba(42,111,255,0.6)" class="flex-shrink-0">›</span><span>$2</span></div>')
-          .replace(/^- (.+)$/gm, '<div class="flex gap-2 ml-2"><span style="color:rgba(42,111,255,0.6)" class="flex-shrink-0">›</span><span>$1</span></div>')
-          // Horizontal rule
-          .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid rgba(0,0,0,0.08);margin:12px 0" />')
-          // Paragraphs
-          .replace(/\n\n/g, '<br/><br/>')
-          .replace(/\n/g, '<br/>');
-
-        // Wrap tables
-        const tableWrapped = html.includes('<tr>')
-          ? html.replace(/(<tr>[\s\S]*?<\/tr>)/g, '<table class="w-full rounded-lg overflow-hidden my-2" style="border-collapse:collapse">$1</table>')
-          : html;
-
-        return <div key={i} dangerouslySetInnerHTML={{ __html: tableWrapped }} />;
-      })}
+  return (
+    <div className="techdocs-content max-w-4xl">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={components}
+      >
+        {content}
+      </ReactMarkdown>
     </div>
   );
 };

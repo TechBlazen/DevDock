@@ -42,3 +42,37 @@ body {
 main > * { animation: fadeIn 0.2s ease both; }
 
 .font-mono { font-family: 'Source Code Pro', monospace; }
+
+/* ─── TechDocs Content Styling ────────────────────────────────────────────── */
+.techdocs-content {
+  /* Ordered list counter styling */
+  counter-reset: techdocs-ol;
+}
+
+.techdocs-content ol li {
+  counter-increment: techdocs-ol;
+}
+
+.techdocs-content ol li > span:first-child::before {
+  content: counter(techdocs-ol) ".";
+  font-weight: 600;
+}
+
+/* Smooth transitions for interactive elements */
+.techdocs-content a {
+  transition: color 0.15s ease;
+}
+
+.techdocs-content a:hover {
+  color: #1e54d9;
+}
+
+/* Code block improvements */
+.techdocs-content pre {
+  font-family: 'Source Code Pro', 'Monaco', 'Courier New', monospace;
+}
+
+/* Table hover effects */
+.techdocs-content table tbody tr:hover {
+  background: rgba(42, 111, 255, 0.02);
+}
