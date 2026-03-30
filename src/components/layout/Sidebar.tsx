@@ -7,7 +7,7 @@ import {
   Wrench, Braces, Send, Search, User, MessageSquare,
   Globe, Wifi, FileSearch, ShieldCheck, LayoutList,
   Cable, Waypoints, FileDiff, Binary, Regex,
-  Table, GitMerge, Container,
+  Table, GitMerge, Container, BarChart3,
 } from 'lucide-react';
 import { useMCPStore, useAuthStore, useSearchStore } from '../../store';
 import { usePluginExtensions } from '../../lib/plugins';
@@ -31,6 +31,7 @@ const toolsNavItems = [
 ];
 
 const adminNavItems = [
+  { to: '/analytics',  icon: BarChart3,       label: 'Analytics' },
   { to: '/users',      icon: Users,           label: 'Users' },
   { to: '/settings',   icon: Settings,        label: 'Settings' },
 ];

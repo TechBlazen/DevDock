@@ -7,6 +7,7 @@ import { TerminalPanel } from '../terminal/Terminal';
 import { CommandPalette } from '../search/CommandPalette';
 import { useChatStore, useSearchStore } from '../../store';
 import { useSearchSync } from '../../hooks/useSearchSync';
+import { useAnalyticsTracker } from '../../hooks/useAnalyticsTracker';
 
 interface ShellProps {
   children: ReactNode;
@@ -26,6 +27,9 @@ export const Shell = ({ children, editMode = false, onToggleEdit = () => {} }: S
 
   // Keep search index in sync with store data
   useSearchSync();
+
+  // Track page views and errors for admin analytics
+  useAnalyticsTracker();
 
   useEffect(() => {
     const handler = () => setTerminalOpen((v) => !v);

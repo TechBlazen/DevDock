@@ -9,6 +9,7 @@ import { ProfilePage } from './pages/ProfilePage'
 import { WhatsNewPage } from './pages/WhatsNewPage'
 import { PrivacyPage } from './pages/PrivacyPage'
 import { ForumPage } from './pages/ForumPage'
+import { AnalyticsPage } from './pages/AnalyticsPage'
 import {
   DashboardPage,
   GitHubPage,
@@ -153,6 +154,7 @@ function PluginRoutes({ editMode }: { editMode: boolean }) {
       <Route path="/privacy"   element={<PrivacyPage />} />
       <Route path="/forum"          element={<ForumPage />} />
       <Route path="/forum/:threadId" element={<ForumPage />} />
+      <Route path="/analytics" element={<AdminGuard><AnalyticsPage /></AdminGuard>} />
       <Route path="/users"     element={<AdminGuard><UsersPage /></AdminGuard>} />
       <Route path="/settings"  element={<AdminGuard><SettingsPage /></AdminGuard>} />
       {pages.map(({ path, component: Component }) => (
