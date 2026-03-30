@@ -165,7 +165,7 @@ export const GraphqlExplorer = () => {
                 beforeMount={(monaco) => {
                   // Register graphql language if not already registered
                   const langs = monaco.languages.getLanguages();
-                  if (!langs.some((l) => l.id === 'graphql')) {
+                  if (!langs.some((l: { id: string }) => l.id === 'graphql')) {
                     monaco.languages.register({ id: 'graphql' });
                     monaco.languages.setMonarchTokensProvider('graphql', {
                       tokenizer: {

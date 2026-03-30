@@ -2,7 +2,13 @@ export { DashboardPage } from './DashboardPage';
 export { GitHubPage, ADOPage, MCPPage, TelemetryPageRoute } from './RepoPages';
 export { CatalogPage } from './CatalogPage';
 export { ScaffoldPage } from './ScaffoldPage';
-export { DevToolsPage, JsonValidatorPage, ApiTesterPage } from './DevToolsPage';
+export {
+  DevToolsPage, JsonValidatorPage, ApiTesterPage,
+  DnsLookupPage, PingToolPage, WhoisLookupPage, SslCheckerPage,
+  HttpHeadersPage, WebSocketDebuggerPage, GraphqlExplorerPage,
+  TextDiffPage, Base64ToolPage, RegexTesterPage, CsvViewerPage,
+  GitGeneratorPage, DockerGeneratorPage,
+} from './DevToolsPage';
 export { DocsPage } from './DocsPage';
 export { LoginPage } from './LoginPage';
 export { NetworkPage } from './NetworkPage';
