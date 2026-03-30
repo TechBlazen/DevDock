@@ -113,10 +113,10 @@ export const LoginPage = () => {
             <Zap size={28} color="#fff" strokeWidth={2.5} />
           </div>
           <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-            FORGE
+            DEVDOCK
           </h1>
           <p className="text-xs uppercase tracking-[2px] mt-1" style={{ color: 'var(--text-muted)' }}>
-            Developer Portal
+            AI Developer Portal
           </p>
         </div>
 
@@ -127,7 +127,7 @@ export const LoginPage = () => {
           boxShadow: 'var(--shadow-md)',
         }}>
           <h2 className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
-            Sign in to Forge Portal
+            Sign in to DevDock
           </h2>
           <p className="text-[11px] mb-5" style={{ color: 'var(--text-muted)' }}>
             Choose an authentication method to get started.

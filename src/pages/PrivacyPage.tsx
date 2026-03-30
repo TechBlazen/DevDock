@@ -13,7 +13,7 @@ export const PrivacyPage = () => {
 
       <div className="flex flex-col gap-6">
         <Section title="1. Introduction">
-          Forge Portal ("we", "our", or "the application") is an AI-powered developer portal.
+          DevDock ("we", "our", or "the application") is an AI-powered developer portal.
           This Privacy Policy explains how we collect, use, and protect information when you use our application.
           We are committed to protecting your privacy and handling your data transparently.
         </Section>
@@ -39,7 +39,7 @@ export const PrivacyPage = () => {
         </Section>
 
         <Section title="4. Third-Party Services">
-          Forge Portal integrates with third-party services at your direction. These services have their
+          DevDock integrates with third-party services at your direction. These services have their
           own privacy policies:
           <ul style={{ marginTop: 8, paddingLeft: 20, listStyleType: 'disc' }}>
             <li>GitHub (github.com)</li>

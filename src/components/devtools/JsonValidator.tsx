@@ -4,7 +4,7 @@ import { CheckCircle, AlertCircle, Wand2, Copy, Check, Braces } from 'lucide-rea
 import { Button } from '../ui';
 
 const SAMPLE_JSON = `{
-  "name": "forge-portal",
+  "name": "devdock",
   "version": "1.0.0",
   "dependencies": {
     "react": "^19.2.4",

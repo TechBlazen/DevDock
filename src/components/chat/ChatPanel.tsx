@@ -81,7 +81,7 @@ export const ChatPanel = () => {
           <Bot size={16} color="#fff" />
         </div>
         <div>
-          <div className="text-sm font-bold text-[#e0e8ff] font-mono">Forge AI</div>
+          <div className="text-sm font-bold text-[#e0e8ff] font-mono">DevDock AI</div>
           <div className="flex items-center gap-1.5 text-[10px] text-[#3a4a6a] font-mono">
             <StatusDot color="green" pulse />
             MCP: {runningMCP} active
@@ -163,7 +163,7 @@ export const ChatPanel = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask Forge AI anything… (⏎ send, ⇧⏎ newline)"
+            placeholder="Ask DevDock AI anything… (⏎ send, ⇧⏎ newline)"
             rows={1}
             className="flex-1 bg-transparent border-none outline-none text-[#c8d8ff] text-[13px] resize-none font-sans placeholder:text-[#2a3a5a] max-h-[120px] leading-relaxed"
             style={{ minHeight: 22 }}

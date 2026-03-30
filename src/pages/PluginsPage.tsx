@@ -41,7 +41,7 @@ export const PluginsPage = () => {
 
   return (
     <div className="p-6">
-      <SectionTitle sub="Browse, enable, and develop plugins that extend Forge Portal.">
+      <SectionTitle sub="Browse, enable, and develop plugins that extend DevDock.">
         Plugin Marketplace
       </SectionTitle>
 
@@ -199,7 +199,7 @@ export const PluginsPage = () => {
       <div className="mb-6">
         <h2 className="text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Develop a Plugin</h2>
         <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
-          Extend Forge Portal by creating plugins. Plugins are plain TypeScript objects — no build tooling or npm packaging required.
+          Extend DevDock by creating plugins. Plugins are plain TypeScript objects — no build tooling or npm packaging required.
         </p>
       </div>
 

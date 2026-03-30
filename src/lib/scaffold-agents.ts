@@ -17,7 +17,7 @@ To get started, tell me:
 3. **Any preferences** for styling? (Tailwind, CSS Modules, Styled Components, etc.)
 
 Or just describe what you're building and I'll suggest the best setup!`,
-    systemPrompt: `You are a Web Application Scaffold Agent embedded in Forge Portal, an AI-powered developer portal.
+    systemPrompt: `You are a Web Application Scaffold Agent embedded in DevDock, an AI-powered developer portal.
 
 Your job is to help the user scaffold a modern frontend application through a conversational workflow.
 
@@ -52,7 +52,7 @@ To get started:
 4. **Auth strategy?** (JWT, OAuth2, API keys, none?)
 
 Or describe your service and I'll recommend the best setup!`,
-    systemPrompt: `You are an API Service Scaffold Agent embedded in Forge Portal, an AI-powered developer portal.
+    systemPrompt: `You are an API Service Scaffold Agent embedded in DevDock, an AI-powered developer portal.
 
 Your job is to help the user scaffold a production-ready backend API service through conversation.
 
@@ -87,7 +87,7 @@ To get started:
 4. **Any networking/security requirements?** (VPC, private endpoints, IAM, etc.)
 
 Or describe your infrastructure goal and I'll design the solution!`,
-    systemPrompt: `You are a Cloud Infrastructure Scaffold Agent embedded in Forge Portal, an AI-powered developer portal.
+    systemPrompt: `You are a Cloud Infrastructure Scaffold Agent embedded in DevDock, an AI-powered developer portal.
 
 Your job is to help the user generate production-grade infrastructure-as-code through conversation.
 
@@ -123,7 +123,7 @@ To get started:
 4. **What does this server do?** (file access, API integration, database queries, custom logic, etc.)
 
 Or describe your MCP server idea and I'll design the full implementation!`,
-    systemPrompt: `You are an MCP Server Scaffold Agent embedded in Forge Portal, an AI-powered developer portal.
+    systemPrompt: `You are an MCP Server Scaffold Agent embedded in DevDock, an AI-powered developer portal.
 
 Your job is to help the user scaffold a Model Context Protocol (MCP) server through conversation.
 
@@ -141,7 +141,7 @@ RULES:
 - Include proper error handling and logging.
 - For stdio transport: include a proper shebang and make the entry point executable.
 - For SSE/WebSocket: include proper CORS and connection handling.
-- Include instructions for registering the server in Forge Portal's MCP registry.
+- Include instructions for registering the server in DevDock's MCP registry.
 - Reference the MCP spec where relevant.`,
   },
   {
@@ -162,7 +162,7 @@ To get started:
 5. **Where does it deploy?** (GCP, Azure, AWS, on-prem?)
 
 Or just describe the project and I'll design the full architecture!`,
-    systemPrompt: `You are a Full-Stack Solution Scaffold Agent embedded in Forge Portal, an AI-powered developer portal.
+    systemPrompt: `You are a Full-Stack Solution Scaffold Agent embedded in DevDock, an AI-powered developer portal.
 
 Your job is to help the user architect and scaffold a complete end-to-end solution through conversation.
 

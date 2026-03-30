@@ -87,7 +87,7 @@ export const useAuthStore = create<AuthStore>()(
       setToken: (token) => set({ accessToken: token }),
     }),
     {
-      name: 'forge-portal-auth',
+      name: 'devdock-auth',
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({
         status: s.status,
@@ -122,7 +122,7 @@ const defaultSettings: AppSettings = {
   },
   otel: {
     endpoint: 'http://localhost:4317',
-    serviceName: 'forge-portal',
+    serviceName: 'devdock',
     enabled: true,
     exportTraces: true,
     exportMetrics: true,
@@ -165,7 +165,7 @@ export const useSettingsStore = create<SettingsStore>()(
         set((s) => ({ settings: { ...s.settings, dashboardWidgets: widgets } })),
     }),
     {
-      name: 'forge-portal-settings',
+      name: 'devdock-settings',
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ settings: s.settings }),
     }
@@ -216,7 +216,7 @@ export const useChatStore = create<ChatStore>()((set) => ({
     {
       id: 'welcome',
       role: 'assistant',
-      content: "Hey Judge 👋 I'm **Forge AI** — your MCP-powered developer assistant.\n\nI can help you:\n- 🔍 Explore GitHub & Azure DevOps repos\n- 🤖 Inspect and manage MCP servers\n- 📊 Analyze OpenTelemetry traces\n- 💻 Write, review, and explain code\n- 🏗️ Plan architecture and infrastructure\n\nWhat are we building today?",
+      content: "Hey Judge 👋 I'm **DevDock AI** — your MCP-powered developer assistant.\n\nI can help you:\n- 🔍 Explore GitHub & Azure DevOps repos\n- 🤖 Inspect and manage MCP servers\n- 📊 Analyze OpenTelemetry traces\n- 💻 Write, review, and explain code\n- 🏗️ Plan architecture and infrastructure\n\nWhat are we building today?",
       timestamp: new Date(),
       provider: 'anthropic',
     },
@@ -286,7 +286,7 @@ export const useRepoStore = create<RepoStore>()(
         }),
     }),
     {
-      name: 'forge-portal-repos',
+      name: 'devdock-repos',
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ githubRepos: s.githubRepos, adoRepos: s.adoRepos }),
     }
@@ -306,10 +306,10 @@ interface TelemetryStore {
 const seedSpans: TraceSpan[] = [
   { traceId: 'tr_9f2a3b', spanId: 'sp_001', service: 'overwatch-ai', operation: 'agent.run', duration: 142, status: 'ok', timestamp: '12:01:34' },
   { traceId: 'tr_8b1c4d', spanId: 'sp_002', service: 'mcp-gateway', operation: 'tool.call', duration: 89, status: 'ok', timestamp: '12:01:31' },
-  { traceId: 'tr_7e4d5f', spanId: 'sp_003', service: 'forge-portal', operation: 'api.repos', duration: 234, status: 'error', timestamp: '12:01:28' },
+  { traceId: 'tr_7e4d5f', spanId: 'sp_003', service: 'devdock', operation: 'api.repos', duration: 234, status: 'error', timestamp: '12:01:28' },
   { traceId: 'tr_6a3f6e', spanId: 'sp_004', service: 'overwatch-ai', operation: 'llm.completion', duration: 1820, status: 'ok', timestamp: '12:01:25' },
   { traceId: 'tr_5c2b7d', spanId: 'sp_005', service: 'mcp-gateway', operation: 'filesystem.read', duration: 45, status: 'ok', timestamp: '12:01:20' },
-  { traceId: 'tr_4d1a8c', spanId: 'sp_006', service: 'forge-portal', operation: 'chat.send', duration: 388, status: 'ok', timestamp: '12:01:15' },
+  { traceId: 'tr_4d1a8c', spanId: 'sp_006', service: 'devdock', operation: 'chat.send', duration: 388, status: 'ok', timestamp: '12:01:15' },
 ];
 
 export const useTelemetryStore = create<TelemetryStore>()((set) => ({
@@ -414,7 +414,7 @@ export const useScaffoldStore = create<ScaffoldStore>()(
         })),
     }),
     {
-      name: 'forge-portal-scaffold',
+      name: 'devdock-scaffold',
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ sessions: s.sessions }),
     }
@@ -480,7 +480,7 @@ export const usePluginStore = create<PluginStore>()(
         })),
     }),
     {
-      name: 'forge-portal-plugins',
+      name: 'devdock-plugins',
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({
         enabledPlugins: s.enabledPlugins,
@@ -503,21 +503,21 @@ interface DocsStore {
 const sampleDocs: DocEntry[] = [
   {
     id: 'doc-getting-started',
-    title: 'Getting Started with Forge Portal',
-    content: `# Getting Started with Forge Portal
+    title: 'Getting Started with DevDock',
+    content: `# Getting Started with DevDock
 
-Welcome to **Forge Portal** — your AI-powered developer portal.
+Welcome to **DevDock** — your AI-powered developer portal.
 
 ## Quick Setup
 
 1. Configure your API keys in **Settings**
 2. Register repositories from the **GitHub** or **Azure DevOps** pages
-3. Start chatting with **Forge AI** for coding assistance
+3. Start chatting with **DevDock AI** for coding assistance
 
 ## Features
 
 - **Repo Browser** — Browse GitHub & Azure DevOps repos, open in VS Code
-- **Forge AI Chat** — Multi-provider AI (Claude, GPT-4o, Gemini, Ollama)
+- **DevDock AI Chat** — Multi-provider AI (Claude, GPT-4o, Gemini, Ollama)
 - **MCP Registry** — Register and manage Model Context Protocol servers
 - **OpenTelemetry** — Live traces, metrics, and spans
 - **Scaffold** — AI agents that help you scaffold new projects
@@ -582,8 +582,8 @@ npx @modelcontextprotocol/server-github
   },
   {
     id: 'doc-architecture',
-    title: 'Forge Portal Architecture',
-    content: `# Forge Portal Architecture
+    title: 'DevDock Architecture',
+    content: `# DevDock Architecture
 
 ## System Overview
 
@@ -612,7 +612,7 @@ graph TD
 \`\`\`mermaid
 sequenceDiagram
     participant U as User
-    participant F as Forge Portal
+    participant F as DevDock
     participant AI as AI Provider
     participant MCP as MCP Server
     participant OT as OpenTelemetry
@@ -708,7 +708,7 @@ export const useDocsStore = create<DocsStore>()(
       setActiveDoc: (id) => set({ activeDocId: id }),
     }),
     {
-      name: 'forge-portal-docs',
+      name: 'devdock-docs',
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ docs: s.docs }),
       merge: (persisted, current) => {
@@ -866,7 +866,7 @@ export const useUserAccountsStore = create<UserAccountsStore>()(
       },
     }),
     {
-      name: 'forge-portal-users',
+      name: 'devdock-users',
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ accounts: s.accounts }),
       merge: (persisted, current) => {

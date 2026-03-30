@@ -163,7 +163,7 @@ export const RegisterRepo = ({ source }: RegisterRepoProps) => {
         </div>
 
         <p className="text-[10px] mb-3" style={{ color: 'var(--text-faint)' }}>
-          Paste a repository URL to fetch its metadata and register it in Forge Portal.
+          Paste a repository URL to fetch its metadata and register it in DevDock.
         </p>
 
         {/* Error */}

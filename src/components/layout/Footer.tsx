@@ -65,7 +65,7 @@ export const Footer = ({ editMode, onToggleEdit }: FooterProps) => {
         </Link>
 
         <span style={{ color: 'var(--text-faint)' }}>
-          &copy; {year} Forge Portal
+          &copy; {year} DevDock
         </span>
       </nav>
 

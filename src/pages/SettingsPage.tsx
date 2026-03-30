@@ -213,12 +213,12 @@ export const SettingsPage = () => {
         </CardHeader>
         <div className="p-5 space-y-3">
           <p className="text-xs text-[#4a5a7a] leading-relaxed">
-            Install the <strong className="text-[#c8d8ff]">Forge Portal VS Code Extension</strong> to open
+            Install the <strong className="text-[#c8d8ff]">DevDock VS Code Extension</strong> to open
             repos directly from the browser into your local IDE, and get AI-assisted code review
-            powered by Forge AI and your configured MCP servers.
+            powered by DevDock AI and your configured MCP servers.
           </p>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => window.open('vscode:extension/forge-portal.forge-vscode', '_blank')}>
+            <Button variant="outline" onClick={() => window.open('vscode:extension/devdock.devdock-vscode', '_blank')}>
               <Code2 size={12} /> Install from VS Code Marketplace
             </Button>
           </div>

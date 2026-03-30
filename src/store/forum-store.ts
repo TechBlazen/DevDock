@@ -31,7 +31,7 @@ const seedThreads: ForumThread[] = [
     viewCount: 120, acceptedAnswerId: null, createdAt: ago(72), updatedAt: ago(40),
   },
   {
-    id: 'ft3', title: 'Feature request: Support for GitLab repositories', body: '## Proposal\nForge Portal currently supports GitHub and Azure DevOps. It would be great to add GitLab support as well.\n\n## Use case\nOur team uses GitLab for internal projects and GitHub for open-source. Having both in one portal would be a huge productivity boost.\n\n## Suggested approach\n- GitLab API v4 integration\n- Personal access token auth\n- Group and project browsing', category: 'feature-request', tags: ['Engineering', 'CI/CD'],
+    id: 'ft3', title: 'Feature request: Support for GitLab repositories', body: '## Proposal\nDevDock currently supports GitHub and Azure DevOps. It would be great to add GitLab support as well.\n\n## Use case\nOur team uses GitLab for internal projects and GitHub for open-source. Having both in one portal would be a huge productivity boost.\n\n## Suggested approach\n- GitLab API v4 integration\n- Personal access token auth\n- Group and project browsing', category: 'feature-request', tags: ['Engineering', 'CI/CD'],
     authorId: 'seed-carol', authorName: 'Carol Davis', authorAvatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=CD',
     votes: [{ userId: 'seed-alice', value: 1, createdAt: ago(100) }, { userId: 'seed-bob', value: 1, createdAt: ago(90) }, { userId: 'seed-dave', value: 1, createdAt: ago(85) }, { userId: 'seed-eve', value: 1, createdAt: ago(80) }, { userId: 'seed-frank', value: 1, createdAt: ago(75) }, { userId: 'seed-grace', value: 1, createdAt: ago(60) }, { userId: 'seed-henry', value: 1, createdAt: ago(50) }, { userId: 'seed-iris', value: 1, createdAt: ago(40) }, { userId: 'seed-jack', value: 1, createdAt: ago(30) }, { userId: 'seed-kate', value: 1, createdAt: ago(20) }, { userId: 'seed-leo', value: 1, createdAt: ago(10) }, { userId: 'seed-mia', value: 1, createdAt: ago(5) }],
     answers: [
@@ -259,7 +259,7 @@ export const useForumStore = create<ForumStore>()(
       },
     }),
     {
-      name: 'forge-portal-forum',
+      name: 'devdock-forum',
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ threads: s.threads }),
       merge: (persisted, current) => {
