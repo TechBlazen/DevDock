@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useSearchStore, useRepoStore, useMCPStore, useDocsStore, usePluginStore, useTelemetryStore, useActivityStore } from '../store';
+import { useSearchStore, useRepoStore, useMCPStore, useDocsStore, usePluginStore, useTelemetryStore, useActivityStore, useForumStore } from '../store';
 
 export function useSearchSync() {
   const reindex = useSearchStore((s) => s.reindex);
@@ -18,4 +18,7 @@ export function useSearchSync() {
   useEffect(() => { reindex('plugin'); }, [plugins, reindex]);
   useEffect(() => { reindex('telemetry'); }, [spans, reindex]);
   useEffect(() => { reindex('activity'); }, [events, reindex]);
+
+  const threads = useForumStore((s) => s.threads);
+  useEffect(() => { reindex('forum'); }, [threads, reindex]);
 }

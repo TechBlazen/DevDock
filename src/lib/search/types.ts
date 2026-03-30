@@ -5,7 +5,8 @@ export type SearchCategory =
   | 'plugin'
   | 'scaffold-agent'
   | 'telemetry'
-  | 'activity';
+  | 'activity'
+  | 'forum';
 
 export interface SearchResult {
   id: string;
