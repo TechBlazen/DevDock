@@ -10,6 +10,7 @@ import { ActivityWidget } from './ActivityWidget';
 import { QuickActionsWidget } from './QuickActionsWidget';
 import { AIMetricsWidget } from './QuickActionsWidget';
 import { NetworkMap } from '../network/NetworkMap';
+import { FavoritesWidget } from './FavoritesWidget';
 import { CardHeader, Button } from '../ui';
 import type { WidgetId, DashboardWidget } from '../../types';
 
@@ -23,6 +24,7 @@ export const CORE_WIDGET_CATALOG: DashboardWidget[] = [
   { id: 'activity_feed', title: 'Activity Feed',   icon: '🔔', description: 'Recent events across all your services',   defaultSize: 'md' },
   { id: 'ai_metrics',    title: 'AI Metrics',      icon: '🤖', description: 'Token usage, latency, and cost tracking',  defaultSize: 'sm' },
   { id: 'network_map',   title: 'Network Map',     icon: '🌐', description: 'Discovered devices on your local network',  defaultSize: 'md' },
+  { id: 'favorite_repos', title: 'Favorite Repos',  icon: '⭐', description: 'Your starred repositories with quick access', defaultSize: 'md' },
 ];
 
 // ─── Core widget content router ──────────────────────────────────────────────
@@ -41,6 +43,7 @@ const CoreWidgetContent = ({ id }: { id: WidgetId }) => {
     case 'activity_feed': return <ActivityWidget />;
     case 'ai_metrics':    return <AIMetricsWidget />;
     case 'network_map':   return <NetworkMap compact />;
+    case 'favorite_repos': return <FavoritesWidget />;
     default:              return null;
   }
 };

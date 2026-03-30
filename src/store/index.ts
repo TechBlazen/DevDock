@@ -139,7 +139,7 @@ const defaultSettings: AppSettings = {
     projects: [],
   },
   theme: 'dark',
-  dashboardWidgets: ['repos_github', 'repos_ado', 'mcp_status', 'telemetry', 'quick_actions', 'activity_feed'],
+  dashboardWidgets: ['repos_github', 'repos_ado', 'mcp_status', 'telemetry', 'quick_actions', 'activity_feed', 'favorite_repos'],
 };
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -241,23 +241,24 @@ interface RepoStore {
   addRepo: (repo: Repository) => void;
   removeRepo: (id: string, source: 'github' | 'ado') => void;
   selectRepo: (repo: Repository | null) => void;
+  updateRepoMeta: (id: string, source: 'github' | 'ado', meta: Partial<Pick<Repository, 'environments' | 'cloudPlatform' | 'owners' | 'customTags'>>) => void;
 }
 
 export const useRepoStore = create<RepoStore>()(
   persist(
     (set) => ({
       githubRepos: [
-        { id: 'gh1', name: 'overwatch-ai', fullName: 'judge/overwatch-ai', description: 'Agentic AI diagnostics framework', source: 'github', language: 'Python', defaultBranch: 'main', stars: 142, forks: 18, isPrivate: true, updatedAt: '2h ago', cloneUrl: 'https://github.com/judge/overwatch-ai.git', webUrl: 'https://github.com/judge/overwatch-ai', topics: ['ai', 'kubernetes', 'diagnostics'] },
-        { id: 'gh2', name: 'forge-portal', fullName: 'judge/forge-portal', description: 'AI-powered developer IDE portal', source: 'github', language: 'TypeScript', defaultBranch: 'main', stars: 89, forks: 7, isPrivate: false, updatedAt: '1d ago', cloneUrl: 'https://github.com/judge/forge-portal.git', webUrl: 'https://github.com/judge/forge-portal', topics: ['backstage', 'vite', 'mcp'] },
-        { id: 'gh3', name: 'mcp-server-hub', fullName: 'judge/mcp-server-hub', description: 'MCP server registry and runner', source: 'github', language: 'Go', defaultBranch: 'develop', stars: 67, forks: 4, isPrivate: false, updatedAt: '3d ago', cloneUrl: 'https://github.com/judge/mcp-server-hub.git', webUrl: 'https://github.com/judge/mcp-server-hub', topics: ['mcp', 'go', 'registry'] },
-        { id: 'gh4', name: 'backstage-plugins', fullName: 'judge/backstage-plugins', description: 'Custom Backstage plugin collection', source: 'github', language: 'TypeScript', defaultBranch: 'main', stars: 34, forks: 2, isPrivate: false, updatedAt: '1w ago', cloneUrl: 'https://github.com/judge/backstage-plugins.git', webUrl: 'https://github.com/judge/backstage-plugins' },
-        { id: 'gh5', name: 'photomind', fullName: 'judge/photomind', description: 'AI face-tagging app with Google Photos API', source: 'github', language: 'Python', defaultBranch: 'main', stars: 12, forks: 0, isPrivate: true, updatedAt: '5d ago', cloneUrl: 'https://github.com/judge/photomind.git', webUrl: 'https://github.com/judge/photomind', topics: ['fastapi', 'react', 'ai', 'photos'] },
+        { id: 'gh1', name: 'overwatch-ai', fullName: 'judge/overwatch-ai', description: 'Agentic AI diagnostics framework', source: 'github', language: 'Python', defaultBranch: 'main', stars: 142, forks: 18, isPrivate: true, updatedAt: '2h ago', cloneUrl: 'https://github.com/judge/overwatch-ai.git', webUrl: 'https://github.com/judge/overwatch-ai', topics: ['ai', 'kubernetes', 'diagnostics'], environments: ['PRD', 'UAT', 'SBX'], cloudPlatform: 'GCP', owners: [{ name: 'judge', type: 'user' }, { name: 'Platform Team', type: 'team' }], customTags: ['ml-ops', 'critical'] },
+        { id: 'gh2', name: 'forge-portal', fullName: 'judge/forge-portal', description: 'AI-powered developer IDE portal', source: 'github', language: 'TypeScript', defaultBranch: 'main', stars: 89, forks: 7, isPrivate: false, updatedAt: '1d ago', cloneUrl: 'https://github.com/judge/forge-portal.git', webUrl: 'https://github.com/judge/forge-portal', topics: ['backstage', 'vite', 'mcp'], environments: ['SBX', 'ADT'], cloudPlatform: 'Azure', owners: [{ name: 'judge', type: 'user' }], customTags: ['developer-portal'] },
+        { id: 'gh3', name: 'mcp-server-hub', fullName: 'judge/mcp-server-hub', description: 'MCP server registry and runner', source: 'github', language: 'Go', defaultBranch: 'develop', stars: 67, forks: 4, isPrivate: false, updatedAt: '3d ago', cloneUrl: 'https://github.com/judge/mcp-server-hub.git', webUrl: 'https://github.com/judge/mcp-server-hub', topics: ['mcp', 'go', 'registry'], environments: ['SPD', 'PRD'], cloudPlatform: 'GCP', owners: [{ name: 'Infra Team', type: 'team' }] },
+        { id: 'gh4', name: 'backstage-plugins', fullName: 'judge/backstage-plugins', description: 'Custom Backstage plugin collection', source: 'github', language: 'TypeScript', defaultBranch: 'main', stars: 34, forks: 2, isPrivate: false, updatedAt: '1w ago', cloneUrl: 'https://github.com/judge/backstage-plugins.git', webUrl: 'https://github.com/judge/backstage-plugins', environments: ['SBX'], cloudPlatform: 'Azure', owners: [{ name: 'jorge', type: 'user' }], customTags: ['plugins', 'backstage'] },
+        { id: 'gh5', name: 'photomind', fullName: 'judge/photomind', description: 'AI face-tagging app with Google Photos API', source: 'github', language: 'Python', defaultBranch: 'main', stars: 12, forks: 0, isPrivate: true, updatedAt: '5d ago', cloneUrl: 'https://github.com/judge/photomind.git', webUrl: 'https://github.com/judge/photomind', topics: ['fastapi', 'react', 'ai', 'photos'], environments: ['QAT', 'UAT'], cloudPlatform: 'GCP', owners: [{ name: 'judge', type: 'user' }] },
       ],
       adoRepos: [
-        { id: 'ado1', name: 'Costco.Platform.Gateway', fullName: 'Costco/Costco.Platform.Gateway', description: 'API Gateway & ApigeeX configuration', source: 'ado', language: 'YAML', defaultBranch: 'main', isPrivate: true, updatedAt: '4h ago', cloneUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.Platform.Gateway', webUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.Platform.Gateway' },
-        { id: 'ado2', name: 'Costco.K8s.Infra', fullName: 'Costco/Costco.K8s.Infra', description: 'GKE cluster infrastructure as code', source: 'ado', language: 'HCL', defaultBranch: 'main', isPrivate: true, updatedAt: '1d ago', cloneUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.K8s.Infra', webUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.K8s.Infra' },
-        { id: 'ado3', name: 'Costco.DevPortal.IDP', fullName: 'Costco/Costco.DevPortal.IDP', description: 'Internal developer platform (Backstage)', source: 'ado', language: 'TypeScript', defaultBranch: 'feature/ai-chat', isPrivate: true, updatedAt: '2d ago', cloneUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.DevPortal.IDP', webUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.DevPortal.IDP' },
-        { id: 'ado4', name: 'Costco.Overwatch.Core', fullName: 'Costco/Costco.Overwatch.Core', description: 'Overwatch AI agent core services', source: 'ado', language: 'Python', defaultBranch: 'main', isPrivate: true, updatedAt: '6h ago', cloneUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.Overwatch.Core', webUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.Overwatch.Core' },
+        { id: 'ado1', name: 'Costco.Platform.Gateway', fullName: 'Costco/Costco.Platform.Gateway', description: 'API Gateway & ApigeeX configuration', source: 'ado', language: 'YAML', defaultBranch: 'main', isPrivate: true, updatedAt: '4h ago', cloneUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.Platform.Gateway', webUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.Platform.Gateway', environments: ['PRD', 'SPD', 'UAT', 'SBX'], cloudPlatform: 'GCP', owners: [{ name: 'Platform Team', type: 'team' }, { name: 'adithya', type: 'user' }], customTags: ['apigee', 'gateway'] },
+        { id: 'ado2', name: 'Costco.K8s.Infra', fullName: 'Costco/Costco.K8s.Infra', description: 'GKE cluster infrastructure as code', source: 'ado', language: 'HCL', defaultBranch: 'main', isPrivate: true, updatedAt: '1d ago', cloneUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.K8s.Infra', webUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.K8s.Infra', environments: ['PRD', 'SPD', 'QAT'], cloudPlatform: 'GCP', owners: [{ name: 'Infra Team', type: 'team' }], customTags: ['terraform', 'gke'] },
+        { id: 'ado3', name: 'Costco.DevPortal.IDP', fullName: 'Costco/Costco.DevPortal.IDP', description: 'Internal developer platform (Backstage)', source: 'ado', language: 'TypeScript', defaultBranch: 'feature/ai-chat', isPrivate: true, updatedAt: '2d ago', cloneUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.DevPortal.IDP', webUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.DevPortal.IDP', environments: ['ADT', 'SBX'], cloudPlatform: 'Azure', owners: [{ name: 'judge', type: 'user' }, { name: 'jorge', type: 'user' }], customTags: ['backstage', 'idp'] },
+        { id: 'ado4', name: 'Costco.Overwatch.Core', fullName: 'Costco/Costco.Overwatch.Core', description: 'Overwatch AI agent core services', source: 'ado', language: 'Python', defaultBranch: 'main', isPrivate: true, updatedAt: '6h ago', cloneUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.Overwatch.Core', webUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.Overwatch.Core', environments: ['PRD', 'UAT', 'QAT', 'SBX'], cloudPlatform: 'GCP', owners: [{ name: 'judge', type: 'user' }, { name: 'Platform Team', type: 'team' }], customTags: ['ai', 'agents'] },
       ],
       selectedRepo: null,
       setRepos: (source, repos) =>
@@ -278,6 +279,11 @@ export const useRepoStore = create<RepoStore>()(
             : { adoRepos: s.adoRepos.filter((r) => r.id !== id) }
         ),
       selectRepo: (repo) => set({ selectedRepo: repo }),
+      updateRepoMeta: (id, source, meta) =>
+        set((s) => {
+          const key = source === 'github' ? 'githubRepos' : 'adoRepos';
+          return { [key]: (s[key] as Repository[]).map((r) => r.id === id ? { ...r, ...meta } : r) };
+        }),
     }),
     {
       name: 'forge-portal-repos',
@@ -733,6 +739,8 @@ interface UserAccountsStore {
   ensureAccount: (user: UserProfile) => UserAccount;
   updatePreferences: (userId: string, partial: Partial<UserPreferences>) => void;
   getPreferences: (userId: string) => UserPreferences;
+  toggleFavoriteRepo: (userId: string, repoId: string) => void;
+  isFavoriteRepo: (userId: string, repoId: string) => boolean;
 }
 
 export const useUserAccountsStore = create<UserAccountsStore>()(
@@ -840,6 +848,21 @@ export const useUserAccountsStore = create<UserAccountsStore>()(
       getPreferences: (userId) => {
         const account = get().accounts.find((a) => a.id === userId);
         return account?.preferences ?? DEFAULT_PREFERENCES;
+      },
+
+      toggleFavoriteRepo: (userId, repoId) =>
+        set((s) => ({
+          accounts: s.accounts.map((a) => {
+            if (a.id !== userId) return a;
+            const favs = a.favoriteRepos ?? [];
+            const next = favs.includes(repoId) ? favs.filter((id) => id !== repoId) : [...favs, repoId];
+            return { ...a, favoriteRepos: next };
+          }),
+        })),
+
+      isFavoriteRepo: (userId, repoId) => {
+        const account = get().accounts.find((a) => a.id === userId);
+        return account?.favoriteRepos?.includes(repoId) ?? false;
       },
     }),
     {

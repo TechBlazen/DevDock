@@ -1,5 +1,12 @@
 // ─── Repository Types ─────────────────────────────────────────────────────────
 export type RepoSource = 'github' | 'ado';
+export type RepoEnvironment = 'SBX' | 'ADT' | 'UAT' | 'QAT' | 'SPD' | 'PRD';
+export type CloudPlatform = 'Azure' | 'GCP' | 'AWS' | 'On-Prem' | 'Other';
+
+export interface RepoOwner {
+  name: string;
+  type: 'user' | 'team';
+}
 
 export interface Repository {
   id: string;
@@ -16,6 +23,10 @@ export interface Repository {
   cloneUrl: string;
   webUrl: string;
   topics?: string[];
+  environments?: RepoEnvironment[];
+  cloudPlatform?: CloudPlatform;
+  owners?: RepoOwner[];
+  customTags?: string[];
 }
 
 // ─── MCP Types ────────────────────────────────────────────────────────────────
@@ -218,6 +229,7 @@ export interface UserAccount {
   role: UserRole;
   permissions: Permission;
   dashboardWidgets?: string[];  // per-user dashboard layout
+  favoriteRepos?: string[];     // repo IDs
   preferences?: UserPreferences;
   createdAt: string;
   lastLogin?: string;
