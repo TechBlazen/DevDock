@@ -121,7 +121,7 @@ export const ApiTester = () => {
   return (
     <div className="h-full flex flex-col">
       {/* URL bar */}
-      <div className="flex items-center gap-2 px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.15)' }}>
+      <div className="flex items-center gap-2 px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid var(--border-color)' }}>
         {/* Method selector */}
         <select
           value={method}
@@ -147,12 +147,12 @@ export const ApiTester = () => {
           placeholder="https://api.example.com/endpoint"
           className="flex-1 rounded-2xl px-3.5 py-2 text-[12px] font-mono outline-none transition-all"
           style={{
-            background: 'rgba(255,255,255,0.12)',
-            border: '1px solid rgba(255,255,255,0.25)',
-            color: 'rgba(0,0,0,0.85)',
+            background: 'var(--bg-input)',
+            border: '1px solid var(--border-input)',
+            color: 'var(--text-primary)',
           }}
           onFocus={(e) => { e.currentTarget.style.border = '1px solid rgba(59,130,246,0.5)'; }}
-          onBlur={(e) => { e.currentTarget.style.border = '1px solid rgba(255,255,255,0.25)'; }}
+          onBlur={(e) => { e.currentTarget.style.border = '1px solid var(--border-input)'; }}
         />
 
         {/* Send */}
@@ -163,7 +163,7 @@ export const ApiTester = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 px-4 py-1.5 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+      <div className="flex items-center gap-1 px-4 py-1.5 flex-shrink-0" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
         {(['headers', 'body', 'response'] as const).map((tab) => (
           <button
             key={tab}
@@ -174,7 +174,7 @@ export const ApiTester = () => {
               color: '#3b82f6',
               border: '1px solid rgba(59,130,246,0.2)',
             } : {
-              color: 'rgba(0,0,0,0.4)',
+              color: 'var(--text-muted)',
               border: '1px solid transparent',
             }}
           >
@@ -190,7 +190,7 @@ export const ApiTester = () => {
 
         {/* Response meta */}
         {response && activeTab === 'response' && (
-          <div className="ml-auto flex items-center gap-3 text-[10px] font-mono" style={{ color: 'rgba(0,0,0,0.4)' }}>
+          <div className="ml-auto flex items-center gap-3 text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>
             <span className="flex items-center gap-1"><Clock size={10} /> {response.duration}ms</span>
             <span>{response.size}</span>
             <span style={{ color: response.status < 400 ? '#10b981' : '#ef4444' }}>
@@ -218,18 +218,18 @@ export const ApiTester = () => {
                   onChange={(e) => updateHeader(i, 'key', e.target.value)}
                   placeholder="Header name"
                   className="flex-1 rounded-xl px-2.5 py-1.5 text-[11px] font-mono outline-none"
-                  style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(0,0,0,0.8)' }}
+                  style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
                 />
                 <input
                   value={h.value}
                   onChange={(e) => updateHeader(i, 'value', e.target.value)}
                   placeholder="Value"
                   className="flex-1 rounded-xl px-2.5 py-1.5 text-[11px] font-mono outline-none"
-                  style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(0,0,0,0.8)' }}
+                  style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
                 />
-                <button onClick={() => removeHeader(i)} className="p-1 flex-shrink-0 transition-colors" style={{ color: 'rgba(0,0,0,0.25)' }}
+                <button onClick={() => removeHeader(i)} className="p-1 flex-shrink-0 transition-colors" style={{ color: 'var(--text-faint)' }}
                   onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(0,0,0,0.25)'}>
+                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-faint)'}>
                   <Trash2 size={12} />
                 </button>
               </div>
@@ -267,7 +267,7 @@ export const ApiTester = () => {
         {activeTab === 'response' && (
           <div className="h-full flex flex-col">
             {!response ? (
-              <div className="flex-1 flex items-center justify-center" style={{ color: 'rgba(0,0,0,0.3)' }}>
+              <div className="flex-1 flex items-center justify-center" style={{ color: 'var(--text-faint)' }}>
                 <div className="text-center">
                   <Send size={24} className="mx-auto mb-2 opacity-30" />
                   <p className="text-xs">Send a request to see the response</p>
@@ -280,17 +280,17 @@ export const ApiTester = () => {
                 <button
                   onClick={() => setShowBody(!showBody)}
                   className="flex items-center gap-2 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider flex-shrink-0"
-                  style={{ color: 'rgba(0,0,0,0.4)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}
+                  style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--border-subtle)' }}
                 >
                   {showBody ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
                   Response Headers ({Object.keys(response.headers).length})
                 </button>
                 {showBody && (
-                  <div className="px-4 py-2 space-y-1 text-[11px] font-mono flex-shrink-0 max-h-[150px] overflow-y-auto" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  <div className="px-4 py-2 space-y-1 text-[11px] font-mono flex-shrink-0 max-h-[150px] overflow-y-auto" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                     {Object.entries(response.headers).map(([k, v]) => (
                       <div key={k} className="flex gap-2">
-                        <span className="font-semibold flex-shrink-0" style={{ color: 'rgba(0,0,0,0.6)' }}>{k}:</span>
-                        <span className="truncate" style={{ color: 'rgba(0,0,0,0.45)' }}>{v}</span>
+                        <span className="font-semibold flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>{k}:</span>
+                        <span className="truncate" style={{ color: 'var(--text-muted)' }}>{v}</span>
                       </div>
                     ))}
                   </div>
@@ -325,17 +325,17 @@ export const ApiTester = () => {
 
       {/* History sidebar */}
       {history.length > 0 && (
-        <div className="px-4 py-2 flex-shrink-0 overflow-x-auto" style={{ borderTop: '1px solid rgba(255,255,255,0.15)' }}>
-          <div className="text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'rgba(0,0,0,0.35)' }}>History</div>
+        <div className="px-4 py-2 flex-shrink-0 overflow-x-auto" style={{ borderTop: '1px solid var(--border-color)' }}>
+          <div className="text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-faint)' }}>History</div>
           <div className="flex gap-1.5">
             {history.map((h, i) => (
               <button
                 key={i}
                 onClick={() => { setMethod(h.method); setUrl(h.url); }}
                 className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-mono flex-shrink-0 transition-all"
-                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(0,0,0,0.5)' }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                style={{ background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-inset)'}
               >
                 <span style={{ color: METHOD_COLORS[h.method] }} className="font-bold">{h.method}</span>
                 <span className="max-w-[120px] truncate">{new URL(h.url).pathname}</span>

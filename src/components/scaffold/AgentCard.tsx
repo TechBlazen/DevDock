@@ -39,10 +39,10 @@ export const AgentCard = ({ agent, onSelect }: AgentCardProps) => {
             <Icon size={20} style={{ color }} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[13px] font-bold" style={{ color: 'rgba(0, 0, 0, 0.9)' }}>
+            <div className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>
               {agent.name}
             </div>
-            <div className="text-[11px] mt-0.5 leading-relaxed line-clamp-2" style={{ color: 'rgba(0, 0, 0, 0.5)' }}>
+            <div className="text-[11px] mt-0.5 leading-relaxed line-clamp-2" style={{ color: 'var(--text-muted)' }}>
               {agent.description}
             </div>
           </div>
@@ -54,7 +54,7 @@ export const AgentCard = ({ agent, onSelect }: AgentCardProps) => {
             <Pill key={tag} color={color}>{tag}</Pill>
           ))}
           {agent.tags.length > 4 && (
-            <span className="text-[10px] px-1.5 py-0.5" style={{ color: 'rgba(0, 0, 0, 0.35)' }}>
+            <span className="text-[10px] px-1.5 py-0.5" style={{ color: 'var(--text-faint)' }}>
               +{agent.tags.length - 4}
             </span>
           )}

@@ -16,8 +16,8 @@ export const DocsPage = () => {
     <div className="flex h-full">
       {/* Sidebar doc list */}
       <div className="w-[240px] flex-shrink-0 h-full" style={{
-        background: 'rgba(255,255,255,0.4)',
-        borderRight: '1px solid rgba(0,0,0,0.06)',
+        background: 'var(--bg-elevated)',
+        borderRight: '1px solid var(--border-subtle)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
       }}>
@@ -30,13 +30,13 @@ export const DocsPage = () => {
           <>
             {/* Doc header */}
             <div className="flex items-center justify-between px-6 py-3 flex-shrink-0" style={{
-              borderBottom: '1px solid rgba(0,0,0,0.06)',
+              borderBottom: '1px solid var(--border-subtle)',
             }}>
               <div className="min-w-0">
-                <h2 className="text-[15px] font-bold truncate" style={{ color: 'rgba(0,0,0,0.9)' }}>
+                <h2 className="text-[15px] font-bold truncate" style={{ color: 'var(--text-primary)' }}>
                   {activeDoc.title}
                 </h2>
-                <div className="flex items-center gap-2 mt-0.5 text-[10px]" style={{ color: 'rgba(0,0,0,0.4)' }}>
+                <div className="flex items-center gap-2 mt-0.5 text-[10px]" style={{ color: 'var(--text-muted)' }}>
                   {activeDoc.sourceUrl && (
                     <a
                       href={activeDoc.sourceUrl}
@@ -50,8 +50,8 @@ export const DocsPage = () => {
                   )}
                   {activeDoc.tags?.map((t) => (
                     <span key={t} className="px-1.5 py-0.5 rounded" style={{
-                      background: 'rgba(42,111,255,0.08)',
-                      color: 'rgba(42,111,255,0.6)',
+                      background: 'var(--code-bg)',
+                      color: 'var(--accent-text)',
                     }}>
                       {t}
                     </span>
@@ -64,27 +64,27 @@ export const DocsPage = () => {
                 <button
                   onClick={() => setShowExport(true)}
                   className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold transition-all"
-                  style={{ color: 'rgba(0,0,0,0.4)', border: '1px solid rgba(0,0,0,0.08)' }}
+                  style={{ color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}
                   onMouseEnter={(e) => { e.currentTarget.style.color = '#00e5a0'; e.currentTarget.style.borderColor = 'rgba(0,229,160,0.3)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(0,0,0,0.4)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border-subtle)'; }}
                 >
                   <Upload size={11} /> Export
                 </button>
 
                 {/* View/Edit toggle */}
                 <div className="flex gap-1 rounded-lg p-0.5" style={{
-                  background: 'rgba(0,0,0,0.04)',
-                  border: '1px solid rgba(0,0,0,0.06)',
+                  background: 'var(--bg-inset)',
+                  border: '1px solid var(--border-subtle)',
                 }}>
                   <button
                     onClick={() => setMode('view')}
                     className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all"
                     style={mode === 'view' ? {
-                      background: 'rgba(255,255,255,0.8)',
+                      background: 'var(--bg-surface)',
                       color: '#2a6fff',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                      boxShadow: 'var(--shadow-sm)',
                     } : {
-                      color: 'rgba(0,0,0,0.4)',
+                      color: 'var(--text-muted)',
                     }}
                   >
                     <Eye size={12} /> View
@@ -93,11 +93,11 @@ export const DocsPage = () => {
                     onClick={() => setMode('edit')}
                     className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all"
                     style={mode === 'edit' ? {
-                      background: 'rgba(255,255,255,0.8)',
+                      background: 'var(--bg-surface)',
                       color: '#2a6fff',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                      boxShadow: 'var(--shadow-sm)',
                     } : {
-                      color: 'rgba(0,0,0,0.4)',
+                      color: 'var(--text-muted)',
                     }}
                   >
                     <Pencil size={12} /> Edit

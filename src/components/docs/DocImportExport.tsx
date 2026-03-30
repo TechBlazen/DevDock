@@ -114,23 +114,23 @@ export const ImportModal = ({ onClose }: { onClose: () => void }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose} style={{
-      background: 'rgba(0,0,0,0.4)',
+      background: 'var(--overlay)',
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
     }}>
       <div className="rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} style={{
-        background: 'rgba(255,255,255,0.95)',
-        border: '1px solid rgba(0,0,0,0.1)',
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-color)',
         backdropFilter: 'blur(40px) saturate(180%)',
         WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        boxShadow: 'var(--shadow-lg)',
       }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Download size={16} style={{ color: '#2a6fff' }} />
-            <h3 className="text-sm font-bold" style={{ color: 'rgba(0,0,0,0.9)' }}>Import Markdown from Repository</h3>
+            <Download size={16} style={{ color: 'var(--accent)' }} />
+            <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Import Markdown from Repository</h3>
           </div>
-          <button onClick={onClose} className="p-1" style={{ color: 'rgba(0,0,0,0.3)' }}>
+          <button onClick={onClose} className="p-1" style={{ color: 'var(--text-faint)' }}>
             <X size={16} />
           </button>
         </div>
@@ -142,7 +142,7 @@ export const ImportModal = ({ onClose }: { onClose: () => void }) => {
             onChange={(e) => setRepoUrl(e.target.value)}
             placeholder="https://github.com/owner/repo"
             className="w-full rounded-xl px-3 py-2 text-xs outline-none"
-            style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.1)', color: 'rgba(0,0,0,0.9)' }}
+            style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
           />
           <div className="flex gap-2">
             <input
@@ -150,7 +150,7 @@ export const ImportModal = ({ onClose }: { onClose: () => void }) => {
               onChange={(e) => setDirPath(e.target.value)}
               placeholder="Directory path (e.g., docs/ or leave empty for root)"
               className="flex-1 rounded-xl px-3 py-2 text-xs outline-none"
-              style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.1)', color: 'rgba(0,0,0,0.9)' }}
+              style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
             />
             <Button variant="outline" size="sm" onClick={handleDiscover} disabled={!repoUrl.trim() || loading}>
               {loading && files.length === 0 ? <Loader2 size={12} className="animate-spin" /> : 'Discover'}
@@ -180,18 +180,18 @@ export const ImportModal = ({ onClose }: { onClose: () => void }) => {
         {files.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-semibold" style={{ color: 'rgba(0,0,0,0.5)' }}>
+              <span className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>
                 {files.length} markdown file{files.length > 1 ? 's' : ''} found
               </span>
-              <button onClick={selectAll} className="text-[10px] font-semibold" style={{ color: '#2a6fff' }}>
+              <button onClick={selectAll} className="text-[10px] font-semibold" style={{ color: 'var(--accent)' }}>
                 {selected.size === files.length ? 'Deselect all' : 'Select all'}
               </button>
             </div>
             <div className="space-y-1 max-h-[240px] overflow-y-auto mb-4">
               {files.map((f) => (
                 <label key={f.path} className="flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-all" style={{
-                  background: selected.has(f.path) ? 'rgba(42,111,255,0.06)' : 'transparent',
-                  border: selected.has(f.path) ? '1px solid rgba(42,111,255,0.2)' : '1px solid rgba(0,0,0,0.04)',
+                  background: selected.has(f.path) ? 'var(--accent-bg)' : 'transparent',
+                  border: selected.has(f.path) ? '1px solid var(--accent)' : '1px solid var(--border-subtle)',
                 }}>
                   <input
                     type="checkbox"
@@ -199,10 +199,10 @@ export const ImportModal = ({ onClose }: { onClose: () => void }) => {
                     onChange={() => toggleFile(f.path)}
                     className="accent-[#2a6fff]"
                   />
-                  <FileText size={13} style={{ color: 'rgba(0,0,0,0.3)' }} />
+                  <FileText size={13} style={{ color: 'var(--text-faint)' }} />
                   <div className="flex-1 min-w-0">
-                    <div className="text-[12px] font-semibold truncate" style={{ color: 'rgba(0,0,0,0.8)' }}>{f.name}</div>
-                    <div className="text-[10px] truncate" style={{ color: 'rgba(0,0,0,0.35)' }}>{f.path}</div>
+                    <div className="text-[12px] font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{f.name}</div>
+                    <div className="text-[10px] truncate" style={{ color: 'var(--text-faint)' }}>{f.path}</div>
                   </div>
                 </label>
               ))}
@@ -278,50 +278,50 @@ export const ExportModal = ({ doc, onClose }: { doc: DocEntry; onClose: () => vo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose} style={{
-      background: 'rgba(0,0,0,0.4)',
+      background: 'var(--overlay)',
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
     }}>
       <div className="rounded-2xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()} style={{
-        background: 'rgba(255,255,255,0.95)',
-        border: '1px solid rgba(0,0,0,0.1)',
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-color)',
         backdropFilter: 'blur(40px) saturate(180%)',
         WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        boxShadow: 'var(--shadow-lg)',
       }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Upload size={16} style={{ color: '#00e5a0' }} />
-            <h3 className="text-sm font-bold" style={{ color: 'rgba(0,0,0,0.9)' }}>Export to Repository</h3>
+            <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Export to Repository</h3>
           </div>
-          <button onClick={onClose} className="p-1" style={{ color: 'rgba(0,0,0,0.3)' }}>
+          <button onClick={onClose} className="p-1" style={{ color: 'var(--text-faint)' }}>
             <X size={16} />
           </button>
         </div>
 
         {/* Doc info */}
         <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg" style={{
-          background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.06)',
+          background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)',
         }}>
-          <FileText size={14} style={{ color: 'rgba(0,0,0,0.4)' }} />
-          <span className="text-[12px] font-semibold" style={{ color: 'rgba(0,0,0,0.7)' }}>{doc.title}</span>
-          <Pill color="rgba(0,0,0,0.3)">{doc.content.length} chars</Pill>
+          <FileText size={14} style={{ color: 'var(--text-muted)' }} />
+          <span className="text-[12px] font-semibold" style={{ color: 'var(--text-secondary)' }}>{doc.title}</span>
+          <Pill color="var(--text-faint)">{doc.content.length} chars</Pill>
         </div>
 
         <div className="space-y-3 mb-4">
           <div>
-            <label className="text-[10px] uppercase tracking-widest mb-1 block" style={{ color: 'rgba(0,0,0,0.5)' }}>Repository URL</label>
+            <label className="text-[10px] uppercase tracking-widest mb-1 block" style={{ color: 'var(--text-muted)' }}>Repository URL</label>
             <input
               value={repoUrl}
               onChange={(e) => { setRepoUrl(e.target.value); setError(''); setSuccess(false); }}
               placeholder="https://github.com/owner/repo"
               className="w-full rounded-xl px-3 py-2 text-xs outline-none"
-              style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.1)', color: 'rgba(0,0,0,0.9)' }}
+              style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
             />
             {parsed && (
               <div className="flex items-center gap-1.5 mt-1">
-                {isGitHub ? <GitFork size={10} style={{ color: '#2a6fff' }} /> : <GitBranch size={10} style={{ color: '#2a6fff' }} />}
-                <span className="text-[10px]" style={{ color: 'rgba(0,0,0,0.4)' }}>
+                {isGitHub ? <GitFork size={10} style={{ color: 'var(--accent)' }} /> : <GitBranch size={10} style={{ color: 'var(--accent)' }} />}
+                <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
                   {isGitHub ? `${parsed.owner}/${parsed.repo}` : `${parsed.org}/${parsed.project}/${parsed.repo}`}
                 </span>
               </div>
@@ -329,34 +329,34 @@ export const ExportModal = ({ doc, onClose }: { doc: DocEntry; onClose: () => vo
           </div>
 
           <div>
-            <label className="text-[10px] uppercase tracking-widest mb-1 block" style={{ color: 'rgba(0,0,0,0.5)' }}>File Path</label>
+            <label className="text-[10px] uppercase tracking-widest mb-1 block" style={{ color: 'var(--text-muted)' }}>File Path</label>
             <input
               value={filePath}
               onChange={(e) => setFilePath(e.target.value)}
               className="w-full rounded-xl px-3 py-2 text-xs outline-none font-mono"
-              style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.1)', color: 'rgba(0,0,0,0.9)' }}
+              style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
             />
           </div>
 
           {isADO && (
             <div>
-              <label className="text-[10px] uppercase tracking-widest mb-1 block" style={{ color: 'rgba(0,0,0,0.5)' }}>Branch</label>
+              <label className="text-[10px] uppercase tracking-widest mb-1 block" style={{ color: 'var(--text-muted)' }}>Branch</label>
               <input
                 value={branch}
                 onChange={(e) => setBranch(e.target.value)}
                 className="w-full rounded-xl px-3 py-2 text-xs outline-none font-mono"
-                style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.1)', color: 'rgba(0,0,0,0.9)' }}
+                style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
               />
             </div>
           )}
 
           <div>
-            <label className="text-[10px] uppercase tracking-widest mb-1 block" style={{ color: 'rgba(0,0,0,0.5)' }}>Commit Message</label>
+            <label className="text-[10px] uppercase tracking-widest mb-1 block" style={{ color: 'var(--text-muted)' }}>Commit Message</label>
             <input
               value={commitMsg}
               onChange={(e) => setCommitMsg(e.target.value)}
               className="w-full rounded-xl px-3 py-2 text-xs outline-none"
-              style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.1)', color: 'rgba(0,0,0,0.9)' }}
+              style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
             />
           </div>
         </div>

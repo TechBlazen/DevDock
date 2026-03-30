@@ -113,7 +113,7 @@ export function CommandPalette() {
       onKeyDown={handleKeyDown}
     >
       {/* Backdrop */}
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(2px)' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'var(--overlay)', backdropFilter: 'blur(2px)' }} />
 
       {/* Modal */}
       <div
@@ -122,10 +122,10 @@ export function CommandPalette() {
           position: 'relative',
           width: '100%',
           maxWidth: 640,
-          background: '#ffffff',
+          background: 'var(--bg-surface)',
           borderRadius: 12,
-          boxShadow: '0 25px 50px rgba(0,0,0,0.15)',
-          border: '1px solid #e0e0e0',
+          boxShadow: 'var(--shadow-lg)',
+          border: '1px solid var(--border-color)',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
@@ -133,8 +133,8 @@ export function CommandPalette() {
         }}
       >
         {/* Search input */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderBottom: '1px solid #e0e0e0' }}>
-          <Search size={18} style={{ color: '#999', flexShrink: 0 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderBottom: '1px solid var(--border-color)' }}>
+          <Search size={18} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
           <input
             ref={inputRef}
             defaultValue={query}
@@ -145,7 +145,7 @@ export function CommandPalette() {
               border: 'none',
               outline: 'none',
               fontSize: 15,
-              color: '#1a1a2e',
+              color: 'var(--text-primary)',
               background: 'transparent',
             }}
           />
@@ -155,9 +155,9 @@ export function CommandPalette() {
               flexShrink: 0,
               padding: '2px 8px',
               fontSize: 11,
-              color: '#999',
-              background: '#f0f0f0',
-              border: '1px solid #ddd',
+              color: 'var(--text-muted)',
+              background: 'var(--bg-inset)',
+              border: '1px solid var(--border-input)',
               borderRadius: 4,
               cursor: 'pointer',
             }}
@@ -167,7 +167,7 @@ export function CommandPalette() {
         </div>
 
         {/* Category pills */}
-        <div style={{ display: 'flex', gap: 6, padding: '8px 16px', borderBottom: '1px solid #f0f0f0', overflowX: 'auto' }}>
+        <div style={{ display: 'flex', gap: 6, padding: '8px 16px', borderBottom: '1px solid var(--border-subtle)', overflowX: 'auto' }}>
           {CATEGORIES.map(({ value, label }) => (
             <button
               key={label}
@@ -178,9 +178,9 @@ export function CommandPalette() {
                 fontWeight: 500,
                 borderRadius: 9999,
                 border: '1px solid',
-                borderColor: activeCategory === value ? '#005DAA' : '#e0e0e0',
-                background: activeCategory === value ? '#e8f0fe' : 'transparent',
-                color: activeCategory === value ? '#005DAA' : '#666',
+                borderColor: activeCategory === value ? 'var(--accent)' : 'var(--border-color)',
+                background: activeCategory === value ? 'var(--accent-bg)' : 'transparent',
+                color: activeCategory === value ? 'var(--accent)' : 'var(--text-secondary)',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
               }}
@@ -193,12 +193,12 @@ export function CommandPalette() {
         {/* Results */}
         <div ref={listRef} role="listbox" style={{ overflowY: 'auto', flex: 1 }}>
           {results.length === 0 && query.trim() && (
-            <div style={{ padding: '32px 16px', textAlign: 'center', color: '#999', fontSize: 14 }}>
+            <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>
               No results for "{query}"
             </div>
           )}
           {results.length === 0 && !query.trim() && (
-            <div style={{ padding: '32px 16px', textAlign: 'center', color: '#999', fontSize: 14 }}>
+            <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>
               Start typing to search repos, MCP servers, docs, and more...
             </div>
           )}
@@ -220,9 +220,9 @@ export function CommandPalette() {
             display: 'flex',
             gap: 16,
             padding: '8px 16px',
-            borderTop: '1px solid #e0e0e0',
+            borderTop: '1px solid var(--border-color)',
             fontSize: 11,
-            color: '#999',
+            color: 'var(--text-muted)',
           }}>
             <span><kbd style={kbdStyle}>↑↓</kbd> Navigate</span>
             <span><kbd style={kbdStyle}>↵</kbd> Open</span>
@@ -239,8 +239,8 @@ const kbdStyle: React.CSSProperties = {
   padding: '1px 5px',
   fontSize: 10,
   fontFamily: 'inherit',
-  background: '#f0f0f0',
-  border: '1px solid #ddd',
+  background: 'var(--bg-inset)',
+  border: '1px solid var(--border-input)',
   borderRadius: 3,
   marginRight: 4,
 };

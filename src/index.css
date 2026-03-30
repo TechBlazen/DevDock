@@ -4,24 +4,80 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root { height: 100%; width: 100%; overflow: hidden; }
 
+/* ─── Theme Variables ────────────────────────────────────────────────────── */
+[data-theme="light"], :root {
+  --bg-primary: #f0f2f5;
+  --bg-surface: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-hover: #f8f9fa;
+  --bg-input: #ffffff;
+  --bg-inset: #fafafa;
+  --text-primary: #1a1a2e;
+  --text-secondary: #555;
+  --text-muted: #999;
+  --text-faint: #bbb;
+  --border-color: #e0e0e0;
+  --border-input: #ccc;
+  --border-subtle: #eee;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,0.15);
+  --overlay: rgba(0,0,0,0.4);
+  --accent: #005DAA;
+  --accent-bg: #e8f0fe;
+  --accent-text: #005DAA;
+  --scrollbar: rgba(0,0,0,0.12);
+  --scrollbar-hover: rgba(0,0,0,0.2);
+  --code-bg: rgba(42,111,255,0.08);
+  --code-text: rgba(42,111,255,0.9);
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0f1117;
+  --bg-surface: #1a1d27;
+  --bg-elevated: #222633;
+  --bg-hover: #2a2d3a;
+  --bg-input: #1a1d27;
+  --bg-inset: #151820;
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0a6;
+  --text-muted: #6b7280;
+  --text-faint: #4b5563;
+  --border-color: #2d3040;
+  --border-input: #3d4050;
+  --border-subtle: #252836;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,0.5);
+  --overlay: rgba(0,0,0,0.6);
+  --accent: #4a9eff;
+  --accent-bg: rgba(74,158,255,0.12);
+  --accent-text: #4a9eff;
+  --scrollbar: rgba(255,255,255,0.1);
+  --scrollbar-hover: rgba(255,255,255,0.2);
+  --code-bg: rgba(74,158,255,0.12);
+  --code-text: #7cb8ff;
+}
+
 body {
-  background: #f0f2f5;
-  color: #1a1a2e;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.12);
+  background: var(--scrollbar);
   border-radius: 100px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--scrollbar-hover);
 }
 
 /* ─── Animations ─────────────────────────────────────────────────────────── */
@@ -64,7 +120,7 @@ main > * { animation: fadeIn 0.2s ease both; }
 }
 
 .techdocs-content a:hover {
-  color: #1e54d9;
+  color: var(--accent-text);
 }
 
 /* Code block improvements */

@@ -38,15 +38,15 @@ const TOOLS: ToolDef[] = [
 export const JsonValidatorPage = () => (
   <div className="h-full flex flex-col">
     <div className="px-6 pt-5 pb-3">
-      <h1 className="text-lg font-bold" style={{ color: 'rgba(0,0,0,0.85)' }}>JSON Validator</h1>
-      <p className="text-[11px]" style={{ color: 'rgba(0,0,0,0.45)' }}>Validate, format, and minify JSON.</p>
+      <h1 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>JSON Validator</h1>
+      <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Validate, format, and minify JSON.</p>
     </div>
     <div className="flex-1 overflow-hidden mx-4 mb-4 rounded-[20px]" style={{
-      background: 'rgba(255,255,255,0.15)',
-      border: '1px solid rgba(255,255,255,0.35)',
+      background: 'var(--bg-elevated)',
+      border: '1px solid var(--border-subtle)',
       backdropFilter: 'blur(40px) saturate(180%)',
       WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-      boxShadow: '0 8px 32px rgba(31,38,135,0.08), inset 0 1px 0 rgba(255,255,255,0.5)',
+      boxShadow: 'var(--shadow-lg)',
     }}>
       <JsonValidator />
     </div>
@@ -56,15 +56,15 @@ export const JsonValidatorPage = () => (
 export const ApiTesterPage = () => (
   <div className="h-full flex flex-col">
     <div className="px-6 pt-5 pb-3">
-      <h1 className="text-lg font-bold" style={{ color: 'rgba(0,0,0,0.85)' }}>API Tester</h1>
-      <p className="text-[11px]" style={{ color: 'rgba(0,0,0,0.45)' }}>Send HTTP requests and inspect responses — like Postman in your browser.</p>
+      <h1 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>API Tester</h1>
+      <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Send HTTP requests and inspect responses — like Postman in your browser.</p>
     </div>
     <div className="flex-1 overflow-hidden mx-4 mb-4 rounded-[20px]" style={{
-      background: 'rgba(255,255,255,0.15)',
-      border: '1px solid rgba(255,255,255,0.35)',
+      background: 'var(--bg-elevated)',
+      border: '1px solid var(--border-subtle)',
       backdropFilter: 'blur(40px) saturate(180%)',
       WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-      boxShadow: '0 8px 32px rgba(31,38,135,0.08), inset 0 1px 0 rgba(255,255,255,0.5)',
+      boxShadow: 'var(--shadow-lg)',
     }}>
       <ApiTester />
     </div>
@@ -112,10 +112,10 @@ export const DevToolsPage = () => {
 
                 {/* Title */}
                 <div>
-                  <h3 className="text-[14px] font-bold" style={{ color: 'rgba(0,0,0,0.85)' }}>
+                  <h3 className="text-[14px] font-bold" style={{ color: 'var(--text-primary)' }}>
                     {tool.name}
                   </h3>
-                  <p className="text-[11px] leading-relaxed mt-1" style={{ color: 'rgba(0,0,0,0.5)' }}>
+                  <p className="text-[11px] leading-relaxed mt-1" style={{ color: 'var(--text-muted)' }}>
                     {tool.description}
                   </p>
                 </div>

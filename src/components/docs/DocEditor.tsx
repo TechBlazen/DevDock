@@ -137,15 +137,15 @@ export const DocEditor = ({ docId }: DocEditorProps) => {
 
   return (
     <div className="h-full flex flex-col rounded-xl overflow-hidden" style={{
-      border: '1px solid rgba(0,0,0,0.08)',
-      background: 'rgba(255,255,255,0.9)',
+      border: '1px solid var(--border-subtle)',
+      background: 'var(--bg-surface)',
     }}>
       {/* AI status bar */}
       {(aiLoading || aiStatus) && (
         <div className="flex items-center gap-2 px-3 py-1.5 text-[11px] font-mono" style={{
-          background: aiLoading ? 'rgba(42,111,255,0.08)' : aiStatus.startsWith('Error') ? 'rgba(255,71,87,0.08)' : 'rgba(0,229,160,0.08)',
-          borderBottom: '1px solid rgba(0,0,0,0.06)',
-          color: aiLoading ? '#2a6fff' : aiStatus.startsWith('Error') ? '#ff4757' : '#00e5a0',
+          background: aiLoading ? 'var(--accent-bg)' : aiStatus.startsWith('Error') ? 'rgba(255,71,87,0.08)' : 'rgba(0,229,160,0.08)',
+          borderBottom: '1px solid var(--border-subtle)',
+          color: aiLoading ? 'var(--accent)' : aiStatus.startsWith('Error') ? '#ff4757' : '#00e5a0',
         }}>
           {aiLoading && <Spinner size={12} />}
           <span>{aiLoading ? 'AI is transforming your selection...' : aiStatus}</span>
@@ -154,9 +154,9 @@ export const DocEditor = ({ docId }: DocEditorProps) => {
 
       {/* Editor hint */}
       <div className="px-3 py-1 text-[10px] flex items-center justify-between" style={{
-        background: 'rgba(0,0,0,0.02)',
-        borderBottom: '1px solid rgba(0,0,0,0.06)',
-        color: 'rgba(0,0,0,0.4)',
+        background: 'var(--bg-inset)',
+        borderBottom: '1px solid var(--border-subtle)',
+        color: 'var(--text-muted)',
       }}>
         <span>Markdown · Right-click for AI actions · Ctrl+Shift+I to improve selection</span>
         <span>{doc.content.length} chars</span>

@@ -18,11 +18,18 @@ import type {
   DocEntry,
   UserAccount,
   UserRole,
-  Permission,
+  UserPreferences,
 } from '../types';
 import { nanoid } from 'nanoid';
 import { createGuestUser } from '../lib/auth';
 import { SEED_ADMIN, ROLE_PERMISSIONS, hashPassword, verifyPassword } from '../lib/rbac';
+
+// ─── User Preferences Defaults ───────────────────────────────────────────────
+export const DEFAULT_PREFERENCES: UserPreferences = {
+  theme: 'system',
+  accentColor: '#005DAA',
+  greeting: 'time-based',
+};
 
 // ─── Auth Store ──────────────────────────────────────────────────────────────
 interface AuthStore extends AuthState {
@@ -42,23 +49,29 @@ export const useAuthStore = create<AuthStore>()(
       provider: null,
       expiresAt: null,
 
-      signIn: (provider, user, accessToken, expiresAt) =>
+      signIn: (provider, user, accessToken, expiresAt) => {
         set({
           status: 'authenticated',
           user,
           accessToken,
           provider,
           expiresAt: expiresAt ?? null,
-        }),
+        });
+        // Auto-provision account for OAuth users
+        useUserAccountsStore.getState().ensureAccount(user);
+      },
 
-      signInAsGuest: () =>
+      signInAsGuest: () => {
+        const guest = createGuestUser();
         set({
           status: 'authenticated',
-          user: createGuestUser(),
+          user: guest,
           accessToken: null,
           provider: 'guest',
           expiresAt: null,
-        }),
+        });
+        useUserAccountsStore.getState().ensureAccount(guest);
+      },
 
       signOut: () =>
         set({
@@ -712,11 +725,14 @@ interface UserAccountsStore {
   accounts: UserAccount[];
   addAccount: (username: string, password: string, displayName: string, role: UserRole, email?: string) => UserAccount | null;
   removeAccount: (id: string) => void;
-  updateAccount: (id: string, partial: Partial<Pick<UserAccount, 'displayName' | 'email' | 'role' | 'permissions' | 'dashboardWidgets'>>) => void;
+  updateAccount: (id: string, partial: Partial<Pick<UserAccount, 'displayName' | 'email' | 'role' | 'permissions' | 'dashboardWidgets' | 'preferences'>>) => void;
   updatePassword: (id: string, newPassword: string) => void;
   authenticate: (username: string, password: string) => UserAccount | null;
   setDashboardWidgets: (userId: string, widgets: string[]) => void;
   getAccount: (id: string) => UserAccount | undefined;
+  ensureAccount: (user: UserProfile) => UserAccount;
+  updatePreferences: (userId: string, partial: Partial<UserPreferences>) => void;
+  getPreferences: (userId: string) => UserPreferences;
 }
 
 export const useUserAccountsStore = create<UserAccountsStore>()(
@@ -785,6 +801,46 @@ export const useUserAccountsStore = create<UserAccountsStore>()(
         })),
 
       getAccount: (id) => get().accounts.find((a) => a.id === id),
+
+      ensureAccount: (user) => {
+        const existing = get().accounts.find((a) => a.id === user.id);
+        if (existing) {
+          set((s) => ({
+            accounts: s.accounts.map((a) =>
+              a.id === user.id ? { ...a, lastLogin: new Date().toISOString() } : a
+            ),
+          }));
+          return { ...existing, lastLogin: new Date().toISOString() };
+        }
+        const account: UserAccount = {
+          id: user.id,
+          username: user.email ?? `${user.provider}_${user.id}`,
+          passwordHash: 'oauth_no_password',
+          displayName: user.displayName,
+          email: user.email,
+          avatarUrl: user.avatarUrl,
+          role: user.role ?? 'viewer',
+          permissions: { ...ROLE_PERMISSIONS[user.role ?? 'viewer'] },
+          createdAt: new Date().toISOString(),
+          lastLogin: new Date().toISOString(),
+        };
+        set((s) => ({ accounts: [...s.accounts, account] }));
+        return account;
+      },
+
+      updatePreferences: (userId, partial) =>
+        set((s) => ({
+          accounts: s.accounts.map((a) =>
+            a.id === userId
+              ? { ...a, preferences: { ...(a.preferences ?? DEFAULT_PREFERENCES), ...partial } }
+              : a
+          ),
+        })),
+
+      getPreferences: (userId) => {
+        const account = get().accounts.find((a) => a.id === userId);
+        return account?.preferences ?? DEFAULT_PREFERENCES;
+      },
     }),
     {
       name: 'forge-portal-users',

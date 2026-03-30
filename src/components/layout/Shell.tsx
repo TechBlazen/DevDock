@@ -33,7 +33,7 @@ export const Shell = ({ children, editMode = false, onToggleEdit = () => {} }: S
   }, []);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ color: '#1a1a2e' }}>
+    <div className="flex flex-col h-screen overflow-hidden" style={{ color: 'var(--text-primary)' }}>
       <CommandPalette />
       {/* Topbar spans full width */}
       <Topbar editMode={editMode} onToggleEdit={onToggleEdit} />

@@ -81,34 +81,34 @@ const getVariantStyle = (variant: NonNullable<ButtonProps['variant']>) => {
   switch (variant) {
     case 'primary':
       return {
-        background: BLUE,
+        background: 'var(--accent)',
         color: '#ffffff',
-        border: `1px solid ${BLUE}`,
-        boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+        border: '1px solid var(--accent)',
+        boxShadow: 'var(--shadow-sm)',
       };
     case 'ghost':
       return {
         background: 'transparent',
-        color: '#555',
-        border: '1px solid #e0e0e0',
+        color: 'var(--text-secondary)',
+        border: '1px solid var(--border-color)',
       };
     case 'danger':
       return {
-        background: '#fff',
+        background: 'var(--bg-surface)',
         color: '#d32f2f',
         border: '1px solid #ffcdd2',
       };
     case 'success':
       return {
-        background: '#fff',
+        background: 'var(--bg-surface)',
         color: '#2e7d32',
         border: '1px solid #c8e6c9',
       };
     case 'outline':
       return {
-        background: '#fff',
-        color: BLUE,
-        border: `1px solid ${BLUE}40`,
+        background: 'var(--bg-surface)',
+        color: 'var(--accent)',
+        border: '1px solid var(--accent)',
       };
   }
 };
@@ -155,9 +155,9 @@ export const Card = ({
       className
     )}
     style={{
-      background: '#ffffff',
-      border: highlight ? `2px solid ${BLUE}` : '1px solid #e0e0e0',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+      background: 'var(--bg-surface)',
+      border: highlight ? '2px solid var(--accent)' : '1px solid var(--border-color)',
+      boxShadow: 'var(--shadow-sm)',
     }}
   >
     {children}
@@ -167,8 +167,8 @@ export const Card = ({
 // ─── CardHeader ───────────────────────────────────────────────────────────────
 export const CardHeader = ({ children, className }: { children: ReactNode; className?: string }) => (
   <div className={clsx('flex items-center gap-2 py-3 rounded-t-lg', className)} style={{ paddingLeft: 24, paddingRight: 20,
-    borderBottom: '1px solid #eee',
-    background: '#fafafa',
+    borderBottom: '1px solid var(--border-subtle)',
+    background: 'var(--bg-inset)',
   }}>
     {children}
   </div>
@@ -182,7 +182,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export const Input = ({ label, className, ...props }: InputProps) => (
   <div className="flex flex-col gap-1.5 w-full">
     {label && (
-      <label className="text-[12px] font-medium" style={{ color: '#555' }}>{label}</label>
+      <label className="text-[12px] font-medium" style={{ color: 'var(--text-secondary)' }}>{label}</label>
     )}
     <input
       className={clsx(
@@ -190,16 +190,16 @@ export const Input = ({ label, className, ...props }: InputProps) => (
         className
       )}
       style={{
-        background: '#ffffff',
-        border: '1px solid #d0d0d0',
-        color: '#1a1a2e',
+        background: 'var(--bg-input)',
+        border: '1px solid var(--border-input)',
+        color: 'var(--text-primary)',
       }}
       onFocus={(e) => {
-        e.currentTarget.style.border = `1px solid ${BLUE}`;
-        e.currentTarget.style.boxShadow = `0 0 0 2px ${BLUE}20`;
+        e.currentTarget.style.border = '1px solid var(--accent)';
+        e.currentTarget.style.boxShadow = '0 0 0 2px var(--accent-bg)';
       }}
       onBlur={(e) => {
-        e.currentTarget.style.border = '1px solid #d0d0d0';
+        e.currentTarget.style.border = '1px solid var(--border-input)';
         e.currentTarget.style.boxShadow = 'none';
       }}
       {...props}
@@ -225,7 +225,7 @@ export const Toggle = ({
         width: 36,
         height: 20,
         borderRadius: 10,
-        background: checked ? color : '#ccc',
+        background: checked ? color : 'var(--border-input)',
         position: 'relative',
         transition: 'background 0.2s',
         flexShrink: 0,
@@ -236,16 +236,16 @@ export const Toggle = ({
           width: 16,
           height: 16,
           borderRadius: '50%',
-          background: '#fff',
+          background: 'var(--bg-surface)',
           position: 'absolute',
           top: 2,
           left: checked ? 18 : 2,
           transition: 'left 0.2s',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+          boxShadow: 'var(--shadow-sm)',
         }}
       />
     </div>
-    {label && <span className="text-[13px]" style={{ color: '#333' }}>{label}</span>}
+    {label && <span className="text-[13px]" style={{ color: 'var(--text-primary)' }}>{label}</span>}
   </div>
 );
 
@@ -254,9 +254,9 @@ export const Tooltip = ({ children, tip }: { children: ReactNode; tip: string })
   <div className="relative group inline-flex">
     {children}
     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50" style={{
-      background: '#333',
-      color: '#fff',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      background: 'var(--text-primary)',
+      color: 'var(--bg-surface)',
+      boxShadow: 'var(--shadow-md)',
     }}>
       {tip}
     </div>
@@ -269,8 +269,8 @@ export const Spinner = ({ size = 16 }: { size?: number }) => (
     style={{
       width: size,
       height: size,
-      border: '2px solid #e0e0e0',
-      borderTopColor: BLUE,
+      border: '2px solid var(--border-color)',
+      borderTopColor: 'var(--accent)',
       borderRadius: '50%',
       animation: 'forge-spin 0.7s linear infinite',
       flexShrink: 0,
@@ -281,16 +281,16 @@ export const Spinner = ({ size = 16 }: { size?: number }) => (
 // ─── SectionTitle ─────────────────────────────────────────────────────────────
 export const SectionTitle = ({ children, sub }: { children: ReactNode; sub?: string }) => (
   <div className="mb-6">
-    <h1 className="text-2xl font-bold" style={{ color: '#1a1a2e' }}>{children}</h1>
-    {sub && <p className="text-[13px] mt-1" style={{ color: '#777' }}>{sub}</p>}
+    <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{children}</h1>
+    {sub && <p className="text-[13px] mt-1" style={{ color: 'var(--text-muted)' }}>{sub}</p>}
   </div>
 );
 
 // ─── EmptyState ───────────────────────────────────────────────────────────────
 export const EmptyState = ({ icon, title, body }: { icon?: ReactNode; title: string; body?: string }) => (
   <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-    {icon && <div className="text-4xl" style={{ color: '#ccc' }}>{icon}</div>}
-    <div className="text-sm font-semibold" style={{ color: '#888' }}>{title}</div>
-    {body && <div className="text-[13px] max-w-xs" style={{ color: '#aaa' }}>{body}</div>}
+    {icon && <div className="text-4xl" style={{ color: 'var(--text-faint)' }}>{icon}</div>}
+    <div className="text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>{title}</div>
+    {body && <div className="text-[13px] max-w-xs" style={{ color: 'var(--text-muted)' }}>{body}</div>}
   </div>
 );

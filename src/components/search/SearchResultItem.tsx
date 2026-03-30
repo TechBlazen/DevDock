@@ -14,7 +14,7 @@ function highlightMatch(text: string, query: string) {
   const parts = text.split(regex);
   return parts.map((part, i) =>
     regex.test(part)
-      ? <mark key={i} style={{ background: '#dbeafe', color: '#1e40af', borderRadius: 2, padding: '0 1px' }}>{part}</mark>
+      ? <mark key={i} style={{ background: 'var(--accent-bg)', color: 'var(--accent-text)', borderRadius: 2, padding: '0 1px' }}>{part}</mark>
       : part
   );
 }
@@ -41,21 +41,21 @@ export function SearchResultItem({ result, query, isSelected, onClick }: Props) 
         gap: 12,
         padding: '10px 16px',
         cursor: 'pointer',
-        background: isSelected ? '#f0f4ff' : 'transparent',
-        borderLeft: isSelected ? '3px solid #005DAA' : '3px solid transparent',
+        background: isSelected ? 'var(--accent-bg)' : 'transparent',
+        borderLeft: isSelected ? '3px solid var(--accent)' : '3px solid transparent',
       }}
-      onMouseOver={(e) => { e.currentTarget.style.background = isSelected ? '#f0f4ff' : '#f8f9fa'; }}
-      onMouseOut={(e) => { e.currentTarget.style.background = isSelected ? '#f0f4ff' : 'transparent'; }}
+      onMouseOver={(e) => { e.currentTarget.style.background = isSelected ? 'var(--accent-bg)' : 'var(--bg-hover)'; }}
+      onMouseOut={(e) => { e.currentTarget.style.background = isSelected ? 'var(--accent-bg)' : 'transparent'; }}
     >
-      <div style={{ flexShrink: 0, color: '#666' }}>
+      <div style={{ flexShrink: 0, color: 'var(--text-secondary)' }}>
         <Icon size={18} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 500, color: '#1a1a2e', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {highlightMatch(result.title, query)}
         </div>
         {result.description && (
-          <div style={{ fontSize: 12, color: '#888', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {highlightMatch(result.description.slice(0, 100), query)}
           </div>
         )}
@@ -68,8 +68,8 @@ export function SearchResultItem({ result, query, isSelected, onClick }: Props) 
             fontSize: 11,
             padding: '2px 8px',
             borderRadius: 9999,
-            background: '#f0f0f0',
-            color: '#666',
+            background: 'var(--bg-inset)',
+            color: 'var(--text-secondary)',
           }}
         >
           {value}

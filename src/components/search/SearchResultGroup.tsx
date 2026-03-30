@@ -27,7 +27,7 @@ export function SearchResultGroup({ category, results, query, selectedId, onSele
         fontWeight: 600,
         textTransform: 'uppercase',
         letterSpacing: '0.05em',
-        color: '#999',
+        color: 'var(--text-muted)',
         padding: '8px 16px 4px',
       }}>
         {CATEGORY_LABELS[category]} ({results.length})

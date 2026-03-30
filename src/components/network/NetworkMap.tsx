@@ -93,12 +93,12 @@ export const NetworkMap = ({ compact = false }: NetworkMapProps) => {
         ) : (
           <div className="space-y-1.5">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-semibold" style={{ color: 'rgba(0,0,0,0.45)' }}>
+              <span className="text-[10px] font-semibold" style={{ color: 'var(--text-muted)' }}>
                 {devices.length} device{devices.length !== 1 ? 's' : ''}
               </span>
-              <button onClick={() => scan()} className="p-1 transition-colors" style={{ color: 'rgba(0,0,0,0.3)' }}
+              <button onClick={() => scan()} className="p-1 transition-colors" style={{ color: 'var(--text-faint)' }}
                 onMouseEnter={(e) => e.currentTarget.style.color = '#3b82f6'}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(0,0,0,0.3)'}>
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-faint)'}>
                 <RefreshCw size={12} className={scanning ? 'animate-spin' : ''} />
               </button>
             </div>
@@ -109,16 +109,16 @@ export const NetworkMap = ({ compact = false }: NetworkMapProps) => {
                   background: d.mac === 'local' ? 'rgba(59,130,246,0.06)' : 'transparent',
                   border: d.mac === 'local' ? '1px solid rgba(59,130,246,0.15)' : '1px solid transparent',
                 }}>
-                  <Icon size={13} style={{ color: d.mac === 'local' ? '#3b82f6' : 'rgba(0,0,0,0.35)' }} />
-                  <span className="font-mono flex-1 truncate" style={{ color: 'rgba(0,0,0,0.7)' }}>
+                  <Icon size={13} style={{ color: d.mac === 'local' ? '#3b82f6' : 'var(--text-faint)' }} />
+                  <span className="font-mono flex-1 truncate" style={{ color: 'var(--text-secondary)' }}>
                     {d.hostname || d.ip}
                   </span>
-                  <span className="font-mono" style={{ color: 'rgba(0,0,0,0.35)' }}>{d.ip}</span>
+                  <span className="font-mono" style={{ color: 'var(--text-faint)' }}>{d.ip}</span>
                 </div>
               );
             })}
             {devices.length > 8 && (
-              <div className="text-[10px] text-center pt-1" style={{ color: 'rgba(0,0,0,0.3)' }}>
+              <div className="text-[10px] text-center pt-1" style={{ color: 'var(--text-faint)' }}>
                 +{devices.length - 8} more
               </div>
             )}
@@ -133,16 +133,16 @@ export const NetworkMap = ({ compact = false }: NetworkMapProps) => {
       {/* Header actions */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-2 rounded-2xl px-3 py-1.5 flex-1 max-w-xs" style={{
-          background: 'rgba(255,255,255,0.12)',
-          border: '1px solid rgba(255,255,255,0.25)',
+          background: 'var(--bg-inset)',
+          border: '1px solid var(--border-subtle)',
         }}>
-          <Search size={13} style={{ color: 'rgba(0,0,0,0.35)' }} />
+          <Search size={13} style={{ color: 'var(--text-faint)' }} />
           <input
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             placeholder="Filter by IP, hostname, MAC..."
             className="bg-transparent border-none outline-none text-xs flex-1"
-            style={{ color: 'rgba(0,0,0,0.8)' }}
+            style={{ color: 'var(--text-primary)' }}
           />
         </div>
         <Button variant="outline" size="sm" onClick={() => scan(false)} disabled={scanning}>
@@ -154,7 +154,7 @@ export const NetworkMap = ({ compact = false }: NetworkMapProps) => {
           Deep Scan
         </Button>
         {scanResult && (
-          <span className="text-[10px] ml-auto" style={{ color: 'rgba(0,0,0,0.35)' }}>
+          <span className="text-[10px] ml-auto" style={{ color: 'var(--text-faint)' }}>
             {devices.length} devices · {new Date(scanResult.scannedAt).toLocaleTimeString()}
           </span>
         )}
@@ -182,7 +182,7 @@ export const NetworkMap = ({ compact = false }: NetworkMapProps) => {
               background: `${color}08`, border: `1px solid ${color}20`,
             }}>
               <div className="text-sm font-bold font-mono" style={{ color }}>{value}</div>
-              <div className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: 'rgba(0,0,0,0.4)' }}>{label}</div>
+              <div className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: 'var(--text-muted)' }}>{label}</div>
             </div>
           ))}
         </div>
@@ -193,7 +193,7 @@ export const NetworkMap = ({ compact = false }: NetworkMapProps) => {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Spinner size={24} />
-            <p className="text-xs mt-3" style={{ color: 'rgba(0,0,0,0.4)' }}>
+            <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>
               {sweeping ? 'Running ping sweep...' : 'Scanning network...'}
             </p>
           </div>
@@ -209,20 +209,20 @@ export const NetworkMap = ({ compact = false }: NetworkMapProps) => {
               <Card key={`${device.ip}-${device.mac}`} highlight={isLocal}>
                 <div className="flex items-center gap-3 px-4 py-3">
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{
-                    background: isLocal ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.03)',
-                    border: isLocal ? '1px solid rgba(59,130,246,0.2)' : '1px solid rgba(255,255,255,0.2)',
+                    background: isLocal ? 'rgba(59,130,246,0.1)' : 'var(--bg-inset)',
+                    border: isLocal ? '1px solid rgba(59,130,246,0.2)' : '1px solid var(--border-subtle)',
                   }}>
-                    <Icon size={18} style={{ color: isLocal ? '#3b82f6' : 'rgba(0,0,0,0.4)' }} />
+                    <Icon size={18} style={{ color: isLocal ? '#3b82f6' : 'var(--text-muted)' }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-[13px] font-bold truncate" style={{ color: 'rgba(0,0,0,0.85)' }}>
+                      <span className="text-[13px] font-bold truncate" style={{ color: 'var(--text-primary)' }}>
                         {device.hostname || device.ip}
                       </span>
                       {isLocal && <Pill color="#3b82f6">this machine</Pill>}
                       {device.vendor && <Pill color="#8b5cf6">{device.vendor}</Pill>}
                     </div>
-                    <div className="flex items-center gap-3 mt-0.5 text-[11px] font-mono" style={{ color: 'rgba(0,0,0,0.4)' }}>
+                    <div className="flex items-center gap-3 mt-0.5 text-[11px] font-mono" style={{ color: 'var(--text-muted)' }}>
                       <span>{device.ip}</span>
                       {device.mac !== 'local' && <span>{device.mac}</span>}
                       <span>{device.interface}</span>

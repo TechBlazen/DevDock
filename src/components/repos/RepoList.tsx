@@ -43,16 +43,16 @@ export const RepoList = ({ source, showFilter = true }: RepoListProps) => {
         <div className="flex gap-2 flex-wrap items-center">
           {/* Search */}
           <div className="flex items-center gap-2 rounded-lg px-3 py-1.5 flex-1 min-w-[180px] max-w-xs" style={{
-            background: 'rgba(0, 0, 0, 0.04)',
-            border: '1px solid rgba(0, 0, 0, 0.08)'
+            background: 'var(--bg-inset)',
+            border: '1px solid var(--border-subtle)'
           }}>
-            <Search size={12} style={{ color: 'rgba(0, 0, 0, 0.4)' }} />
+            <Search size={12} style={{ color: 'var(--text-muted)' }} />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Filter repos..."
               className="bg-transparent border-none outline-none text-xs flex-1"
-              style={{ color: 'rgba(0, 0, 0, 0.9)' }}
+              style={{ color: 'var(--text-primary)' }}
             />
           </div>
 
@@ -62,9 +62,9 @@ export const RepoList = ({ source, showFilter = true }: RepoListProps) => {
             onChange={(e) => setLangFilter(e.target.value)}
             className="rounded-lg px-3 py-1.5 text-xs outline-none cursor-pointer"
             style={{
-              background: 'rgba(0, 0, 0, 0.04)',
-              border: '1px solid rgba(0, 0, 0, 0.08)',
-              color: 'rgba(0, 0, 0, 0.8)'
+              background: 'var(--bg-inset)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-primary)'
             }}
           >
             <option value="">All languages</option>

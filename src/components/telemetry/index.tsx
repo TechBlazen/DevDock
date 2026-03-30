@@ -23,9 +23,9 @@ export const MetricsBar = () => {
             <Icon size={12} style={{ color }} />
           </div>
           <div className="font-black text-xl leading-none" style={{ color }}>
-            {value}<span className="text-xs font-normal" style={{ color: 'rgba(0, 0, 0, 0.4)' }}>{unit}</span>
+            {value}<span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>{unit}</span>
           </div>
-          <div className="text-[10px] uppercase tracking-wider mt-1" style={{ color: 'rgba(0, 0, 0, 0.5)' }}>{label}</div>
+          <div className="text-[10px] uppercase tracking-wider mt-1" style={{ color: 'var(--text-muted)' }}>{label}</div>
         </Card>
       ))}
     </div>
@@ -40,35 +40,35 @@ const TraceRow = ({ span }: { span: ReturnType<typeof useTelemetryStore.getState
     <div
       className="rounded-lg cursor-pointer transition-all"
       style={{
-        background: 'rgba(255, 255, 255, 0.5)',
-        border: '1px solid rgba(0, 0, 0, 0.08)',
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-subtle)',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)'
       }}
       onClick={() => setExpanded((v) => !v)}
-      onMouseEnter={(e) => e.currentTarget.style.border = '1px solid rgba(0, 0, 0, 0.15)'}
-      onMouseLeave={(e) => e.currentTarget.style.border = '1px solid rgba(0, 0, 0, 0.08)'}
+      onMouseEnter={(e) => e.currentTarget.style.border = '1px solid var(--border-color)'}
+      onMouseLeave={(e) => e.currentTarget.style.border = '1px solid var(--border-subtle)'}
     >
       <div className="flex items-center gap-3 px-3 py-2.5">
         <Badge variant={span.status as 'ok' | 'error'} />
-        <span className="text-xs w-20 truncate" style={{ color: 'rgba(0, 0, 0, 0.5)' }}>{span.traceId.slice(0, 10)}</span>
-        <span className="text-xs flex-1 truncate" style={{ color: 'rgba(0, 0, 0, 0.7)' }}>
-          <span style={{ color: '#000000', fontWeight: 600 }}>{span.service}</span>
-          <span style={{ color: 'rgba(0, 0, 0, 0.3)' }} className="mx-1">›</span>
+        <span className="text-xs w-20 truncate" style={{ color: 'var(--text-muted)' }}>{span.traceId.slice(0, 10)}</span>
+        <span className="text-xs flex-1 truncate" style={{ color: 'var(--text-secondary)' }}>
+          <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{span.service}</span>
+          <span style={{ color: 'var(--text-faint)' }} className="mx-1">›</span>
           {span.operation}
         </span>
-        <span className="text-xs w-16 text-right" style={{ color: 'rgba(0, 0, 0, 0.6)' }}>
+        <span className="text-xs w-16 text-right" style={{ color: 'var(--text-secondary)' }}>
           {span.duration >= 1000 ? `${(span.duration / 1000).toFixed(1)}s` : `${span.duration}ms`}
         </span>
-        <span className="text-[10px] w-16 text-right" style={{ color: 'rgba(0, 0, 0, 0.4)' }}>{span.timestamp}</span>
+        <span className="text-[10px] w-16 text-right" style={{ color: 'var(--text-muted)' }}>{span.timestamp}</span>
       </div>
 
       {expanded && span.attributes && (
-        <div className="px-3 pb-3 pt-2 space-y-1" style={{ borderTop: '1px solid rgba(0, 0, 0, 0.08)' }}>
+        <div className="px-3 pb-3 pt-2 space-y-1" style={{ borderTop: '1px solid var(--border-subtle)' }}>
           {Object.entries(span.attributes).map(([k, v]) => (
             <div key={k} className="flex items-center gap-2 text-[11px]">
-              <span style={{ color: 'rgba(0, 0, 0, 0.5)' }}>{k}:</span>
-              <span style={{ color: 'rgba(0, 0, 0, 0.7)' }}>{String(v)}</span>
+              <span style={{ color: 'var(--text-muted)' }}>{k}:</span>
+              <span style={{ color: 'var(--text-secondary)' }}>{String(v)}</span>
             </div>
           ))}
           <div className="flex items-center gap-2 text-[11px] mt-1.5">
@@ -106,8 +106,8 @@ export const TraceList = ({ compact = false }: { compact?: boolean }) => {
               className="px-3 py-1 rounded-lg text-xs border transition-all"
               style={{
                 background: statusFilter === f ? 'rgba(42, 111, 255, 0.12)' : 'transparent',
-                color: statusFilter === f ? '#2a6fff' : 'rgba(0, 0, 0, 0.5)',
-                border: statusFilter === f ? '1px solid rgba(42, 111, 255, 0.3)' : '1px solid rgba(0, 0, 0, 0.1)'
+                color: statusFilter === f ? '#2a6fff' : 'var(--text-muted)',
+                border: statusFilter === f ? '1px solid rgba(42, 111, 255, 0.3)' : '1px solid var(--border-input)'
               }}
             >
               {f}
@@ -118,15 +118,15 @@ export const TraceList = ({ compact = false }: { compact?: boolean }) => {
             onChange={(e) => setServiceFilter(e.target.value)}
             className="rounded-lg px-3 py-1 text-xs outline-none"
             style={{
-              background: 'rgba(0, 0, 0, 0.04)',
-              border: '1px solid rgba(0, 0, 0, 0.08)',
-              color: 'rgba(0, 0, 0, 0.8)'
+              background: 'var(--bg-inset)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-primary)'
             }}
           >
             <option value="">All services</option>
             {services.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
-          <span className="ml-auto text-[10px]" style={{ color: 'rgba(0, 0, 0, 0.5)' }}>{filtered.length} spans</span>
+          <span className="ml-auto text-[10px]" style={{ color: 'var(--text-muted)' }}>{filtered.length} spans</span>
         </div>
       )}
 
@@ -147,7 +147,7 @@ export const TelemetryPage = () => (
     </SectionTitle>
     <MetricsBar />
     <div>
-      <h2 className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'rgba(0, 0, 0, 0.6)' }}>Recent Traces</h2>
+      <h2 className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--text-secondary)' }}>Recent Traces</h2>
       <TraceList />
     </div>
   </div>

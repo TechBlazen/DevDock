@@ -38,16 +38,16 @@ const ServerCard = ({ server }: { server: MCPServer }) => {
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-sm font-bold" style={{ color: '#000000' }}>{server.name}</span>
+            <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{server.name}</span>
             <Pill color={transportColor[server.transport] ?? '#8090b0'}>{server.transport}</Pill>
           </div>
-          <div className="text-xs truncate" style={{ color: 'rgba(0, 0, 0, 0.5)' }}>{server.description}</div>
+          <div className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{server.description}</div>
         </div>
 
         {/* Stats + status */}
         <div className="flex flex-col items-end gap-1 flex-shrink-0">
           <Badge variant={server.status as 'running' | 'idle' | 'stopped' | 'error'} />
-          <span className="text-[10px]" style={{ color: 'rgba(0, 0, 0, 0.5)' }}>{server.callCount} calls · :{server.port}</span>
+          <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{server.callCount} calls · :{server.port}</span>
         </div>
 
         {/* Toggle */}
@@ -64,18 +64,18 @@ const ServerCard = ({ server }: { server: MCPServer }) => {
         </button>
 
         {/* Expand chevron */}
-        <span style={{ color: 'rgba(0, 0, 0, 0.3)' }}>
+        <span style={{ color: 'var(--text-faint)' }}>
           {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         </span>
       </div>
 
       {/* Expanded detail */}
       {expanded && (
-        <div className="px-4 pb-4 pt-3 space-y-3" style={{ borderTop: '1px solid rgba(0, 0, 0, 0.08)' }}>
+        <div className="px-4 pb-4 pt-3 space-y-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
           {/* Capabilities */}
           {server.capabilities && server.capabilities.length > 0 && (
             <div>
-              <div className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: 'rgba(0, 0, 0, 0.5)' }}>Capabilities</div>
+              <div className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>Capabilities</div>
               <div className="flex gap-1.5 flex-wrap">
                 {server.capabilities.map((cap) => (
                   <span key={cap} className="text-[11px] rounded px-2 py-0.5" style={{
@@ -93,12 +93,12 @@ const ServerCard = ({ server }: { server: MCPServer }) => {
           {/* Command */}
           {server.command && (
             <div>
-              <div className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: 'rgba(0, 0, 0, 0.5)' }}>Command</div>
+              <div className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>Command</div>
               <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{
-                background: 'rgba(0, 0, 0, 0.04)',
-                border: '1px solid rgba(0, 0, 0, 0.08)'
+                background: 'var(--bg-inset)',
+                border: '1px solid var(--border-subtle)'
               }}>
-                <Terminal size={12} style={{ color: 'rgba(0, 0, 0, 0.4)' }} />
+                <Terminal size={12} style={{ color: 'var(--text-muted)' }} />
                 <code className="text-[11px]" style={{ color: 'rgba(0, 180, 120, 1)' }}>{server.command} @modelcontextprotocol/server-{server.name}</code>
               </div>
             </div>
@@ -148,7 +148,7 @@ const AddServerModal = ({ onClose }: { onClose: () => void }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose} style={{
-      background: 'rgba(0, 0, 0, 0.4)',
+      background: 'var(--overlay)',
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)'
     }}>
@@ -156,14 +156,14 @@ const AddServerModal = ({ onClose }: { onClose: () => void }) => {
         className="rounded-2xl p-6 w-full max-w-md"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: 'rgba(255, 255, 255, 0.95)',
-          border: '1px solid rgba(0, 0, 0, 0.1)',
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-color)',
           backdropFilter: 'blur(40px) saturate(180%)',
           WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
+          boxShadow: 'var(--shadow-lg)'
         }}
       >
-        <h3 className="text-base font-bold mb-4" style={{ color: '#000000' }}>Register MCP Server</h3>
+        <h3 className="text-base font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Register MCP Server</h3>
 
         <div className="space-y-3">
           <Input label="Server Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="my-custom-server" />
@@ -171,7 +171,7 @@ const AddServerModal = ({ onClose }: { onClose: () => void }) => {
           <Input label="Port" type="number" value={port} onChange={(e) => setPort(e.target.value)} />
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] uppercase tracking-widest" style={{ color: 'rgba(0, 0, 0, 0.5)' }}>Transport</label>
+            <label className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Transport</label>
             <div className="flex gap-2">
               {(['stdio', 'sse', 'websocket'] as const).map((t) => (
                 <button
@@ -180,8 +180,8 @@ const AddServerModal = ({ onClose }: { onClose: () => void }) => {
                   className="flex-1 py-1.5 rounded-lg text-xs transition-all"
                   style={{
                     background: transport === t ? 'rgba(42, 111, 255, 0.12)' : 'transparent',
-                    color: transport === t ? '#2a6fff' : 'rgba(0, 0, 0, 0.5)',
-                    border: transport === t ? '1px solid rgba(42, 111, 255, 0.3)' : '1px solid rgba(0, 0, 0, 0.1)'
+                    color: transport === t ? '#2a6fff' : 'var(--text-muted)',
+                    border: transport === t ? '1px solid rgba(42, 111, 255, 0.3)' : '1px solid var(--border-input)'
                   }}
                 >
                   {t}
@@ -218,13 +218,13 @@ export const MCPRegistry = () => {
           { label: 'Total Calls', value: totalCalls, color: '#2a6fff' },
         ].map(({ label, value, color }) => (
           <div key={label} className="rounded-xl px-4 py-2.5" style={{
-            background: 'rgba(255, 255, 255, 0.5)',
+            background: 'var(--bg-surface)',
             border: `1px solid ${color}40`,
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)'
           }}>
             <div style={{ color }} className="text-lg font-black leading-none">{value}</div>
-            <div className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: 'rgba(0, 0, 0, 0.5)' }}>{label}</div>
+            <div className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: 'var(--text-muted)' }}>{label}</div>
           </div>
         ))}
       </div>
@@ -239,16 +239,16 @@ export const MCPRegistry = () => {
         onClick={() => setShowModal(true)}
         className="w-full py-3 border border-dashed rounded-xl text-xs flex items-center justify-center gap-2 transition-all"
         style={{
-          borderColor: 'rgba(0, 0, 0, 0.15)',
-          color: 'rgba(0, 0, 0, 0.5)'
+          borderColor: 'var(--border-color)',
+          color: 'var(--text-muted)'
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.borderColor = 'rgba(42, 111, 255, 0.4)';
           e.currentTarget.style.color = '#2a6fff';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.15)';
-          e.currentTarget.style.color = 'rgba(0, 0, 0, 0.5)';
+          e.currentTarget.style.borderColor = 'var(--border-color)';
+          e.currentTarget.style.color = 'var(--text-muted)';
         }}
       >
         <Plus size={14} /> Register MCP Server
