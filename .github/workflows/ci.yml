@@ -1,0 +1,117 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  validate-branch-name:
+    name: Validate Branch Name
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Check branch name
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          
+          # Allow main and develop
+          if [[ "$BRANCH_NAME" == "main" || "$BRANCH_NAME" == "develop" ]]; then
+            echo "✓ Branch name valid: $BRANCH_NAME"
+            exit 0
+          fi
+          
+          # Validate format: <type>/<description>
+          if [[ ! "$BRANCH_NAME" =~ ^(feature|bugfix|hotfix|release|chore|docs)/[a-z0-9._-]+$ ]]; then
+            echo "❌ ERROR: Branch name '$BRANCH_NAME' does not follow naming convention."
+            echo ""
+            echo "Expected format: <type>/<description>"
+            echo ""
+            echo "Valid types:"
+            echo "  • feature/  - New features"
+            echo "  • bugfix/   - Bug fixes"
+            echo "  • hotfix/   - Urgent production fixes"
+            echo "  • release/  - Release preparation"
+            echo "  • chore/    - Maintenance tasks"
+            echo "  • docs/     - Documentation updates"
+            echo ""
+            echo "Examples:"
+            echo "  ✓ feature/user-authentication"
+            echo "  ✓ bugfix/fix-login-error"
+            echo "  ✓ docs/update-readme"
+            exit 1
+          fi
+          
+          echo "✓ Branch name valid: $BRANCH_NAME"
+
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    needs: validate-branch-name
+    if: always() && (needs.validate-branch-name.result == 'success' || needs.validate-branch-name.result == 'skipped')
+    
+    strategy:
+      matrix:
+        node-version: [20.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint code
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Type check
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+      - name: Build application
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.node-version }}
+          path: dist/
+          retention-days: 7
+
+  lighthouse:
+    name: Lighthouse Performance Check
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            http://localhost:4173
+          uploadArtifacts: true
+          temporaryPublicStorage: true
