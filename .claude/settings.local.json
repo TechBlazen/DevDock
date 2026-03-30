@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:backstage.io)",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "WebFetch(domain:roadie.io)",
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)",
+      "Bash(source ~/.zshrc)",
+      "Bash(nvm ls:*)",
+      "Bash(nvm use:*)",
+      "WebFetch(domain:docs.mia-platform.eu)",
+      "WebFetch(domain:docs.cortex.io)",
+      "WebFetch(domain:www.cortex.io)",
+      "WebFetch(domain:www.opslevel.com)",
+      "Bash(npm install:*)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:css-tricks.com)",
+      "WebFetch(domain:designfast.io)",
+      "WebFetch(domain:blog.logrocket.com)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:kube.io)",
+      "Bash(npx vite:*)",
+      "Bash(node -e \"const pty = require\\(''node-pty''\\); const p = pty.spawn\\(''/bin/zsh'', [], { name: ''xterm-256color'', cols: 80, rows: 24, cwd: require\\(''os''\\).homedir\\(\\) }\\); p.onData\\(d => { console.log\\(''SUCCESS''\\); p.kill\\(\\); process.exit\\(0\\); }\\); p.write\\(''echo hi\\\\r''\\); setTimeout\\(\\(\\) => { p.kill\\(\\); process.exit\\(1\\); }, 3000\\);\")",
+      "Bash(npm uninstall:*)",
+      "Bash(node -e \"const pty = require\\(''node-pty''\\); const p = pty.spawn\\(''/bin/zsh'', [], { name: ''xterm-256color'', cols: 80, rows: 24, cwd: require\\(''os''\\).homedir\\(\\) }\\); p.onData\\(d => { console.log\\(''SUCCESS:'', JSON.stringify\\(d.substring\\(0,50\\)\\)\\); p.kill\\(\\); process.exit\\(0\\); }\\); p.write\\(''echo hi\\\\r''\\); setTimeout\\(\\(\\) => { console.log\\(''TIMEOUT''\\); p.kill\\(\\); process.exit\\(1\\); }, 3000\\);\")"
+    ]
+  }
+}
