@@ -130,4 +130,4 @@ npm run preview  # Preview production build
 
 ---
 
-Built with ⚡ by Judge · Costco Platform Engineering
+Built with ⚡ by Terry Ashley · TechBlazen

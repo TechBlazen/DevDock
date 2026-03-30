@@ -391,7 +391,7 @@ export const LoginPage = () => {
 
         {/* Footer */}
         <p className="text-center text-[10px] mt-6" style={{ color: 'rgba(0, 0, 0, 0.3)' }}>
-          Forge Portal · Costco Platform Engineering
+          Built with ⚡ by Terry Ashley · TechBlazen
         </p>
       </div>
     </div>
