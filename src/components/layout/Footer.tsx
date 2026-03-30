@@ -64,7 +64,7 @@ export const Footer = ({ editMode, onToggleEdit }: FooterProps) => {
       {/* Right: Timestamp + Edit */}
       <div className="flex items-center gap-3">
         <span className="tabular-nums font-mono hidden md:block" style={{ color: 'var(--text-muted)' }}>
-          {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          {time.toLocaleDateString([], { month: 'short', year: 'numeric' })} &middot; {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
         </span>
 
         {isHome && (
