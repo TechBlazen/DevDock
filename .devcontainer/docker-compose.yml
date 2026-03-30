@@ -18,9 +18,6 @@ services:
       
     command: sleep infinity
     
-    # Use host network for easier port access
-    network_mode: host
-    
     environment:
       - NODE_ENV=development
       - SHELL=/bin/zsh
