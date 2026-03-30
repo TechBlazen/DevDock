@@ -5,6 +5,7 @@ import { terminalPlugin } from './vite-terminal-plugin';
 import { networkPlugin } from './vite-network-plugin';
 
 export default defineConfig({
+  base: process.env.GITHUB_ACTIONS ? '/forge-portal-clean/' : '/',
   plugins: [react(), terminalPlugin(), networkPlugin()],
   resolve: {
     alias: {
