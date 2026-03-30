@@ -1,6 +1,7 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
+import { Footer } from './Footer';
 import { ChatPanel } from '../chat/ChatPanel';
 import { TerminalPanel } from '../terminal/Terminal';
 import { CommandPalette } from '../search/CommandPalette';
@@ -36,7 +37,7 @@ export const Shell = ({ children, editMode = false, onToggleEdit = () => {} }: S
     <div className="flex flex-col h-screen overflow-hidden" style={{ color: 'var(--text-primary)' }}>
       <CommandPalette />
       {/* Topbar spans full width */}
-      <Topbar editMode={editMode} onToggleEdit={onToggleEdit} />
+      <Topbar />
 
       {/* Below topbar: sidebar + content */}
       <div className="flex-1 flex overflow-hidden">
@@ -60,6 +61,9 @@ export const Shell = ({ children, editMode = false, onToggleEdit = () => {} }: S
           )}
         </div>
       </div>
+
+      {/* Footer spans full width */}
+      <Footer editMode={editMode} onToggleEdit={onToggleEdit} />
     </div>
   );
 };
