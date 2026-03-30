@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Bell, Bot, ChevronDown } from 'lucide-react';
 import { useChatStore, useTelemetryStore, useAuthStore, useUserAccountsStore } from '../../store';
 import { Button, Pill } from '../ui';
@@ -21,14 +21,7 @@ const ROLE_COLORS: Record<string, string> = {
   viewer: '#2e7d32',
 };
 
-interface TopbarProps {
-  editMode: boolean;
-  onToggleEdit: () => void;
-}
-
-export const Topbar = ({ editMode, onToggleEdit }: TopbarProps) => {
-  const { pathname } = useLocation();
-  const [time, setTime] = useState(new Date());
+export const Topbar = () => {
   const [showPrefs, setShowPrefs] = useState(false);
   const prefsRef = useRef<HTMLDivElement>(null);
   const setOpen = useChatStore((s) => s.setOpen);
@@ -41,11 +34,6 @@ export const Topbar = ({ editMode, onToggleEdit }: TopbarProps) => {
   const userAccount = accounts.find((a) => a.id === user?.id);
   const role = user?.role ?? userAccount?.role ?? 'viewer';
 
-  useEffect(() => {
-    const t = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
-
   // Click outside to close prefs
   useEffect(() => {
     if (!showPrefs) return;
@@ -57,8 +45,6 @@ export const Topbar = ({ editMode, onToggleEdit }: TopbarProps) => {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [showPrefs]);
-
-  const isHome = pathname === '/';
 
   return (
     <header className="h-[52px] flex items-center px-5 gap-4 flex-shrink-0" style={{
@@ -73,11 +59,6 @@ export const Topbar = ({ editMode, onToggleEdit }: TopbarProps) => {
 
       {/* Right nav links */}
       <nav className="flex items-center gap-1">
-        {/* Clock */}
-        <span className="text-[12px] tabular-nums font-mono mr-2 hidden md:block" style={{ color: 'var(--text-muted)' }}>
-          {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-        </span>
-
         {/* OTel status */}
         <Link to="/telemetry" className="px-3 py-1.5 text-[13px] font-medium rounded-md transition-colors" style={{ color: 'var(--accent)' }}
           onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
@@ -85,19 +66,6 @@ export const Topbar = ({ editMode, onToggleEdit }: TopbarProps) => {
           OTel
           <span className="ml-1 text-[11px]" style={{ color: errorRate > 1 ? '#d32f2f' : '#2e7d32' }}>{reqPerSec}/s</span>
         </Link>
-
-        {/* Customize (dashboard only) */}
-        {isHome && (
-          <button
-            onClick={onToggleEdit}
-            className="px-3 py-1.5 text-[13px] font-medium rounded-md transition-colors"
-            style={{ color: editMode ? '#2e7d32' : 'var(--accent)' }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-          >
-            {editMode ? '✓ Done' : 'Edit'}
-          </button>
-        )}
 
         {/* Notifications */}
         <button className="relative px-2 py-1.5 rounded-md transition-colors" style={{ color: 'var(--text-secondary)' }}
