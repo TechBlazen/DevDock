@@ -1,16 +1,9 @@
 {
   "name": "Forge Portal Dev Container",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bullseye",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   
-  "features": {
-    "ghcr.io/devcontainers/features/git:1": {
-      "version": "latest"
-    },
-    "ghcr.io/devcontainers/features/github-cli:1": {
-      "version": "latest"
-    }
-  },
-
   "customizations": {
     "vscode": {
       "extensions": [
@@ -21,7 +14,12 @@
         "dsznajder.es7-react-js-snippets",
         "christian-kohler.path-intellisense",
         "ms-azuretools.vscode-docker",
-        "eamodio.gitlens"
+        "eamodio.gitlens",
+        "usernamehw.errorlens",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "stylelint.vscode-stylelint",
+        "naumovs.color-highlight"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh",
@@ -36,6 +34,9 @@
           "typescript",
           "typescriptreact"
         ],
+        "files.eol": "\n",
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "typescript.enablePromptUseWorkspaceTsdk": true,
         "tailwindCSS.experimental.classRegex": [
           ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
         ]
@@ -58,9 +59,5 @@
   "postCreateCommand": "npm install",
   "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
 
-  "remoteUser": "node",
-  
-  "mounts": [
-    "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,readonly,type=bind,consistency=cached"
-  ]
+  "remoteUser": "node"
 }

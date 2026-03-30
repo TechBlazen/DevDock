@@ -7,11 +7,27 @@ services:
       dockerfile: Dockerfile
     
     volumes:
+      # Mount the workspace
       - ../..:/workspaces:cached
+      # Mount SSH keys (read-only)
+      - ~/.ssh:/home/node/.ssh:ro
+      # Mount git config
+      - ~/.gitconfig:/home/node/.gitconfig:ro
+      # Persist node_modules for better performance
+      - node_modules:/workspaces/${localWorkspaceFolderBasename}/node_modules
       
     command: sleep infinity
     
+    # Use host network for easier port access
     network_mode: host
     
     environment:
       - NODE_ENV=development
+      - SHELL=/bin/zsh
+    
+    # Improve performance on macOS/Windows
+    stdin_open: true
+    tty: true
+
+volumes:
+  node_modules:
