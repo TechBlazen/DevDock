@@ -340,6 +340,25 @@ export interface ForumUserReputation {
   acceptedCount: number;
 }
 
+// ─── Analytics Types ─────────────────────────────────────────────────────────
+export interface PageView {
+  id: string;
+  userId: string;
+  userName: string;
+  path: string;
+  timestamp: string;
+}
+
+export interface ClientError {
+  id: string;
+  userId: string;
+  userName: string;
+  message: string;
+  stack?: string;
+  path: string;
+  timestamp: string;
+}
+
 // ─── Docs Types ──────────────────────────────────────────────────────────────
 export interface DocEntry {
   id: string;

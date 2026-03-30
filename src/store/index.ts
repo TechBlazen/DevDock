@@ -887,3 +887,6 @@ export { useSearchStore } from './search-store';
 
 // ─── Forum Store (re-export) ─────────────────────────────────────────────────
 export { useForumStore } from './forum-store';
+
+// ─── Analytics Store (re-export) ─────────────────────────────────────────────
+export { useAnalyticsStore } from './analytics-store';
