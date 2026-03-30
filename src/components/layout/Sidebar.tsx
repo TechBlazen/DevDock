@@ -5,6 +5,9 @@ import {
   Settings, Layers, Hammer, Puzzle, FileText, Network, Users, LogOut,
   PanelLeftClose, PanelLeftOpen, ChevronDown, ChevronRight,
   Wrench, Braces, Send, Search, User, MessageSquare,
+  Globe, Wifi, FileSearch, ShieldCheck, LayoutList,
+  Cable, Waypoints, FileDiff, Binary, Regex,
+  Table, GitMerge, Container,
 } from 'lucide-react';
 import { useMCPStore, useAuthStore, useSearchStore } from '../../store';
 import { usePluginExtensions } from '../../lib/plugins';
@@ -189,6 +192,19 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
                 {[
                   { to: '/devtools/json', icon: Braces, label: 'JSON Validator' },
                   { to: '/devtools/api', icon: Send, label: 'API Tester' },
+                  { to: '/devtools/dns', icon: Globe, label: 'DNS Lookup' },
+                  { to: '/devtools/ping', icon: Wifi, label: 'Ping Tool' },
+                  { to: '/devtools/whois', icon: FileSearch, label: 'WHOIS Lookup' },
+                  { to: '/devtools/ssl', icon: ShieldCheck, label: 'SSL Checker' },
+                  { to: '/devtools/headers', icon: LayoutList, label: 'HTTP Headers' },
+                  { to: '/devtools/websocket', icon: Cable, label: 'WebSocket' },
+                  { to: '/devtools/graphql', icon: Waypoints, label: 'GraphQL' },
+                  { to: '/devtools/diff', icon: FileDiff, label: 'Text Diff' },
+                  { to: '/devtools/base64', icon: Binary, label: 'Base64' },
+                  { to: '/devtools/regex', icon: Regex, label: 'Regex Tester' },
+                  { to: '/devtools/csv', icon: Table, label: 'CSV Viewer' },
+                  { to: '/devtools/git-gen', icon: GitMerge, label: 'Git Generator' },
+                  { to: '/devtools/docker-gen', icon: Container, label: 'Docker Generator' },
                 ].map((item) => renderNavLink(item.to, item.icon, item.label, true))}
               </div>
             )}
