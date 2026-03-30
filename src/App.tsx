@@ -20,6 +20,19 @@ import {
   DevToolsPage,
   JsonValidatorPage,
   ApiTesterPage,
+  DnsLookupPage,
+  PingToolPage,
+  WhoisLookupPage,
+  SslCheckerPage,
+  HttpHeadersPage,
+  WebSocketDebuggerPage,
+  GraphqlExplorerPage,
+  TextDiffPage,
+  Base64ToolPage,
+  RegexTesterPage,
+  CsvViewerPage,
+  GitGeneratorPage,
+  DockerGeneratorPage,
   DocsPage,
   NetworkPage,
   PluginsPage,
@@ -117,8 +130,21 @@ function PluginRoutes({ editMode }: { editMode: boolean }) {
       <Route path="/catalog"   element={<CatalogPage />} />
       <Route path="/scaffold"  element={<ScaffoldPage />} />
       <Route path="/devtools"         element={<DevToolsPage />} />
-      <Route path="/devtools/json"    element={<JsonValidatorPage />} />
-      <Route path="/devtools/api"     element={<ApiTesterPage />} />
+      <Route path="/devtools/json"       element={<JsonValidatorPage />} />
+      <Route path="/devtools/api"        element={<ApiTesterPage />} />
+      <Route path="/devtools/dns"        element={<DnsLookupPage />} />
+      <Route path="/devtools/ping"       element={<PingToolPage />} />
+      <Route path="/devtools/whois"      element={<WhoisLookupPage />} />
+      <Route path="/devtools/ssl"        element={<SslCheckerPage />} />
+      <Route path="/devtools/headers"    element={<HttpHeadersPage />} />
+      <Route path="/devtools/websocket"  element={<WebSocketDebuggerPage />} />
+      <Route path="/devtools/graphql"    element={<GraphqlExplorerPage />} />
+      <Route path="/devtools/diff"       element={<TextDiffPage />} />
+      <Route path="/devtools/base64"     element={<Base64ToolPage />} />
+      <Route path="/devtools/regex"      element={<RegexTesterPage />} />
+      <Route path="/devtools/csv"        element={<CsvViewerPage />} />
+      <Route path="/devtools/git-gen"    element={<GitGeneratorPage />} />
+      <Route path="/devtools/docker-gen" element={<DockerGeneratorPage />} />
       <Route path="/docs"      element={<DocsPage />} />
       <Route path="/network"   element={<NetworkPage />} />
       <Route path="/plugins"   element={<PluginsPage />} />
