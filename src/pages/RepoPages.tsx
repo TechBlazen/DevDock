@@ -23,7 +23,7 @@ export const ADOPage = () => (
 
 export const MCPPage = () => (
   <div className="p-6">
-    <SectionTitle sub="Manage Model Context Protocol servers used by Forge AI">
+    <SectionTitle sub="Manage Model Context Protocol servers used by DevDock AI">
       MCP Server Registry
     </SectionTitle>
     <MCPRegistry />

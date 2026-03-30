@@ -142,7 +142,7 @@ export const TraceList = ({ compact = false }: { compact?: boolean }) => {
 // ─── Full Telemetry page ──────────────────────────────────────────────────────
 export const TelemetryPage = () => (
   <div className="p-6 space-y-6">
-    <SectionTitle sub="OpenTelemetry traces, metrics, and spans from all Forge services">
+    <SectionTitle sub="OpenTelemetry traces, metrics, and spans from all DevDock services">
       Observability
     </SectionTitle>
     <MetricsBar />

@@ -82,7 +82,7 @@ export const Topbar = () => {
           onClick={() => setOpen(!isOpen)}
         >
           <Bot size={13} />
-          Forge AI
+          DevDock AI
         </Button>
 
         {/* Separator */}

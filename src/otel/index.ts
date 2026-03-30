@@ -7,7 +7,7 @@ import { trace, context, SpanStatusCode, type Tracer } from '@opentelemetry/api'
 import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 
-const SERVICE_NAME = 'forge-portal';
+const SERVICE_NAME = 'devdock';
 const SERVICE_VERSION = '0.1.0';
 
 let tracerProvider: WebTracerProvider | null = null;

@@ -140,7 +140,7 @@ export function CommandPalette() {
             ref={inputRef}
             defaultValue={query}
             onChange={(e) => handleInput(e.target.value)}
-            placeholder="Search Forge Portal..."
+            placeholder="Search DevDock..."
             style={{
               flex: 1,
               border: 'none',
