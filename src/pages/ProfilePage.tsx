@@ -1,8 +1,9 @@
-import { Sun, Moon, Monitor, User, Shield, Clock, Mail, Key } from 'lucide-react';
+import { Sun, Moon, Monitor, User, Shield, Clock, Mail, Key, Bookmark } from 'lucide-react';
 import { useAuthStore, useUserAccountsStore } from '../store';
 import { useUserPreferences } from '../hooks/useUserPreferences';
 import { useTheme } from '../hooks/useTheme';
 import { formatDistanceToNow } from 'date-fns';
+import { BookmarkWidget } from '../components/profile/BookmarkWidget';
 
 const ACCENT_COLORS = [
   { value: '#005DAA', label: 'Blue' },
@@ -181,6 +182,11 @@ export const ProfilePage = () => {
             </button>
           ))}
         </div>
+      </SectionCard>
+
+      {/* Bookmarks */}
+      <SectionCard title="Bookmarks">
+        <BookmarkWidget />
       </SectionCard>
     </div>
   );

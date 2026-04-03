@@ -349,6 +349,46 @@ export interface PageView {
   timestamp: string;
 }
 
+// ─── Bookmark Types ──────────────────────────────────────────────────────────
+export type ContentType = 'article' | 'video' | 'image' | 'document' | 'audio' | 'link';
+
+export interface Bookmark {
+  id: string;
+  userId: string;
+  title: string;
+  url: string;
+  description?: string;
+  favicon?: string;
+  screenshot?: string;
+  collectionId?: string;
+  tags: string[];
+  favorite: boolean;
+  note?: string;
+  contentType: ContentType;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BookmarkCollection {
+  id: string;
+  userId: string;
+  name: string;
+  icon?: string;
+  color?: string;
+  parentId?: string | null;
+  bookmarkCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BookmarkFilter {
+  search?: string;
+  collectionId?: string;
+  tags?: string[];
+  favorite?: boolean;
+  contentType?: ContentType;
+}
+
 export interface ClientError {
   id: string;
   userId: string;
