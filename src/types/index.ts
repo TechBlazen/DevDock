@@ -418,6 +418,27 @@ export interface ForgePlugin {
   settings?: PluginSetting[];
 }
 
+// ─── Plugin Submission Types ─────────────────────────────────────────────────
+export type PluginSubmissionStatus = 'pending' | 'approved' | 'rejected';
+
+export interface PluginSubmission {
+  id: string;
+  name: string;
+  description: string;
+  version: string;
+  author: string;
+  icon: string;
+  category: PluginCategory;
+  tags: string[];
+  status: PluginSubmissionStatus;
+  submittedBy: string;
+  submittedByName: string;
+  submittedAt: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
+}
+
 // ─── Forum Types ────────────────────────────────────────────────────────────
 export type ForumCategory = 'bug' | 'question' | 'discussion' | 'how-to';
 export type ForumDepartment = 'Engineering' | 'DevOps' | 'Platform' | 'Security' | 'Data';
