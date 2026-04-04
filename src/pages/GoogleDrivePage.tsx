@@ -65,22 +65,47 @@ const DriveConnectPrompt = () => {
           onChange={(e) => setToken(e.target.value)}
           placeholder="Paste your Google OAuth access token..."
         />
-        <div className="flex items-start gap-2 rounded-xl p-3" style={{ background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}>
-          <AlertTriangle size={12} className="text-[#f5a623] mt-0.5 flex-shrink-0" />
-          <p className="text-[11px] text-left" style={{ color: 'var(--text-muted)' }}>
-            Generate an access token from the{' '}
-            <a
-              href="https://developers.google.com/oauthplayground/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline"
-              style={{ color: 'var(--accent)' }}
-            >
-              Google OAuth Playground
-            </a>
-            {' '}with the <code style={{ color: 'var(--accent)', fontSize: 10 }}>drive</code> scope.
-            Token is stored locally only.
+        <div className="rounded-xl p-4 space-y-3 text-left" style={{ background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}>
+          <p className="text-[12px] font-semibold" style={{ color: 'var(--text-primary)' }}>
+            How to get an access token:
           </p>
+          <ol className="text-[11px] space-y-2 list-decimal list-inside" style={{ color: 'var(--text-muted)' }}>
+            <li>
+              Open the{' '}
+              <a
+                href="https://developers.google.com/oauthplayground/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+                style={{ color: 'var(--accent)' }}
+              >
+                Google OAuth 2.0 Playground
+              </a>
+            </li>
+            <li>
+              In <strong style={{ color: 'var(--text-secondary)' }}>Step 1</strong>, scroll to{' '}
+              <strong style={{ color: 'var(--text-secondary)' }}>Drive API v3</strong> and select{' '}
+              <code style={{ color: 'var(--accent)', fontSize: 10, background: 'var(--accent-bg)', padding: '1px 4px', borderRadius: 3 }}>
+                https://www.googleapis.com/auth/drive
+              </code>
+            </li>
+            <li>
+              Click <strong style={{ color: 'var(--text-secondary)' }}>Authorize APIs</strong> and sign in with your Google account
+            </li>
+            <li>
+              In <strong style={{ color: 'var(--text-secondary)' }}>Step 2</strong>, click{' '}
+              <strong style={{ color: 'var(--text-secondary)' }}>Exchange authorization code for tokens</strong>
+            </li>
+            <li>
+              Copy the <strong style={{ color: 'var(--text-secondary)' }}>Access token</strong> value and paste it above
+            </li>
+          </ol>
+          <div className="flex items-start gap-2 pt-1">
+            <AlertTriangle size={11} className="text-[#f5a623] mt-0.5 flex-shrink-0" />
+            <p className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
+              Tokens expire after 1 hour. Token is stored in your browser only and never sent to any third-party server.
+            </p>
+          </div>
         </div>
         <Button variant="primary" size="lg" onClick={handleConnect} disabled={!token.trim()}>
           <HardDrive size={14} /> Connect Google Drive
