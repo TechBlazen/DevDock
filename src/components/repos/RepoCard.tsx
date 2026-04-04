@@ -227,8 +227,11 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
   const user = useAuthStore((s) => s.user);
   const removeRepo = useRepoStore((s) => s.removeRepo);
   const toggleFavoriteRepo = useUserAccountsStore((s) => s.toggleFavoriteRepo);
-  const isFavoriteRepo = useUserAccountsStore((s) => s.isFavoriteRepo);
-  const isFav = user ? isFavoriteRepo(user.id, repo.id) : false;
+  const isFav = useUserAccountsStore((s) => {
+    if (!user) return false;
+    const account = s.accounts.find((a) => a.id === user.id);
+    return account?.favoriteRepos?.includes(repo.id) ?? false;
+  });
 
   // Delete permission: user who added the repo OR any admin
   const canDelete = user && (repo.addedBy === user.id || user.role === 'admin');
