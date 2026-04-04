@@ -540,6 +540,188 @@ const ObsidianPageComponent = () => {
   );
 };
 
+// ─── Built-in Plugin: Obsidian Collection Widget ────────────────────────────
+const ObsidianCollectionWidget = () => {
+  const { getPluginSetting } = usePluginStore();
+  const connected = (getPluginSetting('forge-obsidian', 'vault.connected') as string) === 'true';
+
+  const [notes] = useState<ObsidianNote[]>(connected ? DEMO_NOTES : []);
+  const [selectedNote, setSelectedNote] = useState<ObsidianNote | null>(null);
+  const [search, setSearch] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const [editContent, setEditContent] = useState('');
+
+  const filtered = search
+    ? notes.filter((n) => n.title.toLowerCase().includes(search.toLowerCase()) || n.tags.some((t) => t.includes(search.toLowerCase())))
+    : notes;
+
+  if (!connected) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-4">
+        <BookOpen size={28} style={{ color: 'var(--text-faint)' }} />
+        <span className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>
+          No vault connected
+        </span>
+        <span className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
+          Enable the Obsidian plugin and connect a vault to view your notes here.
+        </span>
+      </div>
+    );
+  }
+
+  // ── Note detail view ──
+  if (selectedNote) {
+    const lines = selectedNote.content.split('\n');
+    return (
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className="flex items-center gap-2 pb-2 mb-2" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+          <button
+            onClick={() => { setSelectedNote(null); setEditMode(false); }}
+            className="text-[11px] font-medium"
+            style={{ color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer' }}
+          >
+            &larr; Back
+          </button>
+          <span className="flex-1 text-[11px] font-bold truncate" style={{ color: 'var(--text-primary)' }}>
+            {selectedNote.title}
+          </span>
+          <button
+            onClick={() => {
+              if (editMode) {
+                setEditMode(false);
+              } else {
+                setEditContent(selectedNote.content);
+                setEditMode(true);
+              }
+            }}
+            className="text-[10px] font-semibold px-2 py-1 rounded-md"
+            style={{
+              color: editMode ? '#2e7d32' : 'var(--accent)',
+              background: editMode ? '#2e7d3215' : 'var(--accent-bg)',
+              border: 'none', cursor: 'pointer',
+            }}
+          >
+            {editMode ? 'Preview' : 'Edit'}
+          </button>
+        </div>
+
+        {/* Tags */}
+        <div className="flex gap-1 mb-2 flex-wrap">
+          <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: '#7c3aed18', color: '#7c3aed' }}>
+            {selectedNote.folder}
+          </span>
+          {selectedNote.tags.map((t) => (
+            <span key={t} className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: 'var(--bg-inset)', color: 'var(--text-muted)' }}>
+              #{t}
+            </span>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto">
+          {editMode ? (
+            <textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className="w-full h-full min-h-[120px] bg-transparent border-none outline-none text-[11px] font-mono leading-relaxed resize-none"
+              style={{ color: 'var(--text-primary)' }}
+            />
+          ) : (
+            <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              {lines.map((line, i) => {
+                if (line.startsWith('# ')) return <div key={i} className="text-[13px] font-bold mb-1" style={{ color: 'var(--text-primary)' }}>{line.slice(2)}</div>;
+                if (line.startsWith('## ')) return <div key={i} className="text-[12px] font-bold mt-2 mb-1" style={{ color: 'var(--text-primary)' }}>{line.slice(3)}</div>;
+                if (line.startsWith('### ')) return <div key={i} className="text-[11px] font-bold mt-1.5 mb-0.5" style={{ color: 'var(--text-primary)' }}>{line.slice(4)}</div>;
+                if (line.startsWith('- [ ] ')) return <div key={i} className="flex items-center gap-1.5 py-0.5 pl-2"><input type="checkbox" disabled className="accent-[#7c3aed]" style={{ width: 12, height: 12 }} /><span>{line.slice(6)}</span></div>;
+                if (line.startsWith('- ')) return <div key={i} className="pl-3 py-0.5">&bull; {line.slice(2)}</div>;
+                if (line.startsWith('```')) return <div key={i} className="font-mono text-[10px]" style={{ color: 'var(--text-faint)' }}>{line}</div>;
+                if (line.match(/^\d+\. /)) return <div key={i} className="pl-3 py-0.5">{line}</div>;
+                if (!line.trim()) return <div key={i} className="h-1.5" />;
+                return <div key={i} className="py-0.5">{line}</div>;
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Collection list view ──
+  return (
+    <div className="flex flex-col h-full">
+      {/* Search */}
+      <div className="relative mb-2">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search notes..."
+          className="w-full rounded-lg px-3 py-1.5 text-[11px] outline-none pr-7"
+          style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
+        />
+        <Search size={11} className="absolute right-2.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-faint)' }} />
+      </div>
+
+      {/* Notes */}
+      <div className="flex-1 overflow-y-auto space-y-0.5">
+        {filtered.length === 0 ? (
+          <div className="text-center py-6">
+            <span className="text-[10px]" style={{ color: 'var(--text-faint)' }}>No notes found</span>
+          </div>
+        ) : (
+          filtered.map((note) => {
+            const preview = note.content
+              .split('\n')
+              .find((l) => l.trim() && !l.startsWith('#') && !l.startsWith('```'));
+            return (
+              <div
+                key={note.id}
+                onClick={() => setSelectedNote(note)}
+                className="px-2.5 py-2 rounded-lg cursor-pointer transition-colors"
+                style={{ background: 'transparent' }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+              >
+                <div className="flex items-start gap-2">
+                  <FileText size={12} className="flex-shrink-0 mt-0.5" style={{ color: '#7c3aed' }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[11px] font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+                      {note.title}
+                    </div>
+                    {preview && (
+                      <div className="text-[10px] mt-0.5 truncate" style={{ color: 'var(--text-faint)' }}>
+                        {preview.slice(0, 60)}{preview.length > 60 ? '...' : ''}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <span className="text-[9px]" style={{ color: 'var(--text-faint)' }}>
+                        {note.folder}
+                      </span>
+                      {note.tags.slice(0, 2).map((t) => (
+                        <span key={t} className="text-[8px] px-1 py-0.5 rounded" style={{ background: '#7c3aed12', color: '#7c3aed' }}>
+                          #{t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <ChevronRight size={12} style={{ color: 'var(--text-faint)', flexShrink: 0, marginTop: 2 }} />
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="pt-2 mt-1 text-center" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+        <span className="text-[9px]" style={{ color: 'var(--text-faint)' }}>
+          {notes.length} notes &middot; {[...new Set(notes.map((n) => n.folder))].length} folders
+        </span>
+      </div>
+    </div>
+  );
+};
+
 // ─── Built-in Plugins ────────────────────────────────────────────────────────
 export const BUILT_IN_PLUGINS: ForgePlugin[] = [
   createForgePlugin({
@@ -611,5 +793,26 @@ export const BUILT_IN_PLUGINS: ForgePlugin[] = [
       { key: 'vault.path', label: 'Vault Path', type: 'text', defaultValue: '' },
       { key: 'vault.connected', label: 'Connected', type: 'toggle', defaultValue: false },
     ],
+  }),
+
+  createForgePlugin({
+    id: 'forge-obsidian-collection',
+    name: 'Obsidian Collection Viewer',
+    description: 'A dashboard widget to browse, search, and interact with your Obsidian vault notes. View markdown content, edit inline, and navigate between notes without leaving the dashboard.',
+    version: '1.0.0',
+    author: 'DevDock Team',
+    icon: 'BookOpen',
+    category: 'widget',
+    context: 'dashboard',
+    enabled: true,
+    tags: ['obsidian', 'notes', 'markdown', 'dashboard', 'widget', 'collection'],
+    widgets: [{
+      id: 'plugin:obsidian:collection',
+      title: 'Obsidian Collection',
+      icon: '📓',
+      description: 'Browse and interact with Obsidian vault notes',
+      defaultSize: 'md',
+      component: ObsidianCollectionWidget,
+    }],
   }),
 ];
