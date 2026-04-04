@@ -85,7 +85,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
       <NavLink
         key={to}
         to={to}
-        end={to === '/'}
+        end
         title={collapsed ? label : undefined}
         className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : 'px-3 py-[10px]'} rounded-md text-[13px] font-medium transition-all duration-200`}
         style={({ isActive }) => ({ ...navLinkStyle(isActive), ...(indent && !collapsed ? { marginLeft: 44 } : {}) })}
