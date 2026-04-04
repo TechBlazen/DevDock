@@ -127,6 +127,17 @@ export const DocList = ({ onImport }: DocListProps) => {
                 }}>
                   {doc.title}
                 </div>
+                {(() => {
+                  const desc = doc.content
+                    .split('\n')
+                    .map((l) => l.trim())
+                    .find((l) => l && !l.startsWith('#') && !l.startsWith('```') && !l.startsWith('---'));
+                  return desc ? (
+                    <div className="text-[10px] mt-0.5 line-clamp-2 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                      {desc.length > 80 ? desc.slice(0, 80) + '...' : desc}
+                    </div>
+                  ) : null;
+                })()}
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
                     {formatDistanceToNow(new Date(doc.updatedAt), { addSuffix: true })}
