@@ -6,13 +6,16 @@ import { ForumSortBar } from './ForumSortBar';
 import { ForumCategoryFilter } from './ForumCategoryFilter';
 import { ForumThreadCard } from './ForumThreadCard';
 import { ForumTopContributors } from './ForumTopContributors';
+import { ForumTopFeatureRequests } from './ForumTopFeatureRequests';
 import { ForumAskModal } from './ForumAskModal';
+import { FeatureRequestModal } from './FeatureRequestModal';
 import { useForumStore } from '../../store';
 
 export const ForumListView = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [askModalOpen, setAskModalOpen] = useState(false);
+  const [featureModalOpen, setFeatureModalOpen] = useState(false);
 
   const sortBy = useForumStore((s) => s.sortBy);
   const filterCategory = useForumStore((s) => s.filterCategory);
@@ -104,12 +107,14 @@ export const ForumListView = () => {
         </div>
 
         {/* Sidebar */}
-        <div className="w-[280px] shrink-0 hidden lg:block">
+        <div className="w-[280px] shrink-0 hidden lg:flex flex-col gap-5">
+          <ForumTopFeatureRequests onSubmitClick={() => setFeatureModalOpen(true)} />
           <ForumTopContributors />
         </div>
       </div>
 
       <ForumAskModal isOpen={askModalOpen} onClose={() => setAskModalOpen(false)} />
+      <FeatureRequestModal isOpen={featureModalOpen} onClose={() => setFeatureModalOpen(false)} />
     </>
   );
 };
