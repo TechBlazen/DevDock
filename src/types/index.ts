@@ -145,6 +145,33 @@ export interface DashboardWidget {
   defaultSize: 'sm' | 'md' | 'lg';
 }
 
+// ─── Widget Submission Types ──────────────────────────────────────────────────
+export type WidgetContentType = 'markdown' | 'iframe' | 'link';
+export type WidgetSubmissionStatus = 'pending' | 'approved' | 'rejected';
+
+export interface WidgetContentConfig {
+  type: WidgetContentType;
+  markdown?: string;
+  url?: string;
+  iframeHeight?: number;
+}
+
+export interface WidgetSubmission {
+  id: string;
+  title: string;
+  icon: string;
+  description: string;
+  defaultSize: 'sm' | 'md' | 'lg';
+  content: WidgetContentConfig;
+  status: WidgetSubmissionStatus;
+  submittedBy: string;
+  submittedByName: string;
+  submittedAt: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
+}
+
 // ─── Settings Types ───────────────────────────────────────────────────────────
 export interface GitHubConfig {
   accessToken: string;
