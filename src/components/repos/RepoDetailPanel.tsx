@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import {
   GitCommit, GitPullRequest, Hammer, ExternalLink,
   CheckCircle2, XCircle, Clock, Loader2, AlertTriangle,
-  ChevronRight,
+  ChevronRight, FileText,
 } from 'lucide-react';
-import { useSettingsStore } from '../../store';
+import { useSettingsStore, useDocsStore } from '../../store';
 import { parseRepoUrl } from '../../lib/repos';
 import type { Repository, RepoCommit, RepoMerge, RepoBuild, MergeStatus, BuildStatus } from '../../types';
 import {
@@ -12,7 +12,7 @@ import {
   fetchADOCommits, fetchADOPRs, fetchADOBuilds,
 } from '../../lib/repos';
 
-type Tab = 'commits' | 'merges' | 'builds';
+type Tab = 'commits' | 'merges' | 'builds' | 'docs';
 
 // ─── Seed data (used when no API token is configured) ────────────────────────
 const SEED_COMMITS: Record<string, RepoCommit[]> = {
@@ -211,10 +211,15 @@ export const RepoDetailPanel = ({ repo }: { repo: Repository }) => {
     return () => { cancelled = true; };
   }, [repo.id, repo.source, repo.webUrl, ghToken, adoPat]);
 
+  const allDocs = useDocsStore((s) => s.docs);
+  const setActiveDoc = useDocsStore((s) => s.setActiveDoc);
+  const repoDocs = allDocs.filter((d) => d.tags?.includes('auto-imported') && d.tags?.includes(repo.name));
+
   const tabs: { key: Tab; label: string; icon: typeof GitCommit; count: number }[] = [
     { key: 'commits', label: 'Commits', icon: GitCommit, count: commits.length },
     { key: 'merges',  label: 'Merges',  icon: GitPullRequest, count: merges.length },
     { key: 'builds',  label: 'Builds',  icon: Hammer, count: builds.length },
+    { key: 'docs',    label: 'Docs',    icon: FileText, count: repoDocs.length },
   ];
 
   return (
@@ -383,6 +388,35 @@ export const RepoDetailPanel = ({ repo }: { repo: Repository }) => {
               </a>
             );
           })}
+        </div>
+      )}
+
+      {/* Docs tab */}
+      {!loading && tab === 'docs' && (
+        <div className="space-y-1 max-h-[220px] overflow-y-auto pr-1">
+          {repoDocs.length === 0 && <EmptyState label="No markdown files imported" />}
+          {repoDocs.map((doc) => (
+            <a
+              key={doc.id}
+              href={`/docs`}
+              onClick={(e) => { e.preventDefault(); setActiveDoc(doc.id); window.location.href = '/docs'; }}
+              className="flex items-start gap-2 px-2 py-1.5 rounded-lg transition-colors group"
+              style={{ textDecoration: 'none', color: 'inherit' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            >
+              <FileText size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--accent)' }} />
+              <div className="flex-1 min-w-0">
+                <div className="font-medium truncate" style={{ fontSize: '12px', color: 'var(--text-primary)' }}>{doc.title}</div>
+                <div className="mt-0.5" style={{ fontSize: '11px', color: 'var(--text-faint)' }}>
+                  {doc.sourceUrl && (
+                    <span className="truncate block" style={{ maxWidth: 300 }}>{doc.sourceUrl.split('/').pop()}</span>
+                  )}
+                </div>
+              </div>
+              <ExternalLink size={11} className="flex-shrink-0 mt-1 opacity-0 group-hover:opacity-60 transition-opacity" style={{ color: 'var(--text-muted)' }} />
+            </a>
+          ))}
         </div>
       )}
 
