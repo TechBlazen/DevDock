@@ -114,9 +114,9 @@ const getVariantStyle = (variant: NonNullable<ButtonProps['variant']>) => {
 };
 
 const sizePadding: Record<NonNullable<ButtonProps['size']>, { padding: string; fontSize: number }> = {
-  sm: { padding: '6px 16px', fontSize: 12 },
-  md: { padding: '8px 20px', fontSize: 13 },
-  lg: { padding: '10px 28px', fontSize: 14 },
+  sm: { padding: '3px 8px', fontSize: 12 },
+  md: { padding: '4px 10px', fontSize: 13 },
+  lg: { padding: '5px 14px', fontSize: 14 },
 };
 
 export const Button = ({ variant = 'ghost', size = 'md', className, children, ...props }: ButtonProps) => (
