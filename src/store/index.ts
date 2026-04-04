@@ -187,6 +187,67 @@ export const useSettingsStore = create<SettingsStore>()(
       name: 'devdock-settings',
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ settings: s.settings }),
+      merge: (persisted, current) => {
+        const state = persisted as { settings?: AppSettings } | undefined;
+        if (!state?.settings) return current;
+
+        const merged = { ...current, settings: { ...current.settings, ...state.settings } };
+
+        // Migrate navigation: merge new default items into persisted nav
+        if (merged.settings.navigation?.items && defaultNavigation.items) {
+          const existingIds = new Set<string>();
+          const collectIds = (items: typeof defaultNavigation.items) => {
+            for (const item of items) {
+              existingIds.add(item.id);
+              if (item.type === 'group') {
+                for (const child of item.children) existingIds.add(child.id);
+              }
+            }
+          };
+          collectIds(merged.settings.navigation.items);
+
+          // Find items in default nav that don't exist in persisted nav
+          for (const defaultItem of defaultNavigation.items) {
+            if (!existingIds.has(defaultItem.id)) {
+              // If the default item is a group that replaces a link with the same route, swap it
+              if (defaultItem.type === 'group') {
+                const idx = merged.settings.navigation.items.findIndex(
+                  (i) => i.type === 'link' && 'route' in i && i.route === defaultItem.route
+                );
+                if (idx !== -1) {
+                  merged.settings.navigation.items[idx] = defaultItem;
+                  continue;
+                }
+              }
+              // Otherwise append before the admin divider
+              const adminDivIdx = merged.settings.navigation.items.findIndex((i) => i.id === 'div-admin');
+              if (adminDivIdx !== -1) {
+                merged.settings.navigation.items.splice(adminDivIdx, 0, defaultItem);
+              } else {
+                merged.settings.navigation.items.push(defaultItem);
+              }
+            } else if (defaultItem.type === 'group') {
+              // Group exists — merge any new children
+              const existingItem = merged.settings.navigation.items.find((i) => i.id === defaultItem.id);
+              if (existingItem && existingItem.type === 'group') {
+                const existingChildIds = new Set(existingItem.children.map((c) => c.id));
+                for (const child of defaultItem.children) {
+                  if (!existingChildIds.has(child.id)) {
+                    existingItem.children.push(child);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // Ensure new settings fields have defaults
+        if (!merged.settings.googleDrive) {
+          merged.settings.googleDrive = defaultSettings.googleDrive;
+        }
+
+        return merged;
+      },
     }
   )
 );
