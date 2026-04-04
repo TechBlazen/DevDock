@@ -403,6 +403,32 @@ export interface ForumUserReputation {
   acceptedCount: number;
 }
 
+// ─── Feature Request Types ──────────────────────────────────────────────────
+export type FeatureRequestStatus = 'open' | 'planned' | 'in-progress' | 'completed' | 'declined';
+
+export interface FeatureRequestAttachment {
+  id: string;
+  name: string;
+  url: string;        // data URL for local uploads
+  type: string;       // MIME type
+  size: number;       // bytes
+}
+
+export interface FeatureRequest {
+  id: string;
+  title: string;
+  description: string;
+  authorId: string;
+  authorName: string;
+  authorAvatarUrl?: string;
+  status: FeatureRequestStatus;
+  votes: ForumVote[];
+  attachments: FeatureRequestAttachment[];
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ─── Analytics Types ─────────────────────────────────────────────────────────
 export interface PageView {
   id: string;

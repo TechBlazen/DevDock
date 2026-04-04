@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
-import type { ForumThread, ForumAnswer, ForumCategory, ForumUserReputation, ReputationTier } from '../types';
+import type { ForumThread, ForumAnswer, ForumCategory, ForumUserReputation, ReputationTier, FeatureRequest, FeatureRequestAttachment } from '../types';
 import { getTier } from '../lib/forum-constants';
 
 // ─── Seed Data ──────────────────────────────────────────────────────────────
@@ -67,6 +67,68 @@ const seedThreads: ForumThread[] = [
   },
 ];
 
+// ─── Feature Request Seed Data ──────────────────────────────────────────────
+const seedFeatureRequests: FeatureRequest[] = [
+  {
+    id: 'fr1', title: 'GitLab Repository Integration', description: 'Add support for browsing and managing GitLab repositories alongside GitHub and Azure DevOps. Should include personal access token auth, group/project browsing, and the same metadata editing as existing repos.',
+    authorId: 'seed-carol', authorName: 'Carol Davis', authorAvatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=CD',
+    status: 'planned',
+    votes: [
+      { userId: 'seed-alice', value: 1, createdAt: ago(200) }, { userId: 'seed-bob', value: 1, createdAt: ago(180) },
+      { userId: 'seed-dave', value: 1, createdAt: ago(150) }, { userId: 'seed-eve', value: 1, createdAt: ago(120) },
+      { userId: 'seed-frank', value: 1, createdAt: ago(100) }, { userId: 'seed-grace', value: 1, createdAt: ago(80) },
+      { userId: 'seed-henry', value: 1, createdAt: ago(60) }, { userId: 'seed-iris', value: 1, createdAt: ago(40) },
+      { userId: 'seed-jack', value: 1, createdAt: ago(20) }, { userId: 'seed-kate', value: 1, createdAt: ago(10) },
+      { userId: 'seed-leo', value: 1, createdAt: ago(5) }, { userId: 'seed-mia', value: 1, createdAt: ago(2) },
+    ],
+    attachments: [], tags: ['Engineering', 'CI/CD'], createdAt: ago(240), updatedAt: ago(2),
+  },
+  {
+    id: 'fr2', title: 'Dark/Light Theme Scheduler', description: 'Allow users to schedule automatic theme switching based on time of day — e.g. light mode during working hours and dark mode in the evening. Could also tie into OS-level dark mode settings.',
+    authorId: 'seed-alice', authorName: 'Alice Chen', authorAvatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=AC',
+    status: 'open',
+    votes: [
+      { userId: 'seed-bob', value: 1, createdAt: ago(100) }, { userId: 'seed-carol', value: 1, createdAt: ago(90) },
+      { userId: 'seed-dave', value: 1, createdAt: ago(70) }, { userId: 'seed-eve', value: 1, createdAt: ago(50) },
+      { userId: 'seed-frank', value: 1, createdAt: ago(30) }, { userId: 'seed-grace', value: 1, createdAt: ago(15) },
+      { userId: 'seed-henry', value: 1, createdAt: ago(8) },
+    ],
+    attachments: [], tags: ['Platform'], createdAt: ago(168), updatedAt: ago(8),
+  },
+  {
+    id: 'fr3', title: 'Slack & Teams Notifications', description: 'Push notifications to Slack or Microsoft Teams when key events happen — new deployments, build failures, OTel alerts, or forum mentions. Should be configurable per-channel and per-event type.',
+    authorId: 'seed-frank', authorName: 'Frank Lee', authorAvatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=FL',
+    status: 'open',
+    votes: [
+      { userId: 'seed-alice', value: 1, createdAt: ago(80) }, { userId: 'seed-bob', value: 1, createdAt: ago(70) },
+      { userId: 'seed-carol', value: 1, createdAt: ago(60) }, { userId: 'seed-dave', value: 1, createdAt: ago(40) },
+      { userId: 'seed-eve', value: 1, createdAt: ago(20) }, { userId: 'seed-grace', value: 1, createdAt: ago(10) },
+    ],
+    attachments: [], tags: ['DevOps', 'Platform'], createdAt: ago(120), updatedAt: ago(10),
+  },
+  {
+    id: 'fr4', title: 'Custom Dashboard Widget Builder', description: 'Let users create their own dashboard widgets using a visual builder or by writing custom React components. Would enable embedding Grafana panels, custom metrics, or team-specific tools.',
+    authorId: 'seed-bob', authorName: 'Bob Martinez', authorAvatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=BM',
+    status: 'in-progress',
+    votes: [
+      { userId: 'seed-alice', value: 1, createdAt: ago(150) }, { userId: 'seed-carol', value: 1, createdAt: ago(140) },
+      { userId: 'seed-dave', value: 1, createdAt: ago(130) }, { userId: 'seed-eve', value: 1, createdAt: ago(110) },
+      { userId: 'seed-frank', value: 1, createdAt: ago(90) },
+    ],
+    attachments: [], tags: ['Engineering', 'React'], createdAt: ago(200), updatedAt: ago(24),
+  },
+  {
+    id: 'fr5', title: 'API Rate Limit Dashboard', description: 'A dedicated view showing API rate limit usage across all configured providers (GitHub, ADO, AI providers). Show remaining quota, reset times, and historical usage graphs.',
+    authorId: 'seed-eve', authorName: 'Eve Taylor', authorAvatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=ET',
+    status: 'open',
+    votes: [
+      { userId: 'seed-alice', value: 1, createdAt: ago(48) }, { userId: 'seed-bob', value: 1, createdAt: ago(36) },
+      { userId: 'seed-frank', value: 1, createdAt: ago(24) },
+    ],
+    attachments: [], tags: ['Platform', 'Monitoring'], createdAt: ago(72), updatedAt: ago(24),
+  },
+];
+
 // ─── Store ──────────────────────────────────────────────────────────────────
 interface ForumStore {
   threads: ForumThread[];
@@ -96,6 +158,13 @@ interface ForumStore {
   getReputation: (userId: string) => ForumUserReputation;
   getTopContributors: (limit?: number) => ForumUserReputation[];
   getSortedFilteredThreads: (searchQuery?: string) => ForumThread[];
+
+  // Feature requests
+  featureRequests: FeatureRequest[];
+  addFeatureRequest: (req: Omit<FeatureRequest, 'id' | 'votes' | 'status' | 'createdAt' | 'updatedAt'>) => string;
+  voteFeatureRequest: (id: string, userId: string, value: 1 | -1) => void;
+  updateFeatureRequestStatus: (id: string, status: FeatureRequest['status']) => void;
+  getTopFeatureRequests: (limit?: number) => FeatureRequest[];
 }
 
 function applyVote(votes: { userId: string; value: 1 | -1; createdAt: string }[], userId: string, value: 1 | -1) {
@@ -233,6 +302,35 @@ export const useForumStore = create<ForumStore>()(
         return [...userIds].map((id) => get().getReputation(id)).sort((a, b) => b.points - a.points).slice(0, limit);
       },
 
+      // ─── Feature Requests ────────────────────────────────────────────────
+      featureRequests: seedFeatureRequests,
+
+      addFeatureRequest: (req) => {
+        const id = nanoid();
+        const now = new Date().toISOString();
+        const full: FeatureRequest = { ...req, id, votes: [], status: 'open', createdAt: now, updatedAt: now };
+        set((s) => ({ featureRequests: [full, ...s.featureRequests] }));
+        return id;
+      },
+
+      voteFeatureRequest: (id, userId, value) =>
+        set((s) => ({
+          featureRequests: s.featureRequests.map((fr) =>
+            fr.id === id ? { ...fr, votes: applyVote(fr.votes, userId, value) } : fr
+          ),
+        })),
+
+      updateFeatureRequestStatus: (id, status) =>
+        set((s) => ({
+          featureRequests: s.featureRequests.map((fr) =>
+            fr.id === id ? { ...fr, status, updatedAt: new Date().toISOString() } : fr
+          ),
+        })),
+
+      getTopFeatureRequests: (limit = 10) => {
+        return [...get().featureRequests].sort((a, b) => voteScore(b.votes) - voteScore(a.votes)).slice(0, limit);
+      },
+
       getSortedFilteredThreads: (searchQuery) => {
         const { threads, sortBy, filterCategory, filterTag } = get();
         let result = [...threads];
@@ -261,13 +359,22 @@ export const useForumStore = create<ForumStore>()(
     {
       name: 'devdock-forum',
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ threads: s.threads }),
+      partialize: (s) => ({ threads: s.threads, featureRequests: s.featureRequests }),
       merge: (persisted, current) => {
         const p = persisted as Partial<ForumStore> | undefined;
         const existingThreads = p?.threads ?? [];
-        const existingIds = new Set(existingThreads.map((t) => t.id));
-        const missingSeeds = seedThreads.filter((t) => !existingIds.has(t.id));
-        return { ...current, threads: [...existingThreads, ...missingSeeds] };
+        const threadIds = new Set(existingThreads.map((t) => t.id));
+        const missingThreadSeeds = seedThreads.filter((t) => !threadIds.has(t.id));
+
+        const existingFRs = p?.featureRequests ?? [];
+        const frIds = new Set(existingFRs.map((f) => f.id));
+        const missingFRSeeds = seedFeatureRequests.filter((f) => !frIds.has(f.id));
+
+        return {
+          ...current,
+          threads: [...existingThreads, ...missingThreadSeeds],
+          featureRequests: [...existingFRs, ...missingFRSeeds],
+        };
       },
     }
   )
