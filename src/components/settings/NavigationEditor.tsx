@@ -217,7 +217,7 @@ const GroupChildrenEditor = ({
   };
 
   return (
-    <div className="ml-6 mt-2 space-y-1">
+    <div className="mt-2 space-y-1" style={{ marginLeft: 40 }}
       {children.map((child, idx) => {
         const Icon = getIcon(child.icon);
         if (editingId === child.id) {
