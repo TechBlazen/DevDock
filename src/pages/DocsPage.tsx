@@ -20,6 +20,8 @@ export const DocsPage = () => {
         borderRight: '1px solid var(--border-subtle)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
+        paddingLeft: 12,
+        paddingTop: 12,
       }}>
         <DocList onImport={() => setShowImport(true)} />
       </div>
