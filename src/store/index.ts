@@ -25,7 +25,7 @@ import type {
 } from '../types';
 import { nanoid } from 'nanoid';
 import { createGuestUser } from '../lib/auth';
-import { SEED_ADMIN, ROLE_PERMISSIONS, hashPassword, verifyPassword } from '../lib/rbac';
+import { SEED_ACCOUNTS, ROLE_PERMISSIONS, hashPassword, verifyPassword } from '../lib/rbac';
 
 // ─── User Preferences Defaults ───────────────────────────────────────────────
 export const DEFAULT_PREFERENCES: UserPreferences = {
@@ -749,7 +749,7 @@ interface UserAccountsStore {
 export const useUserAccountsStore = create<UserAccountsStore>()(
   persist(
     (set, get) => ({
-      accounts: [SEED_ADMIN],
+      accounts: SEED_ACCOUNTS,
 
       addAccount: (username, password, displayName, role, email) => {
         const existing = get().accounts.find((a) => a.username === username);
@@ -875,10 +875,12 @@ export const useUserAccountsStore = create<UserAccountsStore>()(
       merge: (persisted, current) => {
         const p = persisted as Partial<UserAccountsStore> | undefined;
         const accounts = p?.accounts ?? [];
-        // Ensure admin always exists
-        if (!accounts.find((a) => a.username === 'admin')) {
-          accounts.push(SEED_ADMIN);
-        }
+        // Ensure all seed accounts exist
+        SEED_ACCOUNTS.forEach((seed) => {
+          if (!accounts.find((a) => a.username === seed.username)) {
+            accounts.push(seed);
+          }
+        });
         return { ...current, accounts };
       },
     }

@@ -67,6 +67,7 @@ interface WidgetWrapperProps {
   onRemove: () => void;
   catalog: DashboardWidget[];
   pluginComponents: Record<string, React.ComponentType>;
+  isAdmin: boolean;
   dragHandleProps: {
     draggable: boolean;
     onDragStart: (e: React.DragEvent) => void;
@@ -77,7 +78,7 @@ interface WidgetWrapperProps {
   };
 }
 
-const WidgetWrapper = ({ id, editMode, isDragging, isDragOver, onRemove, catalog, pluginComponents, dragHandleProps }: WidgetWrapperProps) => {
+const WidgetWrapper = ({ id, editMode, isDragging, isDragOver, onRemove, catalog, pluginComponents, isAdmin, dragHandleProps }: WidgetWrapperProps) => {
   const meta = widgetMeta(id, catalog);
 
   return (
@@ -106,7 +107,7 @@ const WidgetWrapper = ({ id, editMode, isDragging, isDragOver, onRemove, catalog
           </span>
         </div>
 
-        {editMode && (
+        {editMode && isAdmin && (
           <button
             onClick={(e) => { e.stopPropagation(); onRemove(); }}
             className="w-5 h-5 flex items-center justify-center rounded bg-[#ff475715] text-[#ff4757] hover:bg-[#ff475730] transition-colors flex-shrink-0"
@@ -223,6 +224,7 @@ export const DashboardGrid = ({ editMode }: { editMode: boolean }) => {
   const userAccount = accounts.find((a) => a.id === currentUser?.id);
   const rawWidgets = userAccount?.dashboardWidgets ?? settings.dashboardWidgets;
   const userPerms = userAccount?.permissions;
+  const isAdmin = currentUser?.role === 'admin';
 
   // Filter widgets by RBAC permissions
   const widgets = userPerms
@@ -277,6 +279,7 @@ export const DashboardGrid = ({ editMode }: { editMode: boolean }) => {
             onRemove={() => saveWidgets(widgets.filter((w) => w !== id))}
             catalog={allWidgetCatalog}
             pluginComponents={widgetComponents}
+            isAdmin={isAdmin}
             dragHandleProps={{
               draggable: editMode,
               onDragStart: (e) => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', id); setDragSrc(id); },
@@ -288,7 +291,7 @@ export const DashboardGrid = ({ editMode }: { editMode: boolean }) => {
           />
         ))}
 
-        {editMode && (
+        {editMode && isAdmin && (
           <AddWidgetPlaceholder onOpen={() => setShowCatalog(true)} />
         )}
       </div>

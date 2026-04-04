@@ -4,7 +4,7 @@ import {
   ChevronDown, ChevronUp, Globe, Layout, Link2,
   type LucideIcon,
 } from 'lucide-react';
-import { usePluginStore } from '../store';
+import { usePluginStore, useAuthStore } from '../store';
 import { SectionTitle, Card, Pill, Toggle } from '../components/ui';
 import type { PluginCategory } from '../types';
 
@@ -31,8 +31,10 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export const PluginsPage = () => {
   const { plugins, enabledPlugins, togglePlugin } = usePluginStore();
+  const currentUser = useAuthStore((s) => s.user);
   const [filter, setFilter] = useState<string>('all');
   const [expanded, setExpanded] = useState<string | null>(null);
+  const isAdmin = currentUser?.role === 'admin';
 
   const filtered = filter === 'all' ? plugins : plugins.filter((p) => p.category === filter);
   const enabledCount = plugins.filter((p) => enabledPlugins[p.id]).length;
@@ -44,6 +46,17 @@ export const PluginsPage = () => {
       <SectionTitle sub="Browse, enable, and develop plugins that extend DevDock.">
         Plugin Marketplace
       </SectionTitle>
+
+      {!isAdmin && (
+        <div className="mb-5 px-4 py-3 rounded-xl flex items-center gap-2" style={{
+          background: 'rgba(239,68,68,0.08)',
+          border: '1px solid rgba(239,68,68,0.2)',
+          color: '#ef4444',
+        }}>
+          <ShieldCheck size={16} />
+          <span className="text-xs font-medium">Only administrators can enable or disable plugins. Contact an admin to modify plugin settings.</span>
+        </div>
+      )}
 
       {/* Summary chips */}
       <div className="flex gap-2 mb-5 flex-wrap">
@@ -123,6 +136,7 @@ export const PluginsPage = () => {
                     checked={isEnabled}
                     onChange={() => togglePlugin(plugin.id)}
                     color={color}
+                    disabled={!isAdmin}
                   />
                 </div>
 
