@@ -16,6 +16,7 @@ const CATEGORIES: { value: SearchCategory | null; label: string }[] = [
   { value: 'telemetry', label: 'Telemetry' },
   { value: 'activity', label: 'Activity' },
   { value: 'forum', label: 'Forum' },
+  { value: 'federated', label: 'External' },
 ];
 
 export function CommandPalette() {

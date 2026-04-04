@@ -11,6 +11,7 @@ import { registerBookmarkRoutes } from './routes/bookmarks.js';
 import { registerDocRoutes } from './routes/docs.js';
 import { registerPluginRoutes } from './routes/plugins.js';
 import { registerAnalyticsRoutes } from './routes/analytics.js';
+import { registerFederatedSourceRoutes } from './routes/federated-sources.js';
 
 async function main() {
   const config = loadConfig();
@@ -44,6 +45,7 @@ async function main() {
   registerDocRoutes(app, db, config.jwtSecret);
   registerPluginRoutes(app, db, config.jwtSecret);
   registerAnalyticsRoutes(app, db, config.jwtSecret);
+  registerFederatedSourceRoutes(app, db, config.jwtSecret);
 
   // Graceful shutdown
   const shutdown = async () => {

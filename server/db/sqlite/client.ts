@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 import type {
   DatabaseProvider, UserRow, RepoRow, SettingsRow,
   BookmarkRow, CollectionRow, DocRow, PluginStateRow,
-  PageViewRow, ErrorRow,
+  PageViewRow, ErrorRow, FederatedSourceRow, FederatedDocumentRow,
 } from '../provider.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -240,6 +240,62 @@ export class SqliteProvider implements DatabaseProvider {
 
   async getErrors(limit = 100): Promise<ErrorRow[]> {
     return this.db.prepare('SELECT * FROM analytics_errors ORDER BY timestamp DESC LIMIT ?').all(limit) as ErrorRow[];
+  }
+
+  // ─── Federated Sources ──────────────────────────────────────────────────────
+  async getFederatedSources(): Promise<FederatedSourceRow[]> {
+    return this.db.prepare('SELECT * FROM federated_sources ORDER BY created_at DESC').all() as FederatedSourceRow[];
+  }
+
+  async getFederatedSourceById(id: string): Promise<FederatedSourceRow | null> {
+    return (this.db.prepare('SELECT * FROM federated_sources WHERE id = ?').get(id) as FederatedSourceRow) ?? null;
+  }
+
+  async createFederatedSource(source: FederatedSourceRow): Promise<FederatedSourceRow> {
+    const s = nullify(source);
+    this.db.prepare(`
+      INSERT INTO federated_sources (id, name, type, endpoint_url, auth_type, auth_config, result_mapping, trigger_config, sync_interval_minutes, last_synced_at, document_count, enabled, created_by, created_at, updated_at)
+      VALUES (@id, @name, @type, @endpoint_url, @auth_type, @auth_config, @result_mapping, @trigger_config, @sync_interval_minutes, @last_synced_at, @document_count, @enabled, @created_by, @created_at, @updated_at)
+    `).run(s);
+    return source;
+  }
+
+  async updateFederatedSource(id: string, partial: Partial<FederatedSourceRow>): Promise<FederatedSourceRow | null> {
+    const existing = await this.getFederatedSourceById(id);
+    if (!existing) return null;
+    const sets = Object.keys(partial).filter((k) => k !== 'id').map((k) => `${k} = @${k}`).join(', ');
+    if (!sets) return existing;
+    this.db.prepare(`UPDATE federated_sources SET ${sets} WHERE id = @id`).run(nullify({ ...partial, id }));
+    return this.getFederatedSourceById(id);
+  }
+
+  async deleteFederatedSource(id: string): Promise<void> {
+    this.db.prepare('DELETE FROM federated_sources WHERE id = ?').run(id);
+  }
+
+  // ─── Federated Documents ────────────────────────────────────────────────────
+  async getFederatedDocuments(sourceId: string): Promise<FederatedDocumentRow[]> {
+    return this.db.prepare('SELECT * FROM federated_documents WHERE source_id = ?').all(sourceId) as FederatedDocumentRow[];
+  }
+
+  async getAllFederatedDocuments(): Promise<FederatedDocumentRow[]> {
+    return this.db.prepare('SELECT * FROM federated_documents').all() as FederatedDocumentRow[];
+  }
+
+  async replaceFederatedDocuments(sourceId: string, docs: FederatedDocumentRow[]): Promise<void> {
+    const tx = this.db.transaction(() => {
+      this.db.prepare('DELETE FROM federated_documents WHERE source_id = ?').run(sourceId);
+      const insert = this.db.prepare(`
+        INSERT INTO federated_documents (id, source_id, title, description, url, icon, tags, content, extra, meta, fetched_at)
+        VALUES (@id, @source_id, @title, @description, @url, @icon, @tags, @content, @extra, @meta, @fetched_at)
+      `);
+      for (const doc of docs) { insert.run(nullify(doc)); }
+    });
+    tx();
+  }
+
+  async deleteFederatedDocumentsBySource(sourceId: string): Promise<void> {
+    this.db.prepare('DELETE FROM federated_documents WHERE source_id = ?').run(sourceId);
   }
 }
 

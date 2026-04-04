@@ -8,6 +8,7 @@ import { createScaffoldSource } from './scaffold-source';
 import { createTelemetrySource } from './telemetry-source';
 import { createActivitySource } from './activity-source';
 import { createForumSource } from './forum-source';
+import { createFederatedSource } from './federated-source';
 
 export function createSearchSources(): SearchSource[] {
   return [
@@ -19,5 +20,6 @@ export function createSearchSources(): SearchSource[] {
     createTelemetrySource(useTelemetryStore.getState),
     createActivitySource(useActivityStore.getState),
     createForumSource(useForumStore.getState),
+    createFederatedSource(),
   ];
 }

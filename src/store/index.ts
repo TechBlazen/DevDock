@@ -901,6 +901,9 @@ export { useAnalyticsStore } from './analytics-store';
 // ─── Widget Submission Store (re-export) ────────────────────────────────────
 export { useWidgetSubmissionStore } from './widget-submission-store';
 
+// ─── Federated Source Store (re-export) ─────────────────────────────────────
+export { useFederatedSourceStore } from './federated-source-store';
+
 // ─── Bookmark Store ──────────────────────────────────────────────────────────
 interface BookmarkStore {
   bookmarks: Bookmark[];
