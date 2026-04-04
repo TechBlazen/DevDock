@@ -1,11 +1,10 @@
 import type { ForumCategory, ForumDepartment, ForumTechnology, ReputationTier } from '../types';
 
 export const FORUM_CATEGORIES: { value: ForumCategory; label: string; color: string }[] = [
-  { value: 'bug',             label: 'Bug',             color: '#d32f2f' },
-  { value: 'feature-request', label: 'Feature Request', color: '#7c3aed' },
-  { value: 'question',        label: 'Question',        color: '#005DAA' },
-  { value: 'discussion',      label: 'Discussion',      color: '#2e7d32' },
-  { value: 'how-to',          label: 'How-To',          color: '#ed6c02' },
+  { value: 'bug',        label: 'Bug',        color: '#d32f2f' },
+  { value: 'question',   label: 'Question',   color: '#005DAA' },
+  { value: 'discussion', label: 'Discussion', color: '#2e7d32' },
+  { value: 'how-to',     label: 'How-To',     color: '#ed6c02' },
 ];
 
 export const DEPARTMENTS: ForumDepartment[] = ['Engineering', 'DevOps', 'Platform', 'Security', 'Data'];

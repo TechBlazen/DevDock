@@ -31,15 +31,6 @@ const seedThreads: ForumThread[] = [
     viewCount: 120, acceptedAnswerId: null, createdAt: ago(72), updatedAt: ago(40),
   },
   {
-    id: 'ft3', title: 'Feature request: Support for GitLab repositories', body: '## Proposal\nDevDock currently supports GitHub and Azure DevOps. It would be great to add GitLab support as well.\n\n## Use case\nOur team uses GitLab for internal projects and GitHub for open-source. Having both in one portal would be a huge productivity boost.\n\n## Suggested approach\n- GitLab API v4 integration\n- Personal access token auth\n- Group and project browsing', category: 'feature-request', tags: ['Engineering', 'CI/CD'],
-    authorId: 'seed-carol', authorName: 'Carol Davis', authorAvatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=CD',
-    votes: [{ userId: 'seed-alice', value: 1, createdAt: ago(100) }, { userId: 'seed-bob', value: 1, createdAt: ago(90) }, { userId: 'seed-dave', value: 1, createdAt: ago(85) }, { userId: 'seed-eve', value: 1, createdAt: ago(80) }, { userId: 'seed-frank', value: 1, createdAt: ago(75) }, { userId: 'seed-grace', value: 1, createdAt: ago(60) }, { userId: 'seed-henry', value: 1, createdAt: ago(50) }, { userId: 'seed-iris', value: 1, createdAt: ago(40) }, { userId: 'seed-jack', value: 1, createdAt: ago(30) }, { userId: 'seed-kate', value: 1, createdAt: ago(20) }, { userId: 'seed-leo', value: 1, createdAt: ago(10) }, { userId: 'seed-mia', value: 1, createdAt: ago(5) }],
-    answers: [
-      { id: 'fa6', threadId: 'ft3', authorId: 'seed-alice', authorName: 'Alice Chen', authorAvatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=AC', body: 'This is on the roadmap! The `src/lib/repos.ts` fetch layer is already abstracted to support multiple sources. A GitLab adapter would follow the same pattern as the GitHub and ADO fetchers.\n\nI\'d estimate this as a medium-sized effort — maybe 2-3 days of work.', votes: [{ userId: 'seed-carol', value: 1, createdAt: ago(95) }, { userId: 'seed-bob', value: 1, createdAt: ago(88) }], isAccepted: false, createdAt: ago(98), updatedAt: ago(98) },
-    ],
-    viewCount: 89, acceptedAnswerId: null, createdAt: ago(120), updatedAt: ago(98),
-  },
-  {
     id: 'ft4', title: 'Best practices for Kubernetes pod security policies', body: '## Question\nWe\'re migrating to GKE and need to set up pod security policies. What are the current best practices?\n\nSpecifically:\n- Should we use Pod Security Admission or a third-party tool like OPA/Gatekeeper?\n- What baseline policies should every cluster have?\n- How do you handle exceptions for system namespaces?', category: 'discussion', tags: ['Security', 'Kubernetes', 'GCP'],
     authorId: 'seed-eve', authorName: 'Eve Taylor', authorAvatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=ET',
     votes: [{ userId: 'seed-alice', value: 1, createdAt: ago(40) }, { userId: 'seed-bob', value: 1, createdAt: ago(35) }, { userId: 'seed-dave', value: 1, createdAt: ago(30) }, { userId: 'seed-frank', value: 1, createdAt: ago(20) }, { userId: 'seed-grace', value: 1, createdAt: ago(10) }],
@@ -70,18 +61,18 @@ const seedThreads: ForumThread[] = [
 // ─── Feature Request Seed Data ──────────────────────────────────────────────
 const seedFeatureRequests: FeatureRequest[] = [
   {
-    id: 'fr1', title: 'GitLab Repository Integration', description: 'Add support for browsing and managing GitLab repositories alongside GitHub and Azure DevOps. Should include personal access token auth, group/project browsing, and the same metadata editing as existing repos.',
+    id: 'fr1', title: 'Support for GitLab repositories', description: '## Proposal\nDevDock currently supports GitHub and Azure DevOps. It would be great to add GitLab support as well.\n\n## Use case\nOur team uses GitLab for internal projects and GitHub for open-source. Having both in one portal would be a huge productivity boost.\n\n## Suggested approach\n- GitLab API v4 integration\n- Personal access token auth\n- Group and project browsing\n\n---\n**Update:** This is on the roadmap! The `src/lib/repos.ts` fetch layer is already abstracted to support multiple sources. A GitLab adapter would follow the same pattern as the GitHub and ADO fetchers. I\'d estimate this as a medium-sized effort — maybe 2-3 days of work.',
     authorId: 'seed-carol', authorName: 'Carol Davis', authorAvatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=CD',
     status: 'planned',
     votes: [
-      { userId: 'seed-alice', value: 1, createdAt: ago(200) }, { userId: 'seed-bob', value: 1, createdAt: ago(180) },
-      { userId: 'seed-dave', value: 1, createdAt: ago(150) }, { userId: 'seed-eve', value: 1, createdAt: ago(120) },
-      { userId: 'seed-frank', value: 1, createdAt: ago(100) }, { userId: 'seed-grace', value: 1, createdAt: ago(80) },
-      { userId: 'seed-henry', value: 1, createdAt: ago(60) }, { userId: 'seed-iris', value: 1, createdAt: ago(40) },
-      { userId: 'seed-jack', value: 1, createdAt: ago(20) }, { userId: 'seed-kate', value: 1, createdAt: ago(10) },
-      { userId: 'seed-leo', value: 1, createdAt: ago(5) }, { userId: 'seed-mia', value: 1, createdAt: ago(2) },
+      { userId: 'seed-alice', value: 1, createdAt: ago(100) }, { userId: 'seed-bob', value: 1, createdAt: ago(90) },
+      { userId: 'seed-dave', value: 1, createdAt: ago(85) }, { userId: 'seed-eve', value: 1, createdAt: ago(80) },
+      { userId: 'seed-frank', value: 1, createdAt: ago(75) }, { userId: 'seed-grace', value: 1, createdAt: ago(60) },
+      { userId: 'seed-henry', value: 1, createdAt: ago(50) }, { userId: 'seed-iris', value: 1, createdAt: ago(40) },
+      { userId: 'seed-jack', value: 1, createdAt: ago(30) }, { userId: 'seed-kate', value: 1, createdAt: ago(20) },
+      { userId: 'seed-leo', value: 1, createdAt: ago(10) }, { userId: 'seed-mia', value: 1, createdAt: ago(5) },
     ],
-    attachments: [], tags: ['Engineering', 'CI/CD'], createdAt: ago(240), updatedAt: ago(2),
+    attachments: [], tags: ['Engineering', 'CI/CD'], createdAt: ago(120), updatedAt: ago(98),
   },
   {
     id: 'fr2', title: 'Dark/Light Theme Scheduler', description: 'Allow users to schedule automatic theme switching based on time of day — e.g. light mode during working hours and dark mode in the evening. Could also tie into OS-level dark mode settings.',
