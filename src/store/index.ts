@@ -898,6 +898,9 @@ export { useForumStore } from './forum-store';
 // ─── Analytics Store (re-export) ─────────────────────────────────────────────
 export { useAnalyticsStore } from './analytics-store';
 
+// ─── Widget Submission Store (re-export) ────────────────────────────────────
+export { useWidgetSubmissionStore } from './widget-submission-store';
+
 // ─── Bookmark Store ──────────────────────────────────────────────────────────
 interface BookmarkStore {
   bookmarks: Bookmark[];

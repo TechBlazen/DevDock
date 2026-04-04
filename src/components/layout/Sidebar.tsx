@@ -23,7 +23,7 @@ const mainNavItems = [
 // Group 2: Tools & monitoring (below divider)
 const toolsNavItems = [
   { to: '/telemetry',  icon: Activity,        label: 'Observability' },
-  { to: '/catalog',    icon: Layers,          label: 'Catalog' },
+  { to: '/catalog',    icon: Layers,          label: 'Widgets' },
   { to: '/scaffold',   icon: Hammer,          label: 'Scaffold' },
   { to: '/docs',       icon: FileText,        label: 'Docs' },
   { to: '/network',    icon: Network,         label: 'Network' },

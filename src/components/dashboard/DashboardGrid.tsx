@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus, X, GripVertical } from 'lucide-react';
-import { useSettingsStore, useAuthStore, useUserAccountsStore } from '../../store';
+import { useSettingsStore, useAuthStore, useUserAccountsStore, useWidgetSubmissionStore } from '../../store';
 import { usePluginExtensions } from '../../lib/plugins';
 import { canAccessWidget } from '../../lib/rbac';
 import { RepoList } from '../repos/RepoList';
@@ -11,6 +11,7 @@ import { QuickActionsWidget } from './QuickActionsWidget';
 import { AIMetricsWidget } from './QuickActionsWidget';
 import { NetworkMap } from '../network/NetworkMap';
 import { FavoritesWidget } from './FavoritesWidget';
+import { UserWidgetContent } from '../widgets/UserWidgetContent';
 import { CardHeader, Button } from '../ui';
 import type { WidgetId, DashboardWidget } from '../../types';
 
@@ -48,12 +49,20 @@ const CoreWidgetContent = ({ id }: { id: WidgetId }) => {
   }
 };
 
-// ─── Widget content with plugin support ──────────────────────────────────────
+// ─── Widget content with plugin + user widget support ───────────────────────
 const WidgetContent = ({ id, pluginComponents }: { id: WidgetId; pluginComponents: Record<string, React.ComponentType> }) => {
   const core = CoreWidgetContent({ id });
   if (core) return core;
   const PluginComponent = pluginComponents[id];
-  return PluginComponent ? <PluginComponent /> : null;
+  if (PluginComponent) return <PluginComponent />;
+  // User-submitted widgets
+  if (id.startsWith('user_widget_')) {
+    const subId = id.replace('user_widget_', '');
+    const submissions = useWidgetSubmissionStore.getState().submissions;
+    const submission = submissions.find((s) => s.id === subId && s.status === 'approved');
+    if (submission) return <UserWidgetContent submission={submission} />;
+  }
+  return null;
 };
 
 const widgetMeta = (id: WidgetId, catalog: DashboardWidget[]) => catalog.find((w) => w.id === id);
@@ -240,7 +249,11 @@ export const DashboardGrid = ({ editMode }: { editMode: boolean }) => {
     }
   };
 
-  const allWidgetCatalog = [...CORE_WIDGET_CATALOG, ...pluginWidgetCatalog];
+  // Merge approved user-submitted widgets into the catalog
+  const approvedUserWidgets = useWidgetSubmissionStore((s) => s.submissions)
+    .filter((s) => s.status === 'approved')
+    .map((s) => ({ id: `user_widget_${s.id}` as WidgetId, title: s.title, icon: s.icon, description: s.description, defaultSize: s.defaultSize }));
+  const allWidgetCatalog = [...CORE_WIDGET_CATALOG, ...pluginWidgetCatalog, ...approvedUserWidgets];
 
   const [dragSrc, setDragSrc] = useState<WidgetId | null>(null);
   const [dragOver, setDragOver] = useState<WidgetId | null>(null);
