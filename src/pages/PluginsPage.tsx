@@ -300,7 +300,7 @@ export const PluginsPage = () => {
       </SectionTitle>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-5" style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: 8 }}>
+      <div className="flex gap-2 mb-8" style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: 0 }}>
         {([
           { key: 'marketplace' as const, label: 'Marketplace' },
           { key: 'submit' as const, label: 'Submit Plugin' },
@@ -309,14 +309,19 @@ export const PluginsPage = () => {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className="px-4 py-2 rounded-t-lg text-[12px] font-semibold transition-colors"
+            className="text-[13px] font-semibold transition-colors"
             style={{
               color: activeTab === tab.key ? 'var(--accent)' : 'var(--text-muted)',
               background: activeTab === tab.key ? 'var(--accent-bg)' : 'transparent',
               border: 'none',
               cursor: 'pointer',
-              borderBottom: activeTab === tab.key ? '2px solid var(--accent)' : '2px solid transparent',
+              borderBottom: activeTab === tab.key ? '3px solid var(--accent)' : '3px solid transparent',
+              padding: '10px 20px',
+              marginBottom: -2,
+              borderRadius: '6px 6px 0 0',
             }}
+            onMouseEnter={(e) => { if (activeTab !== tab.key) e.currentTarget.style.background = 'var(--bg-hover)'; }}
+            onMouseLeave={(e) => { if (activeTab !== tab.key) e.currentTarget.style.background = 'transparent'; }}
           >
             {tab.label}
           </button>
@@ -339,48 +344,59 @@ export const PluginsPage = () => {
       )}
 
       {/* Summary chips */}
-      <div className="flex gap-2 mb-5 flex-wrap">
+      <div className="flex gap-3 mb-0 flex-wrap">
         {[
           { label: 'Total', value: plugins.length, color: '#2a6fff' },
           { label: 'Enabled', value: enabledCount, color: '#00e5a0' },
           { label: 'Pages', value: totalPages, color: '#f5a623' },
           { label: 'Widgets', value: totalWidgets, color: '#b388ff' },
         ].map((c) => (
-          <div key={c.label} className="flex items-center gap-2 px-3 py-1.5 rounded-xl" style={{
+          <div key={c.label} className="flex items-center gap-2 px-4 py-2 rounded-xl" style={{
             background: `${c.color}10`,
             border: `1px solid ${c.color}25`,
           }}>
-            <span className="text-[10px] font-semibold" style={{ color: c.color }}>{c.value}</span>
-            <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{c.label}</span>
+            <span className="text-[11px] font-bold" style={{ color: c.color }}>{c.value}</span>
+            <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{c.label}</span>
           </div>
         ))}
       </div>
 
+      <div style={{ borderTop: '1px solid var(--border-color)', marginTop: 16, marginBottom: 16 }} />
+
       {/* Category filter */}
-      <div className="flex gap-1.5 mb-5 flex-wrap">
+      <div className="flex gap-2 mb-0 flex-wrap">
         {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
           <button
             key={key}
             onClick={() => setFilter(key)}
-            className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all"
-            style={
-              filter === key
+            className="font-semibold transition-all"
+            style={{
+              padding: '8px 18px',
+              borderRadius: 20,
+              fontSize: 12,
+              ...(filter === key
                 ? {
-                    background: 'rgba(42, 111, 255, 0.12)',
-                    color: '#2a6fff',
-                    border: '1px solid rgba(42, 111, 255, 0.3)',
+                    background: 'var(--accent)',
+                    color: '#ffffff',
+                    border: '1px solid var(--accent)',
+                    boxShadow: 'var(--shadow-sm)',
                   }
                 : {
-                    background: 'transparent',
+                    background: 'var(--bg-surface)',
                     color: 'var(--text-muted)',
-                    border: '1px solid var(--border-subtle)',
-                  }
-            }
+                    border: '1px solid var(--border-color)',
+                  }),
+              cursor: 'pointer',
+            }}
+            onMouseEnter={(e) => { if (filter !== key) e.currentTarget.style.borderColor = 'var(--accent)'; }}
+            onMouseLeave={(e) => { if (filter !== key) e.currentTarget.style.borderColor = 'var(--border-color)'; }}
           >
             {label}
           </button>
         ))}
       </div>
+
+      <div style={{ borderTop: '1px solid var(--border-color)', marginTop: 16, marginBottom: 24 }} />
 
       {/* Plugin cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
