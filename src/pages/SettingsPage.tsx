@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Key, Activity, GitFork, GitBranch, Code2, Save, Check, Lock, AlertTriangle } from 'lucide-react';
+import { Key, Activity, GitFork, GitBranch, Code2, Save, Check, Lock, AlertTriangle, Globe } from 'lucide-react';
 import { useSettingsStore } from '../store';
+import { FederatedSourcesPage } from './FederatedSourcesPage';
 import { initOTel } from '../otel';
 import { SectionTitle, Input, Toggle, Button, Card, CardHeader } from '../components/ui';
 import type { AIProvider } from '../types';
@@ -282,6 +283,18 @@ export const SettingsPage = () => {
             </div>
           </div>
         </Card>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+           SECTION 5 — Search Sources (Federated Search)
+           ═══════════════════════════════════════════════════════════════════ */}
+      <div>
+        <h2 className="text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)', borderBottom: '2px solid var(--border-subtle)', paddingBottom: 8 }}>
+          <Globe size={16} className="text-[#2a6fff]" />
+          Search Sources
+        </h2>
+
+        <FederatedSourcesPage embedded />
       </div>
 
       {/* Save */}

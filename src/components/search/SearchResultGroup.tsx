@@ -10,6 +10,7 @@ const CATEGORY_LABELS: Record<SearchCategory, string> = {
   'telemetry': 'Telemetry',
   'activity': 'Activity',
   'forum': 'Forum',
+  'federated': 'External Sources',
 };
 
 interface Props {
