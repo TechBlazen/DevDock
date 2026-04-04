@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { nanoid } from 'nanoid';
 import {
   ChevronUp, ChevronDown, Pencil, Trash2, Eye, EyeOff,
@@ -384,6 +384,11 @@ export const NavigationEditor = () => {
   const [dirty, setDirty] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  // ── Drag state ──
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dropTarget, setDropTarget] = useState<{ idx: number; position: 'above' | 'below' | 'inside' } | null>(null);
+  const rowRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+
   const update = (next: NavItem[]) => {
     setItems(next);
     setDirty(true);
@@ -415,7 +420,7 @@ export const NavigationEditor = () => {
   };
 
   const addItem = (item: NavItem) => {
-    update([...items, item]);
+    update([item, ...items]);
     setEditingId(item.id);
   };
 
@@ -432,6 +437,121 @@ export const NavigationEditor = () => {
     setDirty(true);
   };
 
+  // ── Drag handlers ──
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    setDragIdx(idx);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(idx));
+    // Make the drag image slightly transparent
+    if (e.currentTarget instanceof HTMLElement) {
+      e.currentTarget.style.opacity = '0.5';
+    }
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    if (e.currentTarget instanceof HTMLElement) {
+      e.currentTarget.style.opacity = '1';
+    }
+    setDragIdx(null);
+    setDropTarget(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (dragIdx === null || dragIdx === idx) {
+      setDropTarget(null);
+      return;
+    }
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const height = rect.height;
+    const targetItem = items[idx];
+
+    // If hovering over a group, the middle zone means "drop inside"
+    if (targetItem.type === 'group') {
+      if (y < height * 0.25) {
+        setDropTarget({ idx, position: 'above' });
+      } else if (y > height * 0.75) {
+        setDropTarget({ idx, position: 'below' });
+      } else {
+        // Only allow links/externals to become children
+        const dragItem = items[dragIdx];
+        if (dragItem.type === 'link' || dragItem.type === 'external') {
+          setDropTarget({ idx, position: 'inside' });
+        } else {
+          setDropTarget({ idx, position: y < height / 2 ? 'above' : 'below' });
+        }
+      }
+    } else {
+      setDropTarget({ idx, position: y < height / 2 ? 'above' : 'below' });
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (dragIdx === null || !dropTarget) return;
+
+    const next = [...items];
+    const [draggedItem] = next.splice(dragIdx, 1);
+
+    if (dropTarget.position === 'inside') {
+      // Convert link/external to a group child
+      const targetGroup = next[dropTarget.idx > dragIdx ? dropTarget.idx - 1 : dropTarget.idx];
+      if (targetGroup.type === 'group' && (draggedItem.type === 'link' || draggedItem.type === 'external')) {
+        if (draggedItem.type === 'link') {
+          targetGroup.children = [...targetGroup.children, draggedItem];
+        } else {
+          // Convert external to link for group child
+          const asLink: NavLinkItem = {
+            id: draggedItem.id,
+            type: 'link',
+            label: draggedItem.label,
+            icon: draggedItem.icon,
+            route: draggedItem.url,
+            visible: draggedItem.visible,
+          };
+          targetGroup.children = [...targetGroup.children, asLink];
+        }
+        update(next);
+      }
+    } else {
+      // Reorder: insert at the target position
+      let insertIdx = dropTarget.idx;
+      // Adjust if we removed an item before the insert point
+      if (dragIdx < insertIdx) insertIdx--;
+      if (dropTarget.position === 'below') insertIdx++;
+      next.splice(insertIdx, 0, draggedItem);
+      update(next);
+    }
+
+    setDragIdx(null);
+    setDropTarget(null);
+  };
+
+  const getDropIndicatorStyle = (idx: number): React.CSSProperties | undefined => {
+    if (!dropTarget || dropTarget.idx !== idx) return undefined;
+    if (dropTarget.position === 'inside') {
+      return {
+        outline: '2px solid var(--accent)',
+        outlineOffset: -2,
+        borderRadius: 8,
+        background: 'var(--accent-bg)',
+      };
+    }
+    return undefined;
+  };
+
+  const getDropLineStyle = (idx: number, position: 'above' | 'below'): React.CSSProperties | undefined => {
+    if (!dropTarget || dropTarget.idx !== idx || dropTarget.position !== position) return undefined;
+    return {
+      height: 2,
+      background: 'var(--accent)',
+      borderRadius: 1,
+      margin: '0 8px',
+    };
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -443,10 +563,11 @@ export const NavigationEditor = () => {
         </Button>
       </CardHeader>
 
-      <div className="p-4 space-y-1">
+      <div className="p-4 space-y-0">
         {items.map((item, idx) => {
           const isEditing = editingId === item.id;
           const isLocked = (item.type === 'link' && item.locked);
+          const isDragging = dragIdx === idx;
 
           if (isEditing) {
             return (
@@ -462,15 +583,28 @@ export const NavigationEditor = () => {
           // ── Divider row ──
           if (item.type === 'divider') {
             return (
-              <div key={item.id} className="flex items-center gap-2 py-1.5 group" style={{ opacity: item.visible ? 1 : 0.4 }}>
-                <div className="flex-1" style={{ borderTop: '1px dashed var(--border-color)', margin: '0 8px' }} />
-                <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-faint)' }}>divider</span>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <IconBtn icon={ChevronUp} title="Move up" onClick={() => move(idx, -1)} disabled={idx === 0} />
-                  <IconBtn icon={ChevronDown} title="Move down" onClick={() => move(idx, 1)} disabled={idx === items.length - 1} />
-                  <IconBtn icon={item.visible ? Eye : EyeOff} title={item.visible ? 'Hide' : 'Show'} onClick={() => toggleVisibility(idx)} />
-                  <IconBtn icon={Trash2} title="Remove" onClick={() => removeItem(idx)} danger />
+              <div key={item.id}>
+                <div style={getDropLineStyle(idx, 'above')} />
+                <div
+                  className="flex items-center gap-2 py-1.5 group"
+                  style={{ opacity: isDragging ? 0.3 : item.visible ? 1 : 0.4, cursor: 'grab', ...getDropIndicatorStyle(idx) }}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, idx)}
+                  onDragEnd={handleDragEnd}
+                  onDragOver={(e) => handleDragOver(e, idx)}
+                  onDrop={handleDrop}
+                >
+                  <GripVertical size={14} style={{ color: 'var(--text-faint)', flexShrink: 0 }} />
+                  <div className="flex-1" style={{ borderTop: '1px dashed var(--border-color)', margin: '0 8px' }} />
+                  <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-faint)' }}>divider</span>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <IconBtn icon={ChevronUp} title="Move up" onClick={() => move(idx, -1)} disabled={idx === 0} />
+                    <IconBtn icon={ChevronDown} title="Move down" onClick={() => move(idx, 1)} disabled={idx === items.length - 1} />
+                    <IconBtn icon={item.visible ? Eye : EyeOff} title={item.visible ? 'Hide' : 'Show'} onClick={() => toggleVisibility(idx)} />
+                    <IconBtn icon={Trash2} title="Remove" onClick={() => removeItem(idx)} danger />
+                  </div>
                 </div>
+                <div style={getDropLineStyle(idx, 'below')} />
               </div>
             );
           }
@@ -478,21 +612,34 @@ export const NavigationEditor = () => {
           // ── Plugin slot row ──
           if (item.type === 'plugin-slot') {
             return (
-              <div key={item.id} className="flex items-center gap-2 px-3 py-2 rounded-md group" style={{ opacity: item.visible ? 1 : 0.4 }}>
-                <span
-                  className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded"
-                  style={{ background: '#10b98120', color: '#10b981' }}
+              <div key={item.id}>
+                <div style={getDropLineStyle(idx, 'above')} />
+                <div
+                  className="flex items-center gap-2 px-3 py-2 rounded-md group"
+                  style={{ opacity: isDragging ? 0.3 : item.visible ? 1 : 0.4, cursor: 'grab', ...getDropIndicatorStyle(idx) }}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, idx)}
+                  onDragEnd={handleDragEnd}
+                  onDragOver={(e) => handleDragOver(e, idx)}
+                  onDrop={handleDrop}
                 >
-                  Plugins Slot
-                </span>
-                <span className="text-[11px] flex-1" style={{ color: 'var(--text-muted)' }}>
-                  Dynamic plugin nav items appear here
-                </span>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <IconBtn icon={ChevronUp} title="Move up" onClick={() => move(idx, -1)} disabled={idx === 0} />
-                  <IconBtn icon={ChevronDown} title="Move down" onClick={() => move(idx, 1)} disabled={idx === items.length - 1} />
-                  <IconBtn icon={item.visible ? Eye : EyeOff} title={item.visible ? 'Hide' : 'Show'} onClick={() => toggleVisibility(idx)} />
+                  <GripVertical size={14} style={{ color: 'var(--text-faint)', flexShrink: 0 }} />
+                  <span
+                    className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded"
+                    style={{ background: '#10b98120', color: '#10b981' }}
+                  >
+                    Plugins Slot
+                  </span>
+                  <span className="text-[11px] flex-1" style={{ color: 'var(--text-muted)' }}>
+                    Dynamic plugin nav items appear here
+                  </span>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <IconBtn icon={ChevronUp} title="Move up" onClick={() => move(idx, -1)} disabled={idx === 0} />
+                    <IconBtn icon={ChevronDown} title="Move down" onClick={() => move(idx, 1)} disabled={idx === items.length - 1} />
+                    <IconBtn icon={item.visible ? Eye : EyeOff} title={item.visible ? 'Hide' : 'Show'} onClick={() => toggleVisibility(idx)} />
+                  </div>
                 </div>
+                <div style={getDropLineStyle(idx, 'below')} />
               </div>
             );
           }
@@ -503,12 +650,24 @@ export const NavigationEditor = () => {
 
           return (
             <div key={item.id}>
+              <div style={getDropLineStyle(idx, 'above')} />
               <div
+                ref={(el) => { if (el) rowRefs.current.set(idx, el); }}
                 className="flex items-center gap-2 px-3 py-2 rounded-md group transition-colors"
-                style={{ opacity: item.visible ? 1 : 0.4 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                style={{
+                  opacity: isDragging ? 0.3 : item.visible ? 1 : 0.4,
+                  cursor: 'grab',
+                  ...getDropIndicatorStyle(idx),
+                }}
+                draggable
+                onDragStart={(e) => handleDragStart(e, idx)}
+                onDragEnd={handleDragEnd}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDrop={handleDrop}
+                onMouseEnter={(e) => { if (!isDragging) e.currentTarget.style.background = getDropIndicatorStyle(idx)?.background as string ?? 'var(--bg-hover)'; }}
+                onMouseLeave={(e) => { if (!isDragging) e.currentTarget.style.background = getDropIndicatorStyle(idx)?.background as string ?? 'transparent'; }}
               >
+                <GripVertical size={14} style={{ color: 'var(--text-faint)', flexShrink: 0 }} />
                 <Icon size={15} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
                 <span className="text-[13px] font-medium flex-1 truncate" style={{ color: 'var(--text-primary)' }}>
                   {item.label}
@@ -542,6 +701,7 @@ export const NavigationEditor = () => {
                   {!isLocked && <IconBtn icon={Trash2} title="Remove" onClick={() => removeItem(idx)} danger />}
                 </div>
               </div>
+              <div style={getDropLineStyle(idx, 'below')} />
 
               {/* Group children */}
               {item.type === 'group' && (
