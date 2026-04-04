@@ -55,6 +55,19 @@ export interface DatabaseProvider {
   trackError(error: ErrorRow): Promise<void>;
   getPageViews(limit?: number): Promise<PageViewRow[]>;
   getErrors(limit?: number): Promise<ErrorRow[]>;
+
+  // ─── Federated Sources ──────────────────────────────────────────────────────
+  getFederatedSources(): Promise<FederatedSourceRow[]>;
+  getFederatedSourceById(id: string): Promise<FederatedSourceRow | null>;
+  createFederatedSource(source: FederatedSourceRow): Promise<FederatedSourceRow>;
+  updateFederatedSource(id: string, partial: Partial<FederatedSourceRow>): Promise<FederatedSourceRow | null>;
+  deleteFederatedSource(id: string): Promise<void>;
+
+  // ─── Federated Documents ────────────────────────────────────────────────────
+  getFederatedDocuments(sourceId: string): Promise<FederatedDocumentRow[]>;
+  getAllFederatedDocuments(): Promise<FederatedDocumentRow[]>;
+  replaceFederatedDocuments(sourceId: string, docs: FederatedDocumentRow[]): Promise<void>;
+  deleteFederatedDocumentsBySource(sourceId: string): Promise<void>;
 }
 
 // ─── Row types (flat, JSON-serialized for complex fields) ───────────────────
@@ -168,4 +181,36 @@ export interface ErrorRow {
   stack?: string;
   path: string;
   timestamp: string;
+}
+
+export interface FederatedSourceRow {
+  id: string;
+  name: string;
+  type: string;
+  endpoint_url: string;
+  auth_type: string;
+  auth_config: string;
+  result_mapping: string;
+  trigger_config: string;
+  sync_interval_minutes: number;
+  last_synced_at?: string;
+  document_count: number;
+  enabled: number;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FederatedDocumentRow {
+  id: string;
+  source_id: string;
+  title: string;
+  description: string;
+  url: string;
+  icon?: string;
+  tags: string;
+  content: string;
+  extra: string;
+  meta: string;
+  fetched_at: string;
 }
