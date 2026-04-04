@@ -114,9 +114,9 @@ const getVariantStyle = (variant: NonNullable<ButtonProps['variant']>) => {
 };
 
 const sizeStyles: Record<NonNullable<ButtonProps['size']>, string> = {
-  sm: 'px-4 py-1.5 text-[12px]',
-  md: 'px-5 py-2 text-[13px]',
-  lg: 'px-7 py-3 text-sm',
+  sm: 'px-5 py-2 text-[12px]',
+  md: 'px-7 py-2.5 text-[13px]',
+  lg: 'px-9 py-3.5 text-sm',
 };
 
 export const Button = ({ variant = 'ghost', size = 'md', className, children, ...props }: ButtonProps) => (
