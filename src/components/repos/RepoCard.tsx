@@ -273,45 +273,45 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
         <p className="text-xs mb-2.5 leading-relaxed line-clamp-2" style={{ color: 'var(--text-muted)' }}>{repo.description}</p>
 
         {/* Metadata pills */}
-        <div className="flex gap-1.5 flex-wrap mb-2">
+        <div className="flex gap-2.5 flex-wrap mb-3">
           {/* Environments */}
           {repo.environments?.map((env) => (
-            <span key={env} className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${ENV_COLORS[env]}18`, color: ENV_COLORS[env], border: `1px solid ${ENV_COLORS[env]}40` }}>{env}</span>
+            <span key={env} className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: `${ENV_COLORS[env]}18`, color: ENV_COLORS[env], border: `1px solid ${ENV_COLORS[env]}40` }}>{env}</span>
           ))}
           {/* Cloud platform */}
           {repo.cloudPlatform && (
-            <span className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${CLOUD_COLORS[repo.cloudPlatform]}18`, color: CLOUD_COLORS[repo.cloudPlatform], border: `1px solid ${CLOUD_COLORS[repo.cloudPlatform]}40` }}>
-              <Cloud size={8} />{repo.cloudPlatform}
+            <span className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: `${CLOUD_COLORS[repo.cloudPlatform]}18`, color: CLOUD_COLORS[repo.cloudPlatform], border: `1px solid ${CLOUD_COLORS[repo.cloudPlatform]}40` }}>
+              <Cloud size={10} />{repo.cloudPlatform}
             </span>
           )}
           {/* Owners */}
           {repo.owners?.map((o) => (
-            <span key={o.name} className="flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
-              {o.type === 'team' ? <Users size={8} /> : <User size={8} />}{o.name}
+            <span key={o.name} className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
+              {o.type === 'team' ? <Users size={10} /> : <User size={10} />}{o.name}
             </span>
           ))}
           {/* Custom tags */}
           {repo.customTags?.map((tag) => (
-            <span key={tag} className="flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--bg-inset)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>
-              <Tag size={7} />{tag}
+            <span key={tag} className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full" style={{ background: 'var(--bg-inset)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>
+              <Tag size={9} />{tag}
             </span>
           ))}
         </div>
 
         {/* Topics */}
         {repo.topics && repo.topics.length > 0 && (
-          <div className="flex gap-1 flex-wrap mb-2.5">
+          <div className="flex gap-2 flex-wrap mb-3">
             {repo.topics.slice(0, 4).map((t) => (
-              <span key={t} className="text-[10px] rounded-lg px-1.5 py-0.5" style={{ background: 'rgba(59, 130, 246, 0.08)', color: 'rgba(59, 130, 246, 0.7)', border: '1px solid rgba(59, 130, 246, 0.15)' }}>{t}</span>
+              <span key={t} className="text-[11px] rounded-lg px-2 py-0.5" style={{ background: 'rgba(59, 130, 246, 0.08)', color: 'rgba(59, 130, 246, 0.7)', border: '1px solid rgba(59, 130, 246, 0.15)' }}>{t}</span>
             ))}
           </div>
         )}
 
         {/* Meta row */}
-        <div className="flex items-center gap-3 text-[11px]" style={{ color: 'var(--text-muted)' }}>
-          <span className="flex items-center gap-1"><GitBranch size={11} />{repo.defaultBranch}</span>
+        <div className="flex items-center gap-4 text-[12px]" style={{ color: 'var(--text-muted)' }}>
+          <span className="flex items-center gap-1.5"><GitBranch size={12} />{repo.defaultBranch}</span>
           {repo.stars !== undefined && (
-            <span className="flex items-center gap-1"><Star size={11} />{repo.stars}</span>
+            <span className="flex items-center gap-1.5"><Star size={12} />{repo.stars}</span>
           )}
           <span className="ml-auto">{repo.updatedAt}</span>
         </div>
