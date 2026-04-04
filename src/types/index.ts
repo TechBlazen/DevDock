@@ -29,6 +29,41 @@ export interface Repository {
   customTags?: string[];
 }
 
+// ─── Repo Activity Types ─────────────────────────────────────────────────────
+export interface RepoCommit {
+  sha: string;
+  message: string;
+  author: string;
+  date: string;
+  url: string;
+}
+
+export type MergeStatus = 'merged' | 'open' | 'closed';
+
+export interface RepoMerge {
+  id: string;
+  title: string;
+  author: string;
+  status: MergeStatus;
+  sourceBranch: string;
+  targetBranch: string;
+  date: string;
+  url: string;
+}
+
+export type BuildStatus = 'succeeded' | 'failed' | 'running' | 'canceled' | 'queued';
+
+export interface RepoBuild {
+  id: string;
+  name: string;
+  status: BuildStatus;
+  branch: string;
+  commit: string;
+  duration: string;
+  date: string;
+  url: string;
+}
+
 // ─── MCP Types ────────────────────────────────────────────────────────────────
 export type MCPStatus = 'running' | 'idle' | 'stopped' | 'error';
 
