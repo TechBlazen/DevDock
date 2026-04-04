@@ -66,8 +66,9 @@ export class SqliteProvider implements DatabaseProvider {
   }
 
   async createUser(user: UserRow): Promise<UserRow> {
+    const row = nullify(user);
     this.db.prepare(`INSERT INTO users (id, username, password_hash, display_name, email, avatar_url, role, permissions, dashboard_widgets, favorite_repos, preferences, created_at, last_login)
-      VALUES (@id, @username, @password_hash, @display_name, @email, @avatar_url, @role, @permissions, @dashboard_widgets, @favorite_repos, @preferences, @created_at, @last_login)`).run(user);
+      VALUES (@id, @username, @password_hash, @display_name, @email, @avatar_url, @role, @permissions, @dashboard_widgets, @favorite_repos, @preferences, @created_at, @last_login)`).run(row);
     return user;
   }
 
@@ -99,7 +100,7 @@ export class SqliteProvider implements DatabaseProvider {
 
   async upsertRepo(repo: RepoRow): Promise<RepoRow> {
     this.db.prepare(`INSERT OR REPLACE INTO repos (id, name, full_name, description, source, language, default_branch, stars, forks, is_private, updated_at, clone_url, web_url, topics, environments, cloud_platform, owners, custom_tags, added_by)
-      VALUES (@id, @name, @full_name, @description, @source, @language, @default_branch, @stars, @forks, @is_private, @updated_at, @clone_url, @web_url, @topics, @environments, @cloud_platform, @owners, @custom_tags, @added_by)`).run(repo);
+      VALUES (@id, @name, @full_name, @description, @source, @language, @default_branch, @stars, @forks, @is_private, @updated_at, @clone_url, @web_url, @topics, @environments, @cloud_platform, @owners, @custom_tags, @added_by)`).run(nullify(repo));
     return repo;
   }
 
@@ -126,7 +127,7 @@ export class SqliteProvider implements DatabaseProvider {
 
   async upsertSettings(settings: SettingsRow): Promise<SettingsRow> {
     this.db.prepare(`INSERT OR REPLACE INTO settings (id, user_id, ai_config, otel_config, github_config, ado_config, theme, dashboard_widgets)
-      VALUES (@id, @user_id, @ai_config, @otel_config, @github_config, @ado_config, @theme, @dashboard_widgets)`).run(settings);
+      VALUES (@id, @user_id, @ai_config, @otel_config, @github_config, @ado_config, @theme, @dashboard_widgets)`).run(nullify(settings));
     return settings;
   }
 
@@ -138,7 +139,7 @@ export class SqliteProvider implements DatabaseProvider {
 
   async createBookmark(bookmark: BookmarkRow): Promise<BookmarkRow> {
     this.db.prepare(`INSERT INTO bookmarks (id, user_id, title, url, description, favicon, screenshot, collection_id, tags, favorite, note, content_type, created_at, updated_at)
-      VALUES (@id, @user_id, @title, @url, @description, @favicon, @screenshot, @collection_id, @tags, @favorite, @note, @content_type, @created_at, @updated_at)`).run(bookmark);
+      VALUES (@id, @user_id, @title, @url, @description, @favicon, @screenshot, @collection_id, @tags, @favorite, @note, @content_type, @created_at, @updated_at)`).run(nullify(bookmark));
     return bookmark;
   }
 
@@ -162,7 +163,7 @@ export class SqliteProvider implements DatabaseProvider {
 
   async createCollection(collection: CollectionRow): Promise<CollectionRow> {
     this.db.prepare(`INSERT INTO collections (id, user_id, name, icon, color, parent_id, created_at, updated_at)
-      VALUES (@id, @user_id, @name, @icon, @color, @parent_id, @created_at, @updated_at)`).run(collection);
+      VALUES (@id, @user_id, @name, @icon, @color, @parent_id, @created_at, @updated_at)`).run(nullify(collection));
     return collection;
   }
 
@@ -186,7 +187,7 @@ export class SqliteProvider implements DatabaseProvider {
 
   async createDoc(doc: DocRow): Promise<DocRow> {
     this.db.prepare(`INSERT INTO docs (id, title, content, source_url, tags, created_at, updated_at)
-      VALUES (@id, @title, @content, @source_url, @tags, @created_at, @updated_at)`).run(doc);
+      VALUES (@id, @title, @content, @source_url, @tags, @created_at, @updated_at)`).run(nullify(doc));
     return doc;
   }
 
@@ -230,7 +231,7 @@ export class SqliteProvider implements DatabaseProvider {
 
   async trackError(error: ErrorRow): Promise<void> {
     this.db.prepare(`INSERT INTO analytics_errors (id, user_id, user_name, message, stack, path, timestamp)
-      VALUES (@id, @user_id, @user_name, @message, @stack, @path, @timestamp)`).run(error);
+      VALUES (@id, @user_id, @user_name, @message, @stack, @path, @timestamp)`).run(nullify(error));
   }
 
   async getPageViews(limit = 100): Promise<PageViewRow[]> {
@@ -240,4 +241,15 @@ export class SqliteProvider implements DatabaseProvider {
   async getErrors(limit = 100): Promise<ErrorRow[]> {
     return this.db.prepare('SELECT * FROM analytics_errors ORDER BY timestamp DESC LIMIT ?').all(limit) as ErrorRow[];
   }
+}
+
+// Convert undefined values to null for better-sqlite3 compatibility
+function nullify<T extends Record<string, unknown>>(obj: T): T {
+  const result = { ...obj };
+  for (const key of Object.keys(result)) {
+    if (result[key] === undefined) {
+      (result as Record<string, unknown>)[key] = null;
+    }
+  }
+  return result;
 }
