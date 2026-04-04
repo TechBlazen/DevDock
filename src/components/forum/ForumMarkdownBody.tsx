@@ -1,20 +1,26 @@
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 
-// Allow common HTML tags but sanitize dangerous ones
+// Allow common HTML tags and preserve className for code highlighting
 const sanitizeSchema = {
   ...defaultSchema,
   tagNames: [
     ...(defaultSchema.tagNames ?? []),
     'details', 'summary', 'kbd', 'mark', 'abbr', 'sub', 'sup',
     'table', 'thead', 'tbody', 'tr', 'th', 'td',
-    'br', 'hr', 'div', 'span', 'p',
+    'br', 'hr', 'div', 'span', 'p', 'pre', 'code',
+    'input', // for GFM task lists
   ],
   attributes: {
     ...defaultSchema.attributes,
     '*': [...(defaultSchema.attributes?.['*'] ?? []), 'className', 'style'],
-    code: [...(defaultSchema.attributes?.['code'] ?? []), 'className'],
+    code: ['className'],
+    pre: ['className'],
+    input: ['type', 'checked', 'disabled'],
+    td: [...(defaultSchema.attributes?.['td'] ?? []), 'align'],
+    th: [...(defaultSchema.attributes?.['th'] ?? []), 'align'],
   },
 };
 
@@ -28,6 +34,7 @@ export const ForumMarkdownBody = ({ content }: ForumMarkdownBodyProps) => (
     style={{ color: 'var(--text-secondary)' }}
   >
     <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
       rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
       components={{
         code: ({ children, className, ...props }) => {
@@ -94,6 +101,24 @@ export const ForumMarkdownBody = ({ content }: ForumMarkdownBodyProps) => (
           >
             {children}
           </blockquote>
+        ),
+        table: ({ children }) => (
+          <div className="my-2 overflow-x-auto rounded-md" style={{ border: '1px solid var(--border-subtle)' }}>
+            <table className="w-full text-[12px]" style={{ borderCollapse: 'collapse' }}>{children}</table>
+          </div>
+        ),
+        thead: ({ children }) => (
+          <thead style={{ background: 'var(--bg-inset)' }}>{children}</thead>
+        ),
+        th: ({ children, style: s }) => (
+          <th className="px-3 py-1.5 text-left font-semibold" style={{ ...s, borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>{children}</th>
+        ),
+        td: ({ children, style: s }) => (
+          <td className="px-3 py-1.5" style={{ ...s, borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-secondary)' }}>{children}</td>
+        ),
+        hr: () => <hr className="my-3" style={{ border: 'none', borderTop: '1px solid var(--border-subtle)' }} />,
+        img: ({ src, alt }) => (
+          <img src={src} alt={alt} className="rounded-md my-2 max-w-full" style={{ maxHeight: 400 }} />
         ),
       }}
     >
