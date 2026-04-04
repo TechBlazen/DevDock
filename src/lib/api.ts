@@ -1,0 +1,106 @@
+import axios from 'axios';
+
+// ─── API Client ─────────────────────────────────────────────────────────────
+// Thin wrapper around axios for all backend API calls.
+// The Vite dev server proxies /api to http://localhost:3000.
+
+const api = axios.create({ baseURL: '/api' });
+
+// Attach JWT token from localStorage to every request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('devdock-api-token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// ─── Health ─────────────────────────────────────────────────────────────────
+export const healthApi = {
+  check: () => api.get<{ status: string; provider: string; uptime: number }>('/health').then(r => r.data),
+};
+
+// ─── Auth ───────────────────────────────────────────────────────────────────
+export const authApi = {
+  login: (username: string, password: string) =>
+    api.post<{ token: string; user: Record<string, unknown> }>('/auth/login', { username, password }).then(r => r.data),
+  verify: () =>
+    api.post<{ user: Record<string, unknown> }>('/auth/verify').then(r => r.data),
+};
+
+// ─── Users ──────────────────────────────────────────────────────────────────
+export const usersApi = {
+  list: () => api.get('/users').then(r => r.data),
+  get: (id: string) => api.get(`/users/${id}`).then(r => r.data),
+  create: (data: Record<string, unknown>) => api.post('/users', data).then(r => r.data),
+  update: (id: string, data: Record<string, unknown>) => api.put(`/users/${id}`, data).then(r => r.data),
+  delete: (id: string) => api.delete(`/users/${id}`).then(r => r.data),
+  updatePreferences: (id: string, prefs: Record<string, unknown>) => api.put(`/users/${id}/preferences`, prefs).then(r => r.data),
+  toggleFavorite: (id: string, repoId: string) => api.put(`/users/${id}/favorites`, { repoId }).then(r => r.data),
+  updateDashboard: (id: string, widgets: string[]) => api.put(`/users/${id}/dashboard`, { widgets }).then(r => r.data),
+};
+
+// ─── Repos ──────────────────────────────────────────────────────────────────
+export const reposApi = {
+  list: (source?: 'github' | 'ado') => api.get('/repos', { params: source ? { source } : {} }).then(r => r.data),
+  get: (id: string) => api.get(`/repos/${id}`).then(r => r.data),
+  create: (data: Record<string, unknown>) => api.post('/repos', data).then(r => r.data),
+  updateMeta: (id: string, meta: Record<string, unknown>) => api.put(`/repos/${id}/meta`, meta).then(r => r.data),
+  delete: (id: string) => api.delete(`/repos/${id}`).then(r => r.data),
+};
+
+// ─── Settings ───────────────────────────────────────────────────────────────
+export const settingsApi = {
+  get: () => api.get('/settings').then(r => r.data),
+  update: (data: Record<string, unknown>) => api.put('/settings', data).then(r => r.data),
+};
+
+// ─── Bookmarks ──────────────────────────────────────────────────────────────
+export const bookmarksApi = {
+  list: () => api.get('/bookmarks').then(r => r.data),
+  create: (data: Record<string, unknown>) => api.post('/bookmarks', data).then(r => r.data),
+  update: (id: string, data: Record<string, unknown>) => api.put(`/bookmarks/${id}`, data).then(r => r.data),
+  delete: (id: string) => api.delete(`/bookmarks/${id}`).then(r => r.data),
+};
+
+// ─── Collections ────────────────────────────────────────────────────────────
+export const collectionsApi = {
+  list: () => api.get('/collections').then(r => r.data),
+  create: (data: Record<string, unknown>) => api.post('/collections', data).then(r => r.data),
+  update: (id: string, data: Record<string, unknown>) => api.put(`/collections/${id}`, data).then(r => r.data),
+  delete: (id: string) => api.delete(`/collections/${id}`).then(r => r.data),
+};
+
+// ─── Docs ───────────────────────────────────────────────────────────────────
+export const docsApi = {
+  list: () => api.get('/docs').then(r => r.data),
+  create: (data: Record<string, unknown>) => api.post('/docs', data).then(r => r.data),
+  update: (id: string, data: Record<string, unknown>) => api.put(`/docs/${id}`, data).then(r => r.data),
+  delete: (id: string) => api.delete(`/docs/${id}`).then(r => r.data),
+};
+
+// ─── Plugins ────────────────────────────────────────────────────────────────
+export const pluginsApi = {
+  getState: () => api.get('/plugins/state').then(r => r.data),
+  updateState: (data: Record<string, unknown>) => api.put('/plugins/state', data).then(r => r.data),
+};
+
+// ─── Analytics ──────────────────────────────────────────────────────────────
+export const analyticsApi = {
+  trackPageView: (path: string) => api.post('/analytics/pageview', { path }).then(r => r.data),
+  trackError: (data: { message: string; stack?: string; path: string }) => api.post('/analytics/error', data).then(r => r.data),
+  getPageViews: (limit?: number) => api.get('/analytics/pageviews', { params: limit ? { limit } : {} }).then(r => r.data),
+  getErrors: (limit?: number) => api.get('/analytics/errors', { params: limit ? { limit } : {} }).then(r => r.data),
+};
+
+// ─── Server availability check ──────────────────────────────────────────────
+// Returns true if the API server is reachable, false otherwise.
+// Used to decide whether to persist via API or fall back to localStorage.
+export async function isApiAvailable(): Promise<boolean> {
+  try {
+    await api.get('/health', { timeout: 2000 });
+    return true;
+  } catch {
+    return false;
+  }
+}

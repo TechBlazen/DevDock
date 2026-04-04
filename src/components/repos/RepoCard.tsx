@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Star, GitBranch, Lock, Globe, ExternalLink, Code2, Download, Copy, Check, Terminal, Pencil, X, User, Users, Cloud, Tag, Plus } from 'lucide-react';
+import { Star, GitBranch, Lock, Globe, ExternalLink, Code2, Download, Copy, Check, Terminal, Pencil, X, User, Users, Cloud, Tag, Plus, Trash2 } from 'lucide-react';
 import { Card, Pill, Button, Tooltip } from '../ui';
 import { openInVSCode, openInVSCodeWeb } from '../../lib/repos';
 import { useRepoStore, useAuthStore, useUserAccountsStore } from '../../store';
@@ -221,12 +221,17 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const [showCloneMenu, setShowCloneMenu] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const langColor = langColors[repo.language] ?? langColors.Unknown;
 
   const user = useAuthStore((s) => s.user);
+  const removeRepo = useRepoStore((s) => s.removeRepo);
   const toggleFavoriteRepo = useUserAccountsStore((s) => s.toggleFavoriteRepo);
   const isFavoriteRepo = useUserAccountsStore((s) => s.isFavoriteRepo);
   const isFav = user ? isFavoriteRepo(user.id, repo.id) : false;
+
+  // Delete permission: user who added the repo OR any admin
+  const canDelete = user && (repo.addedBy === user.id || user.role === 'admin');
 
   return (
     <Card highlight={expanded} onClick={() => { if (!editing) setExpanded((v) => !v); }} className="transition-all">
@@ -332,6 +337,38 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
               <Button variant="ghost" size="sm" onClick={() => setShowCloneMenu(!showCloneMenu)}><Download size={11} /> Clone</Button>
               {showCloneMenu && <CloneMenu repo={repo} onClose={() => setShowCloneMenu(false)} />}
             </div>
+            {canDelete && (
+              <Tooltip tip={user?.role === 'admin' ? 'Delete repo (admin)' : 'Delete repo'}>
+                <Button variant="danger" size="sm" onClick={() => setConfirmDelete(true)}><Trash2 size={11} /> Delete</Button>
+              </Tooltip>
+            )}
+          </div>
+        )}
+
+        {/* Delete confirmation dialog */}
+        {confirmDelete && (
+          <div
+            className="mt-3 pt-3 flex items-center gap-3"
+            style={{ borderTop: '1px solid var(--border-subtle)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Trash2 size={14} style={{ color: '#ef4444', flexShrink: 0 }} />
+            <span className="text-[11px] flex-1" style={{ color: 'var(--text-secondary)' }}>
+              Remove <strong>{repo.name}</strong> from your portal?
+            </span>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => {
+                removeRepo(repo.id, repo.source);
+                setConfirmDelete(false);
+              }}
+            >
+              Confirm
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>
+              Cancel
+            </Button>
           </div>
         )}
 
