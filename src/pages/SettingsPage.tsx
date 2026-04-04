@@ -128,13 +128,18 @@ const ActiveDirectorySettings = ({
     }, 1500);
   };
 
+  const adFont: React.CSSProperties = { fontFamily: 'Verdana, Geneva, sans-serif' };
+  const adLabel: React.CSSProperties = { ...adFont, fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6, display: 'block' };
+  const adInput: React.CSSProperties = { ...adFont, fontSize: 13, background: 'var(--bg-input)', border: '2px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: 8, padding: '10px 14px', width: '100%', outline: 'none' };
+  const adSelect: React.CSSProperties = { ...adInput, cursor: 'pointer' };
+
   return (
-    <div className="space-y-4">
-      {/* Connection toggle */}
+    <div className="space-y-6" style={adFont}>
+      {/* Connection */}
       <Card>
         <CardHeader>
           <Shield size={14} className="text-[#0078d4]" />
-          <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Connection</span>
+          <span style={{ ...adFont, fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Connection</span>
           <div className="flex-1" />
           <Toggle
             checked={config.enabled}
@@ -143,85 +148,53 @@ const ActiveDirectorySettings = ({
             color="#0078d4"
           />
         </CardHeader>
-        <div className="p-5 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Azure AD Tenant ID"
-              value={config.tenantId}
-              onChange={(e) => onUpdate({ tenantId: e.target.value })}
-              placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            />
-            <Input
-              label="Domain"
-              value={config.domain}
-              onChange={(e) => onUpdate({ domain: e.target.value })}
-              placeholder="contoso.com"
-            />
+        <div className="p-6 space-y-5">
+          <div className="grid grid-cols-2 gap-5">
+            <div>
+              <label style={adLabel}>Azure AD Tenant ID</label>
+              <input value={config.tenantId} onChange={(e) => onUpdate({ tenantId: e.target.value })} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style={adInput} />
+            </div>
+            <div>
+              <label style={adLabel}>Domain</label>
+              <input value={config.domain} onChange={(e) => onUpdate({ domain: e.target.value })} placeholder="contoso.com" style={adInput} />
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Client ID (App Registration)"
-              value={config.clientId}
-              onChange={(e) => onUpdate({ clientId: e.target.value })}
-              placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            />
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[12px] font-medium" style={{ color: 'var(--text-secondary)' }}>Client Secret</label>
+          <div className="grid grid-cols-2 gap-5">
+            <div>
+              <label style={adLabel}>Client ID (App Registration)</label>
+              <input value={config.clientId} onChange={(e) => onUpdate({ clientId: e.target.value })} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style={adInput} />
+            </div>
+            <div>
+              <label style={adLabel}>Client Secret</label>
               <div className="flex items-center gap-2">
-                <Lock size={12} className="text-[var(--text-faint)] flex-shrink-0" />
-                <input
-                  type="password"
-                  value={config.clientSecret}
-                  onChange={(e) => onUpdate({ clientSecret: e.target.value })}
-                  placeholder="Client secret..."
-                  className="flex-1 rounded-md px-3 py-2 text-[13px] outline-none"
-                  style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
-                />
+                <Lock size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                <input type="password" value={config.clientSecret} onChange={(e) => onUpdate({ clientSecret: e.target.value })} placeholder="Client secret..." style={{ ...adInput, flex: 1 }} />
               </div>
             </div>
           </div>
 
-          <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 16 }}>
-            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
+          <div style={{ borderTop: '2px solid var(--border-color)', paddingTop: 20, marginTop: 8 }}>
+            <div style={{ ...adFont, fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 14 }}>
               LDAP Configuration (Optional)
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label="LDAP URL"
-                value={config.ldapUrl}
-                onChange={(e) => onUpdate({ ldapUrl: e.target.value })}
-                placeholder="ldaps://dc.contoso.com:636"
-              />
-              <Input
-                label="Base DN"
-                value={config.baseDn}
-                onChange={(e) => onUpdate({ baseDn: e.target.value })}
-                placeholder="DC=contoso,DC=com"
-              />
+            <div className="grid grid-cols-2 gap-5">
+              <div>
+                <label style={adLabel}>LDAP URL</label>
+                <input value={config.ldapUrl} onChange={(e) => onUpdate({ ldapUrl: e.target.value })} placeholder="ldaps://dc.contoso.com:636" style={adInput} />
+              </div>
+              <div>
+                <label style={adLabel}>Base DN</label>
+                <input value={config.baseDn} onChange={(e) => onUpdate({ baseDn: e.target.value })} placeholder="DC=contoso,DC=com" style={adInput} />
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleTestConnection}
-              disabled={testStatus === 'testing'}
-            >
-              {testStatus === 'testing' ? (
-                <>Testing...</>
-              ) : testStatus === 'success' ? (
-                <><Check size={12} className="text-[#2e7d32]" /> Connected</>
-              ) : testStatus === 'error' ? (
-                <><AlertTriangle size={12} className="text-[#d32f2f]" /> Failed</>
-              ) : (
-                <>Test Connection</>
-              )}
+          <div className="flex items-center gap-3 pt-3">
+            <Button variant="outline" size="sm" onClick={handleTestConnection} disabled={testStatus === 'testing'}>
+              {testStatus === 'testing' ? <>Testing...</> : testStatus === 'success' ? <><Check size={12} className="text-[#2e7d32]" /> Connected</> : testStatus === 'error' ? <><AlertTriangle size={12} className="text-[#d32f2f]" /> Failed</> : <>Test Connection</>}
             </Button>
             {testStatus === 'error' && (
-              <span className="text-[11px]" style={{ color: '#d32f2f' }}>
-                Please fill in Tenant ID, Client ID, and Domain
-              </span>
+              <span style={{ ...adFont, fontSize: 12, color: '#d32f2f' }}>Please fill in Tenant ID, Client ID, and Domain</span>
             )}
           </div>
         </div>
@@ -231,14 +204,14 @@ const ActiveDirectorySettings = ({
       <Card>
         <CardHeader>
           <Users size={14} className="text-[#0078d4]" />
-          <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Security Groups</span>
+          <span style={{ ...adFont, fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Security Groups</span>
           <div className="flex-1" />
-          <span className="text-[10px] font-semibold" style={{ color: 'var(--text-faint)' }}>
+          <span style={{ ...adFont, fontSize: 11, fontWeight: 600, color: 'var(--text-faint)' }}>
             {config.securityGroups.length} group{config.securityGroups.length !== 1 ? 's' : ''}
           </span>
         </CardHeader>
-        <div className="p-5 space-y-4">
-          <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+        <div className="p-6 space-y-5">
+          <p style={{ ...adFont, fontSize: 13, lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 4 }}>
             Map Active Directory security groups to portal roles. Users in these groups will be automatically assigned the corresponding role when they sign in via AD.
           </p>
 
@@ -248,44 +221,18 @@ const ActiveDirectorySettings = ({
               {config.securityGroups.map((group) => {
                 const roleInfo = ROLE_OPTIONS.find((r) => r.value === group.role);
                 return (
-                  <div
-                    key={group.id}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg"
-                    style={{ background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}
-                  >
-                    <Users size={14} style={{ color: '#0078d4', flexShrink: 0 }} />
+                  <div key={group.id} className="flex items-center gap-3 px-5 py-4 rounded-lg" style={{ background: 'var(--bg-inset)', border: '2px solid var(--border-color)' }}>
+                    <Users size={16} style={{ color: '#0078d4', flexShrink: 0 }} />
                     <div className="flex-1 min-w-0">
-                      <div className="text-[12px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-                        {group.name}
-                      </div>
+                      <div style={{ ...adFont, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{group.name}</div>
                       {group.description && (
-                        <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-faint)' }}>
-                          {group.description}
-                        </div>
+                        <div style={{ ...adFont, fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{group.description}</div>
                       )}
                     </div>
-                    <select
-                      value={group.role}
-                      onChange={(e) => updateGroupRole(group.id, e.target.value as UserRole)}
-                      className="text-[11px] font-semibold rounded-md px-2 py-1 outline-none"
-                      style={{
-                        background: `${roleInfo?.color}12`,
-                        color: roleInfo?.color,
-                        border: `1px solid ${roleInfo?.color}40`,
-                      }}
-                    >
-                      {ROLE_OPTIONS.map((r) => (
-                        <option key={r.value} value={r.value}>{r.label}</option>
-                      ))}
+                    <select value={group.role} onChange={(e) => updateGroupRole(group.id, e.target.value as UserRole)} style={{ ...adFont, fontSize: 12, fontWeight: 600, borderRadius: 6, padding: '6px 10px', background: `${roleInfo?.color}12`, color: roleInfo?.color, border: `2px solid ${roleInfo?.color}40`, outline: 'none', cursor: 'pointer' }}>
+                      {ROLE_OPTIONS.map((r) => (<option key={r.value} value={r.value}>{r.label}</option>))}
                     </select>
-                    <button
-                      onClick={() => removeGroup(group.id)}
-                      className="p-1.5 rounded-md transition-colors"
-                      style={{ color: 'var(--text-faint)', background: 'transparent', border: 'none', cursor: 'pointer' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.color = '#d32f2f'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-faint)'; }}
-                      title="Remove group"
-                    >
+                    <button onClick={() => removeGroup(group.id)} className="p-1.5 rounded-md transition-colors" style={{ color: 'var(--text-faint)', background: 'transparent', border: 'none', cursor: 'pointer' }} onMouseEnter={(e) => { e.currentTarget.style.color = '#d32f2f'; }} onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-faint)'; }} title="Remove group">
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -295,47 +242,36 @@ const ActiveDirectorySettings = ({
           )}
 
           {/* Add new group */}
-          <div className="rounded-lg p-4" style={{ background: 'var(--bg-inset)', border: '1px dashed var(--border-color)' }}>
-            <div className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
+          <div className="rounded-lg p-5" style={{ background: 'var(--bg-inset)', border: '2px dashed var(--border-color)' }}>
+            <div style={{ ...adFont, fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 14 }}>
               Add Security Group
             </div>
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <Input
-                  label="Group Name"
-                  value={newGroupName}
-                  onChange={(e) => setNewGroupName(e.target.value)}
-                  placeholder="e.g. SG-Portal-Admins"
-                />
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[12px] font-medium" style={{ color: 'var(--text-secondary)' }}>Assigned Role</label>
-                  <select
-                    value={newGroupRole}
-                    onChange={(e) => setNewGroupRole(e.target.value as UserRole)}
-                    className="rounded-md px-3 py-2 text-[13px] outline-none"
-                    style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
-                  >
-                    {ROLE_OPTIONS.map((r) => (
-                      <option key={r.value} value={r.value}>{r.label}</option>
-                    ))}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label style={adLabel}>Group Name</label>
+                  <input value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="e.g. SG-Portal-Admins" style={adInput} />
+                </div>
+                <div>
+                  <label style={adLabel}>Assigned Role</label>
+                  <select value={newGroupRole} onChange={(e) => setNewGroupRole(e.target.value as UserRole)} style={adSelect}>
+                    {ROLE_OPTIONS.map((r) => (<option key={r.value} value={r.value}>{r.label}</option>))}
                   </select>
                 </div>
               </div>
-              <Input
-                label="Description (optional)"
-                value={newGroupDesc}
-                onChange={(e) => setNewGroupDesc(e.target.value)}
-                placeholder="e.g. Portal administrators with full access"
-              />
+              <div>
+                <label style={adLabel}>Description (optional)</label>
+                <input value={newGroupDesc} onChange={(e) => setNewGroupDesc(e.target.value)} placeholder="e.g. Portal administrators with full access" style={adInput} />
+              </div>
               <Button variant="outline" size="sm" onClick={addGroup} disabled={!newGroupName.trim()}>
                 <Plus size={12} /> Add Group
               </Button>
             </div>
           </div>
 
-          <div className="flex items-start gap-2 rounded-xl p-3" style={{ background: '#0078d408', border: '1px solid #0078d41a' }}>
-            <Shield size={12} className="text-[#0078d4] mt-0.5 flex-shrink-0" />
-            <p className="text-[11px] leading-snug" style={{ color: 'var(--text-muted)' }}>
+          <div className="flex items-start gap-3 rounded-xl p-4" style={{ background: '#0078d408', border: '1px solid #0078d41a' }}>
+            <Shield size={14} className="text-[#0078d4] mt-0.5 flex-shrink-0" />
+            <p style={{ ...adFont, fontSize: 12, lineHeight: 1.6, color: 'var(--text-secondary)' }}>
               Security groups are synced from Active Directory. Users are automatically provisioned with the mapped role when they authenticate.
               Groups can be nested — users inherit the highest-privilege role from all their group memberships.
             </p>
