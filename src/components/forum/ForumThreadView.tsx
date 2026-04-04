@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Eye, Check } from 'lucide-react';
+import { ArrowLeft, Eye, Check, ThumbsUp, Award } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button, Card } from '../ui';
 import { ForumVoteControl } from './ForumVoteControl';
@@ -147,12 +147,19 @@ export const ForumThreadView = ({ threadId }: ForumThreadViewProps) => {
       </Card>
 
       {/* Answers header */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <h2 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
           {thread.answers.length} {thread.answers.length === 1 ? 'Answer' : 'Answers'}
         </h2>
         <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>
           sorted by votes
+        </span>
+        <span
+          className="ml-auto flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-full"
+          style={{ background: 'var(--accent-bg)', color: 'var(--accent)', border: '1px solid var(--accent)' }}
+        >
+          <ThumbsUp size={10} />
+          Vote on answers to help the best rise to the top
         </span>
       </div>
 
@@ -177,11 +184,12 @@ export const ForumThreadView = ({ threadId }: ForumThreadViewProps) => {
                 <ForumVoteControl
                   votes={answer.votes}
                   onVote={(value) => voteAnswer(thread.id, answer.id, userId, value)}
+                  label="Rate"
                 />
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  {/* Author info */}
+                  {/* Author info + accept */}
                   <div className="flex items-center gap-2 mb-3">
                     {answer.authorAvatarUrl ? (
                       <img
@@ -206,25 +214,46 @@ export const ForumThreadView = ({ threadId }: ForumThreadViewProps) => {
                       {formatDistanceToNow(new Date(answer.createdAt), { addSuffix: true })}
                     </span>
 
-                    {/* Accept button - only for thread author */}
+                    {/* Accept button - visible to thread author */}
                     {isThreadAuthor && (
                       <button
                         onClick={() => acceptAnswer(thread.id, answer.id)}
-                        className="ml-auto p-1 rounded transition-colors hover:opacity-80 cursor-pointer"
+                        className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer"
                         style={{
-                          color: answer.isAccepted ? '#2e7d32' : 'var(--text-faint)',
-                          background: answer.isAccepted ? '#2e7d3218' : 'transparent',
-                          border: 'none',
+                          color: answer.isAccepted ? '#fff' : '#2e7d32',
+                          background: answer.isAccepted ? '#2e7d32' : '#2e7d3210',
+                          border: answer.isAccepted ? '1px solid #2e7d32' : '1px solid #2e7d3240',
+                          fontSize: '11px',
+                          fontWeight: 600,
                         }}
-                        title={answer.isAccepted ? 'Accepted answer' : 'Accept this answer'}
+                        title={answer.isAccepted ? 'Click to unaccept' : 'Accept this answer (+15 rep to author)'}
                       >
-                        <Check size={18} />
+                        <Check size={14} />
+                        {answer.isAccepted ? 'Accepted' : 'Accept'}
                       </button>
+                    )}
+
+                    {/* Accepted badge - visible to everyone when accepted and not the author */}
+                    {!isThreadAuthor && answer.isAccepted && (
+                      <span
+                        className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold"
+                        style={{ color: '#2e7d32', background: '#2e7d3215', border: '1px solid #2e7d3230' }}
+                      >
+                        <Award size={14} />
+                        Accepted Answer
+                      </span>
                     )}
                   </div>
 
                   {/* Answer body */}
                   <ForumMarkdownBody content={answer.body} />
+
+                  {/* Reputation hint */}
+                  <div className="mt-3 flex items-center gap-1.5 text-[10px]" style={{ color: 'var(--text-faint)' }}>
+                    <ThumbsUp size={10} />
+                    Upvotes earn the author +10 reputation
+                    {answer.isAccepted && <span style={{ color: '#2e7d32' }}> · Accepted +15 bonus</span>}
+                  </div>
                 </div>
               </div>
             </div>
