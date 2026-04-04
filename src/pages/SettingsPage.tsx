@@ -598,6 +598,8 @@ export const SettingsPage = () => {
         />
       </CollapsibleSection>
 
+      <div style={{ borderTop: '1px solid var(--border-color)', marginTop: 4, marginBottom: 30 }} />
+
       {/* ═══════════════════════════════════════════════════════════════════
            SECTION 7 — API Keys & Authentication (moved to bottom)
            ═══════════════════════════════════════════════════════════════════ */}
