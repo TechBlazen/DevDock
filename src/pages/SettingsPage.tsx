@@ -104,6 +104,8 @@ export const SettingsPage = () => {
         Settings
       </SectionTitle>
 
+      <div style={{ borderTop: '1px solid var(--border-color)', marginTop: 4, marginBottom: 30 }} />
+
       {/* ═══════════════════════════════════════════════════════════════════
            SECTION 1 — Sidebar Navigation (placeholder for nav editor PR)
            ═══════════════════════════════════════════════════════════════════ */}
