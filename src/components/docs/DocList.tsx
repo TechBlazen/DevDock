@@ -13,7 +13,14 @@ export const DocList = ({ onImport }: DocListProps) => {
   const [showAdd, setShowAdd] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newUrl, setNewUrl] = useState('');
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => {
+    const collapsed = new Set<string>();
+    for (const doc of docs) {
+      const repoTag = doc.tags?.find((t) => t !== 'github' && t !== 'ado' && t !== 'auto-imported');
+      if (doc.tags?.includes('auto-imported') && repoTag) collapsed.add(repoTag);
+    }
+    return collapsed;
+  });
 
   const handleCreate = () => {
     if (!newTitle.trim()) return;

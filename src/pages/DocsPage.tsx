@@ -31,8 +31,10 @@ export const DocsPage = () => {
         {activeDoc ? (
           <>
             {/* Doc header */}
-            <div className="flex items-center justify-between px-6 py-3 flex-shrink-0" style={{
+            <div className="flex items-center justify-between py-3 flex-shrink-0" style={{
               borderBottom: '1px solid var(--border-subtle)',
+              paddingLeft: 40,
+              paddingRight: 24,
             }}>
               <div className="min-w-0">
                 <h2 className="text-[15px] font-bold truncate" style={{ color: 'var(--text-primary)' }}>
@@ -111,7 +113,7 @@ export const DocsPage = () => {
             {/* Content area */}
             <div className="flex-1 overflow-hidden">
               {mode === 'view' ? (
-                <div className="h-full overflow-y-auto px-6 py-5">
+                <div className="h-full overflow-y-auto py-5" style={{ paddingLeft: 40, paddingRight: 24 }}>
                   <MarkdownViewer content={activeDoc.content} />
                 </div>
               ) : (
