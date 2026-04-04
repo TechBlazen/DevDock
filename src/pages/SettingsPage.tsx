@@ -1,5 +1,8 @@
-import { useState } from 'react';
-import { Key, Activity, GitFork, GitBranch, Code2, Save, Check, Lock, AlertTriangle, Globe, LayoutDashboard } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
+import {
+  Key, Activity, GitFork, GitBranch, Code2, Save, Check, Lock, AlertTriangle, Globe,
+  ChevronDown, ChevronRight, LayoutDashboard,
+} from 'lucide-react';
 import { useSettingsStore } from '../store';
 import { FederatedSourcesPage } from './FederatedSourcesPage';
 import { initOTel } from '../otel';
@@ -13,6 +16,53 @@ const providers: { id: AIProvider; label: string; color: string; placeholder: st
   { id: 'gemini',    label: 'Google Gemini',       color: '#4285f4', placeholder: 'AIza...' },
   { id: 'local',     label: 'Local (Ollama)',      color: '#b388ff', placeholder: 'no key needed' },
 ];
+
+// ─── Collapsible Section ─────────────────────────────────────────────────────
+const CollapsibleSection = ({
+  icon,
+  iconColor,
+  title,
+  children,
+  defaultOpen = false,
+}: {
+  icon: ReactNode;
+  iconColor?: string;
+  title: string;
+  children: ReactNode;
+  defaultOpen?: boolean;
+}) => {
+  const [open, setOpen] = useState(defaultOpen);
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full text-sm font-bold uppercase tracking-wider mb-0 flex items-center gap-2 cursor-pointer select-none"
+        style={{
+          color: 'var(--text-primary)',
+          borderBottom: '2px solid var(--border-subtle)',
+          paddingBottom: 8,
+          background: 'none',
+          border: 'none',
+          borderBlockEnd: '2px solid var(--border-subtle)',
+        }}
+      >
+        <span className={iconColor ? `text-[${iconColor}]` : ''} style={{ display: 'flex', alignItems: 'center' }}>
+          {icon}
+        </span>
+        {title}
+        <span className="ml-auto" style={{ color: 'var(--text-faint)' }}>
+          {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+        </span>
+      </button>
+      {open && (
+        <div className="mt-4 animate-[fadeIn_0.15s_ease]">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const SettingsPage = () => {
   const {
@@ -48,73 +98,22 @@ export const SettingsPage = () => {
       </SectionTitle>
 
       {/* ═══════════════════════════════════════════════════════════════════
-           SECTION 1 — API Keys & Authentication
+           SECTION 1 — Sidebar Navigation (placeholder for nav editor PR)
            ═══════════════════════════════════════════════════════════════════ */}
-      <div>
-        <h2 className="text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)', borderBottom: '2px solid var(--border-subtle)', paddingBottom: 8 }}>
-          <Key size={16} className="text-[#2a6fff]" />
-          API Keys &amp; Authentication
-        </h2>
-
-        <div className="space-y-4">
-          {/* AI Provider Keys */}
-          <Card>
-            <CardHeader>
-              <Key size={14} className="text-[#2a6fff]" />
-              <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">AI Provider API Keys</span>
-            </CardHeader>
-            <div className="p-5 space-y-4">
-              {providers.map(({ id, label, color, placeholder }) => (
-                <div key={id}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-                    <span className="text-xs font-semibold" style={{ color }}>{label}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Lock size={12} className="text-[var(--text-faint)] flex-shrink-0" />
-                    <input
-                      type="password"
-                      value={settings.ai.apiKeys[id]}
-                      onChange={(e) => updateApiKey(id, e.target.value)}
-                      placeholder={placeholder}
-                      className="flex-1 rounded-lg px-3 py-2 text-xs outline-none transition-colors"
-                      style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)', fontFamily: 'Verdana, Geneva, sans-serif' }}
-                    />
-                  </div>
-                </div>
-              ))}
-
-              <div>
-                <Input
-                  label="Local Ollama Endpoint"
-                  value={settings.ai.localEndpoint}
-                  onChange={(e) => updateApiKey('local', e.target.value)}
-                  placeholder="http://localhost:11434/v1"
-                />
-              </div>
-
-              <div className="flex items-start gap-2 bg-[#2a6fff08] border border-[#2a6fff1a] rounded-xl p-3">
-                <Lock size={12} className="text-[#2a6fff] mt-0.5 flex-shrink-0" />
-                <p className="text-[11px] text-[var(--text-muted)] leading-snug">
-                  Keys are stored in <code className="text-[#2a6fff] bg-[#2a6fff12] px-1 rounded font-mono">localStorage</code> only.
-                  They are sent <strong className="text-[var(--text-primary)]">directly to the provider</strong> — never to any third-party server.
-                </p>
-              </div>
-            </div>
-          </Card>
-
-        </div>
-      </div>
+      <CollapsibleSection
+        icon={<LayoutDashboard size={16} className="text-[#8b5cf6]" />}
+        title="Sidebar Navigation"
+      >
+        <NavigationEditor />
+      </CollapsibleSection>
 
       {/* ═══════════════════════════════════════════════════════════════════
            SECTION 2 — Organizations & Repositories
            ═══════════════════════════════════════════════════════════════════ */}
-      <div>
-        <h2 className="text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)', borderBottom: '2px solid var(--border-subtle)', paddingBottom: 8 }}>
-          <GitFork size={16} className="text-[#8090b0]" />
-          Organizations &amp; Repositories
-        </h2>
-
+      <CollapsibleSection
+        icon={<GitFork size={16} className="text-[#8090b0]" />}
+        title="Organizations &amp; Repositories"
+      >
         <div className="space-y-4">
           {/* GitHub Token + Orgs */}
           <Card>
@@ -188,17 +187,15 @@ export const SettingsPage = () => {
             </div>
           </Card>
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* ═══════════════════════════════════════════════════════════════════
            SECTION 3 — OpenTelemetry Configuration
            ═══════════════════════════════════════════════════════════════════ */}
-      <div>
-        <h2 className="text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)', borderBottom: '2px solid var(--border-subtle)', paddingBottom: 8 }}>
-          <Activity size={16} className="text-[#00e5a0]" />
-          OpenTelemetry Configuration
-        </h2>
-
+      <CollapsibleSection
+        icon={<Activity size={16} className="text-[#00e5a0]" />}
+        title="OpenTelemetry Configuration"
+      >
         <Card>
           <CardHeader>
             <Activity size={14} className="text-[#00e5a0]" />
@@ -247,17 +244,15 @@ export const SettingsPage = () => {
             </Button>
           </div>
         </Card>
-      </div>
+      </CollapsibleSection>
 
       {/* ═══════════════════════════════════════════════════════════════════
            SECTION 4 — IDE Extensions
            ═══════════════════════════════════════════════════════════════════ */}
-      <div>
-        <h2 className="text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)', borderBottom: '2px solid var(--border-subtle)', paddingBottom: 8 }}>
-          <Code2 size={16} className="text-[#007acc]" />
-          IDE Extensions
-        </h2>
-
+      <CollapsibleSection
+        icon={<Code2 size={16} className="text-[#007acc]" />}
+        title="IDE Extensions"
+      >
         <Card>
           <CardHeader>
             <Code2 size={14} className="text-[#007acc]" />
@@ -284,31 +279,73 @@ export const SettingsPage = () => {
             </div>
           </div>
         </Card>
-      </div>
+      </CollapsibleSection>
 
       {/* ═══════════════════════════════════════════════════════════════════
            SECTION 5 — Search Sources (Federated Search)
            ═══════════════════════════════════════════════════════════════════ */}
-      <div>
-        <h2 className="text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)', borderBottom: '2px solid var(--border-subtle)', paddingBottom: 8 }}>
-          <Globe size={16} className="text-[#2a6fff]" />
-          Search Sources
-        </h2>
-
+      <CollapsibleSection
+        icon={<Globe size={16} className="text-[#2a6fff]" />}
+        title="Search Sources"
+      >
         <FederatedSourcesPage embedded />
-      </div>
+      </CollapsibleSection>
 
       {/* ═══════════════════════════════════════════════════════════════════
-           SECTION 6 — Sidebar Navigation
+           SECTION 6 — API Keys & Authentication (moved to bottom)
            ═══════════════════════════════════════════════════════════════════ */}
-      <div>
-        <h2 className="text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)', borderBottom: '2px solid var(--border-subtle)', paddingBottom: 8 }}>
-          <LayoutDashboard size={16} className="text-[#8b5cf6]" />
-          Sidebar Navigation
-        </h2>
+      <CollapsibleSection
+        icon={<Key size={16} className="text-[#2a6fff]" />}
+        title="API Keys &amp; Authentication"
+      >
+        <div className="space-y-4">
+          {/* AI Provider Keys */}
+          <Card>
+            <CardHeader>
+              <Key size={14} className="text-[#2a6fff]" />
+              <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">AI Provider API Keys</span>
+            </CardHeader>
+            <div className="p-5 space-y-4">
+              {providers.map(({ id, label, color, placeholder }) => (
+                <div key={id}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-2 h-2 rounded-full" style={{ background: color }} />
+                    <span className="text-xs font-semibold" style={{ color }}>{label}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Lock size={12} className="text-[var(--text-faint)] flex-shrink-0" />
+                    <input
+                      type="password"
+                      value={settings.ai.apiKeys[id]}
+                      onChange={(e) => updateApiKey(id, e.target.value)}
+                      placeholder={placeholder}
+                      className="flex-1 rounded-lg px-3 py-2 text-xs outline-none transition-colors"
+                      style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)', fontFamily: 'Verdana, Geneva, sans-serif' }}
+                    />
+                  </div>
+                </div>
+              ))}
 
-        <NavigationEditor />
-      </div>
+              <div>
+                <Input
+                  label="Local Ollama Endpoint"
+                  value={settings.ai.localEndpoint}
+                  onChange={(e) => updateApiKey('local', e.target.value)}
+                  placeholder="http://localhost:11434/v1"
+                />
+              </div>
+
+              <div className="flex items-start gap-2 bg-[#2a6fff08] border border-[#2a6fff1a] rounded-xl p-3">
+                <Lock size={12} className="text-[#2a6fff] mt-0.5 flex-shrink-0" />
+                <p className="text-[11px] text-[var(--text-muted)] leading-snug">
+                  Keys are stored in <code className="text-[#2a6fff] bg-[#2a6fff12] px-1 rounded font-mono">localStorage</code> only.
+                  They are sent <strong className="text-[var(--text-primary)]">directly to the provider</strong> — never to any third-party server.
+                </p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </CollapsibleSection>
 
       {/* Save */}
       <Button variant="primary" size="lg" onClick={handleSave}>
