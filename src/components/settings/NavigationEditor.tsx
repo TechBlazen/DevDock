@@ -563,7 +563,7 @@ export const NavigationEditor = () => {
         </Button>
       </CardHeader>
 
-      <div className="p-4 space-y-0">
+      <div className="py-4 pr-4 space-y-0" style={{ paddingLeft: 28 }}>
         {items.map((item, idx) => {
           const isEditing = editingId === item.id;
           const isLocked = (item.type === 'link' && item.locked);
