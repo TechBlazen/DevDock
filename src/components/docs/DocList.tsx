@@ -206,25 +206,30 @@ export const DocList = ({ onImport }: DocListProps) => {
           const source = groupDocs[0]?.tags?.includes('github') ? 'github' : groupDocs[0]?.tags?.includes('ado') ? 'ado' : '';
 
           return (
-            <div key={group} className="mt-1">
+            <div key={group} className="mt-3 mx-2 rounded-lg" style={{ background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}>
               <button
                 onClick={() => toggleGroup(group)}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-left"
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-left rounded-t-lg"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  borderBottom: isCollapsed ? 'none' : '1px solid var(--border-subtle)',
+                }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
               >
-                {isCollapsed ? <ChevronRight size={11} style={{ color: 'var(--text-faint)' }} /> : <ChevronDown size={11} style={{ color: 'var(--text-faint)' }} />}
-                <FolderOpen size={12} style={{ color: source === 'github' ? '#8090b0' : '#0078d4' }} />
-                <span className="text-[10px] font-bold uppercase tracking-wider flex-1" style={{ color: 'var(--text-muted)' }}>
+                {isCollapsed ? <ChevronRight size={12} style={{ color: 'var(--text-faint)' }} /> : <ChevronDown size={12} style={{ color: 'var(--text-faint)' }} />}
+                <FolderOpen size={13} style={{ color: source === 'github' ? '#8090b0' : '#0078d4' }} />
+                <span className="text-[10px] font-bold uppercase tracking-wider flex-1" style={{ color: 'var(--text-secondary)' }}>
                   {group}
                 </span>
-                <span className="text-[9px] font-semibold" style={{ color: 'var(--text-faint)' }}>
+                <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--bg-hover)', color: 'var(--text-faint)' }}>
                   {groupDocs.length}
                 </span>
               </button>
               {!isCollapsed && (
-                <div className="animate-[fadeIn_0.1s_ease]">
+                <div className="animate-[fadeIn_0.1s_ease]" style={{ paddingLeft: 12 }}>
                   {groupDocs.map(renderDoc)}
                 </div>
               )}
