@@ -150,14 +150,14 @@ export const Card = ({
   <div
     onClick={onClick}
     className={clsx(
-      'rounded-lg transition-all duration-200',
-      onClick && 'cursor-pointer hover:shadow-md',
+      'rounded-xl transition-all duration-200',
+      onClick && 'cursor-pointer hover:shadow-lg',
       className
     )}
     style={{
       background: 'var(--bg-surface)',
       border: highlight ? '2px solid var(--accent)' : '1px solid var(--border-color)',
-      boxShadow: 'var(--shadow-sm)',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
     }}
   >
     {children}

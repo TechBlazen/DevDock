@@ -7,6 +7,7 @@ import { useSettingsStore } from '../store';
 import { FederatedSourcesPage } from './FederatedSourcesPage';
 import { initOTel } from '../otel';
 import { SectionTitle, Input, Toggle, Button, Card, CardHeader } from '../components/ui';
+import { NavigationEditor } from '../components/settings/NavigationEditor';
 import type { AIProvider } from '../types';
 
 const providers: { id: AIProvider; label: string; color: string; placeholder: string }[] = [
@@ -100,16 +101,10 @@ export const SettingsPage = () => {
            SECTION 1 — Sidebar Navigation (placeholder for nav editor PR)
            ═══════════════════════════════════════════════════════════════════ */}
       <CollapsibleSection
-        icon={<LayoutDashboard size={16} />}
+        icon={<LayoutDashboard size={16} className="text-[#8b5cf6]" />}
         title="Sidebar Navigation"
       >
-        <Card>
-          <div className="p-5">
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              Navigation customization is available when the navigation editor feature is enabled.
-            </p>
-          </div>
-        </Card>
+        <NavigationEditor />
       </CollapsibleSection>
 
       {/* ═══════════════════════════════════════════════════════════════════
