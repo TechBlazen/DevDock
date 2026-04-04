@@ -172,6 +172,52 @@ export interface WidgetSubmission {
   rejectionReason?: string;
 }
 
+// ─── Navigation Types ────────────────────────────────────────────────────────
+export interface NavItemBase {
+  id: string;
+  visible: boolean;
+}
+
+export interface NavLinkItem extends NavItemBase {
+  type: 'link';
+  label: string;
+  icon: string;          // lucide icon name
+  route: string;
+  adminOnly?: boolean;
+  locked?: boolean;      // prevent deletion (e.g. Settings)
+}
+
+export interface NavGroupItem extends NavItemBase {
+  type: 'group';
+  label: string;
+  icon: string;
+  route: string;         // parent route
+  children: NavLinkItem[];
+  defaultExpanded: boolean;
+}
+
+export interface NavDividerItem extends NavItemBase {
+  type: 'divider';
+}
+
+export interface NavExternalLinkItem extends NavItemBase {
+  type: 'external';
+  label: string;
+  icon: string;
+  url: string;
+}
+
+export interface NavPluginSlotItem extends NavItemBase {
+  type: 'plugin-slot';
+  label: string;
+}
+
+export type NavItem = NavLinkItem | NavGroupItem | NavDividerItem | NavExternalLinkItem | NavPluginSlotItem;
+
+export interface NavigationConfig {
+  items: NavItem[];
+}
+
 // ─── Settings Types ───────────────────────────────────────────────────────────
 export interface GitHubConfig {
   accessToken: string;
@@ -192,6 +238,7 @@ export interface AppSettings {
   ado: ADOConfig;
   theme: 'dark' | 'light';
   dashboardWidgets: WidgetId[];
+  navigation: NavigationConfig;
 }
 
 // ─── Scaffold Types ──────────���─────────────────────────────────────���─────────

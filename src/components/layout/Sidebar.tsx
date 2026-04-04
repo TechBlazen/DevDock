@@ -1,40 +1,14 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, GitFork, GitBranch, Cpu, Activity,
-  Settings, Layers, Hammer, Puzzle, FileText, Network, Users, LogOut,
   PanelLeftClose, PanelLeftOpen, ChevronDown, ChevronRight,
-  Wrench, Braces, Send, Search, User, MessageSquare,
-  Globe, Wifi, FileSearch, ShieldCheck, LayoutList,
-  Cable, Waypoints, FileDiff, Binary, Regex,
-  Table, GitMerge, Container, BarChart3,
+  Search, LogOut, ExternalLink as ExternalLinkIcon,
 } from 'lucide-react';
-import { useMCPStore, useAuthStore, useSearchStore } from '../../store';
+import { useMCPStore, useAuthStore, useSearchStore, useSettingsStore } from '../../store';
 import { usePluginExtensions } from '../../lib/plugins';
-
-// Group 1: Main navigation (above divider)
-const mainNavItems = [
-  { to: '/',           icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/github',     icon: GitFork,         label: 'GitHub' },
-  { to: '/ado',        icon: GitBranch,       label: 'Azure DevOps' },
-  { to: '/mcp',        icon: Cpu,             label: 'MCP Servers' },
-];
-
-// Group 2: Tools & monitoring (below divider)
-const toolsNavItems = [
-  { to: '/telemetry',  icon: Activity,        label: 'Observability' },
-  { to: '/catalog',    icon: Layers,          label: 'Widgets' },
-  { to: '/scaffold',   icon: Hammer,          label: 'Scaffold' },
-  { to: '/docs',       icon: FileText,        label: 'Docs' },
-  { to: '/network',    icon: Network,         label: 'Network' },
-  { to: '/forum',      icon: MessageSquare,   label: 'Community' },
-];
-
-const adminNavItems = [
-  { to: '/analytics',  icon: BarChart3,       label: 'Analytics' },
-  { to: '/users',      icon: Users,           label: 'Users' },
-  { to: '/settings',   icon: Settings,        label: 'Settings' },
-];
+import { getIcon } from '../../lib/icon-registry';
+import { defaultNavigation } from '../../lib/default-navigation';
+import type { NavItem, NavLinkItem, NavGroupItem } from '../../types';
 
 const PROVIDER_LABELS: Record<string, string> = {
   github: 'GitHub',
@@ -79,45 +53,216 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
   const { user, provider, signOut } = useAuthStore();
   const { navItems: pluginNavItems } = usePluginExtensions();
   const { pathname } = useLocation();
+  const navConfig = useSettingsStore((s) => s.settings.navigation) ?? defaultNavigation;
 
-  const [pluginsExpanded, setPluginsExpanded] = useState(true);
-  const [devtoolsExpanded, setDevtoolsExpanded] = useState(true);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    for (const item of navConfig.items) {
+      if (item.type === 'group') {
+        initial[item.id] = item.defaultExpanded;
+      }
+    }
+    // Always init plugin expansion
+    initial['__plugins__'] = false;
+    return initial;
+  });
 
   const isAdmin = user?.role === 'admin';
   const displayName = user?.displayName ?? 'User';
   const initials = displayName.charAt(0).toUpperCase();
   const providerLabel = PROVIDER_LABELS[provider ?? 'guest'] ?? provider;
 
-  // Check if any plugin route is active
-  const pluginPaths = pluginNavItems.map((p) => p.to);
-  const isPluginRouteActive = pluginPaths.includes(pathname);
-  const isPluginsPageActive = pathname === '/plugins';
-
   const openSearch = useSearchStore((s) => s.open);
 
-  const renderNavLink = (to: string, Icon: React.ComponentType<{ size?: number; className?: string }>, label: string, indent = false) => (
-    <NavLink
-      key={to}
-      to={to}
-      end={to === '/'}
-      title={collapsed ? label : undefined}
-      className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : indent ? 'px-3 py-[10px]' : 'px-3 py-[10px]'} rounded-md text-[13px] font-medium transition-all duration-200`}
-      style={({ isActive }) => ({ ...navLinkStyle(isActive), ...(indent && !collapsed ? { marginLeft: 44 } : {}) })}
-      {...hoverHandlers}
-    >
-      <Icon size={indent ? 14 : 16} className="flex-shrink-0" />
-      {!collapsed && <span className="truncate">{label}</span>}
-      {!collapsed && label === 'MCP Servers' && runningCount > 0 && (
-        <span className="ml-auto text-[10px] rounded-full px-1.5 py-0.5 font-semibold flex-shrink-0" style={{
-          background: 'var(--accent-bg)',
-          color: 'var(--accent)',
-          border: '1px solid var(--accent)',
-        }}>
-          {runningCount}
-        </span>
-      )}
-    </NavLink>
-  );
+  const toggleGroup = (id: string) =>
+    setExpandedGroups((g) => ({ ...g, [id]: !g[id] }));
+
+  // ── Render helpers ──
+
+  const renderNavLink = (to: string, iconName: string, label: string, indent = false) => {
+    const Icon = getIcon(iconName);
+    return (
+      <NavLink
+        key={to}
+        to={to}
+        end={to === '/'}
+        title={collapsed ? label : undefined}
+        className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : 'px-3 py-[10px]'} rounded-md text-[13px] font-medium transition-all duration-200`}
+        style={({ isActive }) => ({ ...navLinkStyle(isActive), ...(indent && !collapsed ? { marginLeft: 44 } : {}) })}
+        {...hoverHandlers}
+      >
+        <Icon size={indent ? 14 : 16} className="flex-shrink-0" />
+        {!collapsed && <span className="truncate">{label}</span>}
+        {!collapsed && label === 'MCP Servers' && runningCount > 0 && (
+          <span className="ml-auto text-[10px] rounded-full px-1.5 py-0.5 font-semibold flex-shrink-0" style={{
+            background: 'var(--accent-bg)',
+            color: 'var(--accent)',
+            border: '1px solid var(--accent)',
+          }}>
+            {runningCount}
+          </span>
+        )}
+      </NavLink>
+    );
+  };
+
+  const renderGroup = (item: NavGroupItem) => {
+    const Icon = getIcon(item.icon);
+    const isExpanded = expandedGroups[item.id] ?? item.defaultExpanded;
+    const visibleChildren = item.children.filter((c) => c.visible);
+
+    if (collapsed) {
+      return renderNavLink(item.route, item.icon, item.label);
+    }
+
+    return (
+      <div key={item.id}>
+        <div className="flex items-center">
+          <NavLink
+            to={item.route}
+            className="flex-1 flex items-center gap-2.5 px-3 py-[10px] rounded-md text-[13px] font-medium transition-all duration-200"
+            style={() => navLinkStyle(pathname.startsWith(item.route))}
+            {...hoverHandlers}
+          >
+            <Icon size={16} className="flex-shrink-0" />
+            <span className="truncate">{item.label}</span>
+          </NavLink>
+          {visibleChildren.length > 0 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); toggleGroup(item.id); }}
+              className="p-1 mr-2 rounded transition-all duration-200"
+              style={{ color: 'var(--text-faint)' }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-faint)'}
+            >
+              {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </button>
+          )}
+        </div>
+        {isExpanded && visibleChildren.length > 0 && (
+          <div className="flex flex-col gap-0.5 animate-[fadeIn_0.15s_ease]">
+            {visibleChildren.map((child) => renderNavLink(child.route, child.icon, child.label, true))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderPluginSlot = () => {
+    const isExpanded = expandedGroups['__plugins__'] ?? false;
+    const pluginPaths = pluginNavItems.map((p) => p.to);
+    const isPluginRouteActive = pluginPaths.includes(pathname);
+    const isPluginsPageActive = pathname === '/plugins';
+
+    if (collapsed) {
+      return renderNavLink('/plugins', 'Puzzle', 'Plugins');
+    }
+
+    const PuzzleIcon = getIcon('Puzzle');
+
+    return (
+      <div key="plugin-slot">
+        <div className="flex items-center">
+          <NavLink
+            to="/plugins"
+            className="flex-1 flex items-center gap-2.5 px-3 py-[10px] rounded-md text-[13px] font-medium transition-all duration-200"
+            style={() => navLinkStyle(isPluginsPageActive || isPluginRouteActive)}
+            {...hoverHandlers}
+          >
+            <PuzzleIcon size={16} className="flex-shrink-0" />
+            <span className="truncate">Plugins</span>
+          </NavLink>
+          {pluginNavItems.length > 0 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); toggleGroup('__plugins__'); }}
+              className="p-1 mr-2 rounded transition-all duration-200"
+              style={{ color: 'var(--text-faint)' }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-faint)'}
+            >
+              {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </button>
+          )}
+        </div>
+        {isExpanded && pluginNavItems.length > 0 && (
+          <div className="flex flex-col gap-0.5 animate-[fadeIn_0.15s_ease]">
+            {pluginNavItems.map((p) => {
+              // Plugin items provide component icons, not string names — use NavLink directly
+              const PluginIcon = p.icon as React.ComponentType<{ size?: number; className?: string }>;
+              return (
+                <NavLink
+                  key={p.to}
+                  to={p.to}
+                  title={collapsed ? p.label : undefined}
+                  className={`flex items-center gap-2.5 px-3 py-[10px] rounded-md text-[13px] font-medium transition-all duration-200`}
+                  style={({ isActive }) => ({ ...navLinkStyle(isActive), marginLeft: 44 })}
+                  {...hoverHandlers}
+                >
+                  <PluginIcon size={14} className="flex-shrink-0" />
+                  <span className="truncate">{p.label}</span>
+                </NavLink>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderExternalLink = (item: { id: string; label: string; icon: string; url: string }) => {
+    const Icon = getIcon(item.icon);
+    return (
+      <a
+        key={item.id}
+        href={item.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={collapsed ? item.label : undefined}
+        className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : 'px-3 py-[10px]'} rounded-md text-[13px] font-medium transition-all duration-200`}
+        style={{ color: 'var(--text-secondary)', border: '1px solid transparent' }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+      >
+        <Icon size={16} className="flex-shrink-0" />
+        {!collapsed && (
+          <>
+            <span className="truncate flex-1">{item.label}</span>
+            <ExternalLinkIcon size={11} style={{ color: 'var(--text-faint)', flexShrink: 0 }} />
+          </>
+        )}
+      </a>
+    );
+  };
+
+  const renderDivider = (id: string) => {
+    if (collapsed) return null;
+    return (
+      <div key={id} style={{ marginTop: 12, marginBottom: 12, marginLeft: 24, marginRight: 24, borderTop: '1px solid var(--border-color)' }} />
+    );
+  };
+
+  // ── Render nav item by type ──
+  const renderItem = (item: NavItem) => {
+    if (!item.visible) return null;
+
+    // Admin-only check
+    if (item.type === 'link' && item.adminOnly && !isAdmin) return null;
+
+    switch (item.type) {
+      case 'link':
+        return renderNavLink(item.route, item.icon, item.label);
+      case 'group':
+        return renderGroup(item);
+      case 'divider':
+        return renderDivider(item.id);
+      case 'external':
+        return renderExternalLink(item);
+      case 'plugin-slot':
+        return renderPluginSlot();
+      default:
+        return null;
+    }
+  };
 
   return (
     <aside
@@ -154,107 +299,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
 
       {/* Nav */}
       <nav className={`flex-1 ${collapsed ? 'px-1.5' : 'px-2'} py-2 flex flex-col gap-0.5 overflow-y-auto overflow-x-hidden`}>
-        {/* Main nav group */}
-        {mainNavItems.map(({ to, icon: Icon, label }) => renderNavLink(to, Icon, label))}
-
-        {/* Tools & monitoring group */}
-        {toolsNavItems.map(({ to, icon: Icon, label }) => renderNavLink(to, Icon, label))}
-
-        {/* ── Divider before Dev Tools ── */}
-        {!collapsed && <div style={{ marginTop: 12, marginBottom: 12, marginLeft: 24, marginRight: 24, borderTop: '1px solid var(--border-color)' }} />}
-
-        {/* Developer Tools treeview */}
-        {collapsed ? (
-          renderNavLink('/devtools', Wrench, 'Dev Tools')
-        ) : (
-          <div>
-            <div className="flex items-center">
-              <NavLink
-                to="/devtools"
-                className="flex-1 flex items-center gap-2.5 px-3 py-[10px] rounded-md text-[13px] font-medium transition-all duration-200"
-                style={() => navLinkStyle(pathname.startsWith('/devtools'))}
-                {...hoverHandlers}
-              >
-                <Wrench size={16} className="flex-shrink-0" />
-                <span className="truncate">Dev Tools</span>
-              </NavLink>
-              <button
-                onClick={(e) => { e.stopPropagation(); setDevtoolsExpanded((v) => !v); }}
-                className="p-1 mr-2 rounded transition-all duration-200"
-                style={{ color: 'var(--text-faint)' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-faint)'}
-              >
-                {devtoolsExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-              </button>
-            </div>
-            {devtoolsExpanded && (
-              <div className="flex flex-col gap-0.5 animate-[fadeIn_0.15s_ease]">
-                {[
-                  { to: '/devtools/json', icon: Braces, label: 'JSON Validator' },
-                  { to: '/devtools/api', icon: Send, label: 'API Tester' },
-                  { to: '/devtools/dns', icon: Globe, label: 'DNS Lookup' },
-                  { to: '/devtools/ping', icon: Wifi, label: 'Ping Tool' },
-                  { to: '/devtools/whois', icon: FileSearch, label: 'WHOIS Lookup' },
-                  { to: '/devtools/ssl', icon: ShieldCheck, label: 'SSL Checker' },
-                  { to: '/devtools/headers', icon: LayoutList, label: 'HTTP Headers' },
-                  { to: '/devtools/websocket', icon: Cable, label: 'WebSocket' },
-                  { to: '/devtools/graphql', icon: Waypoints, label: 'GraphQL' },
-                  { to: '/devtools/diff', icon: FileDiff, label: 'Text Diff' },
-                  { to: '/devtools/base64', icon: Binary, label: 'Base64' },
-                  { to: '/devtools/regex', icon: Regex, label: 'Regex Tester' },
-                  { to: '/devtools/csv', icon: Table, label: 'CSV Viewer' },
-                  { to: '/devtools/git-gen', icon: GitMerge, label: 'Git Generator' },
-                  { to: '/devtools/docker-gen', icon: Container, label: 'Docker Generator' },
-                ].map((item) => renderNavLink(item.to, item.icon, item.label, true))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Plugins treeview */}
-        {collapsed ? (
-          renderNavLink('/plugins', Puzzle, 'Plugins')
-        ) : (
-          <div>
-            <div className="flex items-center">
-              <NavLink
-                to="/plugins"
-                className="flex-1 flex items-center gap-2.5 px-3 py-[10px] rounded-md text-[13px] font-medium transition-all duration-200"
-                style={() => navLinkStyle(isPluginsPageActive || isPluginRouteActive)}
-                {...hoverHandlers}
-              >
-                <Puzzle size={16} className="flex-shrink-0" />
-                <span className="truncate">Plugins</span>
-              </NavLink>
-              {pluginNavItems.length > 0 && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); setPluginsExpanded((v) => !v); }}
-                  className="p-1 mr-2 rounded transition-all duration-200"
-                  style={{ color: 'var(--text-faint)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-faint)'}
-                >
-                  {pluginsExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                </button>
-              )}
-            </div>
-            {pluginsExpanded && pluginNavItems.length > 0 && (
-              <div className="flex flex-col gap-0.5 animate-[fadeIn_0.15s_ease]">
-                {pluginNavItems.map((p) => renderNavLink(p.to, p.icon, p.label, true))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── Divider before Admin ── */}
-        {!collapsed && <div style={{ marginTop: 12, marginBottom: 12, marginLeft: 24, marginRight: 24, borderTop: '1px solid var(--border-color)' }} />}
-
-        {/* Profile (all users) */}
-        {renderNavLink('/profile', User, 'Profile')}
-
-        {/* Admin-only nav items */}
-        {isAdmin && adminNavItems.map(({ to, icon: Icon, label }) => renderNavLink(to, Icon, label))}
+        {navConfig.items.map((item) => renderItem(item))}
       </nav>
 
       {/* Collapse toggle */}
