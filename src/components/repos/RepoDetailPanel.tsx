@@ -218,41 +218,56 @@ export const RepoDetailPanel = ({ repo }: { repo: Repository }) => {
   ];
 
   return (
-    <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--border-subtle)' }} onClick={(e) => e.stopPropagation()}>
+    <div className="pt-5" style={{ marginTop: '20px', borderTop: '1px solid var(--border-subtle)' }} onClick={(e) => e.stopPropagation()}>
+      {/* Section header */}
+      <div className="font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)', fontFamily: "Verdana, Geneva, sans-serif", fontSize: '12px' }}>
+        Repo History
+      </div>
+
       {/* Tabs */}
-      <div className="flex gap-1 mb-3">
+      <div className="flex" style={{ borderBottom: '2px solid var(--border-subtle)' }}>
         {tabs.map(({ key, label, icon: Icon, count }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg transition-all"
+            className="flex items-center gap-1.5 font-semibold px-4 py-2 transition-all relative"
             style={{
-              background: tab === key ? 'var(--accent-bg)' : 'transparent',
-              color: tab === key ? 'var(--accent)' : 'var(--text-muted)',
-              border: tab === key ? '1px solid var(--accent)' : '1px solid transparent',
+              fontFamily: "Verdana, Geneva, sans-serif",
+              fontSize: '12px',
+              background: 'transparent',
+              color: tab === key ? 'var(--text-primary)' : 'var(--text-muted)',
+              border: '2px solid var(--border-subtle)',
+              borderBottom: tab === key ? '2px solid var(--bg-surface, transparent)' : '2px solid var(--border-subtle)',
+              marginBottom: '-2px',
               cursor: 'pointer',
+              borderRadius: '4px 4px 0 0',
             }}
           >
-            <Icon size={12} />
+            <Icon size={13} />
             {label}
-            <span className="text-[9px] font-bold px-1 py-0.5 rounded-full" style={{
-              background: tab === key ? 'var(--accent)' : 'var(--bg-inset)',
-              color: tab === key ? 'white' : 'var(--text-faint)',
+            <span className="font-bold px-1.5 py-0.5 rounded-full ml-0.5" style={{
+              fontSize: '10px',
+              fontFamily: "Verdana, Geneva, sans-serif",
+              background: tab === key ? 'var(--accent-bg)' : 'var(--bg-inset)',
+              color: tab === key ? 'var(--accent)' : 'var(--text-faint)',
             }}>{count}</span>
           </button>
         ))}
       </div>
 
+      {/* Tab content area */}
+      <div style={{ padding: '12px 12px 12px 22px', border: '2px solid var(--border-subtle)', borderTop: 'none', borderRadius: '0 0 4px 4px', fontFamily: "Verdana, Geneva, sans-serif", fontSize: '12px' }}>
+
       {/* Loading state */}
       {loading && (
-        <div className="flex items-center justify-center py-4 gap-2 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+        <div className="flex items-center justify-center py-4 gap-2" style={{ color: 'var(--text-muted)' }}>
           <Loader2 size={14} className="animate-spin" /> Loading...
         </div>
       )}
 
       {/* Error notice */}
       {error && !loading && (
-        <div className="text-[10px] px-2 py-1 mb-2 rounded" style={{ background: 'rgba(245,158,11,0.08)', color: '#f59e0b' }}>
+        <div className="px-2 py-1 mb-2 rounded" style={{ fontSize: '11px', background: 'rgba(245,158,11,0.08)', color: '#f59e0b' }}>
           Using demo data — {error}
         </div>
       )}
@@ -272,14 +287,14 @@ export const RepoDetailPanel = ({ repo }: { repo: Repository }) => {
               onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
-              <code className="text-[10px] font-mono flex-shrink-0 mt-0.5 px-1 py-0.5 rounded" style={{ background: 'var(--bg-inset)', color: 'var(--accent)' }}>{c.sha}</code>
+              <code className="flex-shrink-0 mt-0.5 px-1 py-0.5 rounded" style={{ fontSize: '11px', fontFamily: "Verdana, Geneva, sans-serif", background: 'var(--bg-inset)', color: 'var(--accent)' }}>{c.sha}</code>
               <div className="flex-1 min-w-0">
-                <div className="text-[11px] font-medium truncate" style={{ color: 'var(--text-primary)' }}>{c.message}</div>
-                <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-faint)' }}>
+                <div className="font-medium truncate" style={{ fontSize: '12px', color: 'var(--text-primary)' }}>{c.message}</div>
+                <div className="mt-0.5" style={{ fontSize: '11px', color: 'var(--text-faint)' }}>
                   {c.author} · {c.date}
                 </div>
               </div>
-              {c.url !== '#' && <ExternalLink size={10} className="flex-shrink-0 mt-1 opacity-0 group-hover:opacity-60 transition-opacity" style={{ color: 'var(--text-muted)' }} />}
+              {c.url !== '#' && <ExternalLink size={11} className="flex-shrink-0 mt-1 opacity-0 group-hover:opacity-60 transition-opacity" style={{ color: 'var(--text-muted)' }} />}
             </a>
           ))}
         </div>
@@ -306,19 +321,19 @@ export const RepoDetailPanel = ({ repo }: { repo: Repository }) => {
                 <StatusIcon size={14} className="flex-shrink-0 mt-0.5" style={{ color: cfg.color }} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-mono" style={{ color: 'var(--text-faint)' }}>#{m.id}</span>
-                    <span className="text-[11px] font-medium truncate" style={{ color: 'var(--text-primary)' }}>{m.title}</span>
+                    <span style={{ fontSize: '11px', fontFamily: "Verdana, Geneva, sans-serif", color: 'var(--text-faint)' }}>#{m.id}</span>
+                    <span className="font-medium truncate" style={{ fontSize: '12px', color: 'var(--text-primary)' }}>{m.title}</span>
                   </div>
-                  <div className="flex items-center gap-1 mt-0.5 text-[10px]" style={{ color: 'var(--text-faint)' }}>
+                  <div className="flex items-center gap-1 mt-0.5" style={{ fontSize: '11px', color: 'var(--text-faint)' }}>
                     <span>{m.author}</span>
                     <ChevronRight size={8} />
-                    <code className="px-1 py-0.5 rounded" style={{ background: 'var(--bg-inset)', fontSize: '9px' }}>{m.sourceBranch}</code>
+                    <code className="px-1 py-0.5 rounded" style={{ background: 'var(--bg-inset)', fontSize: '10px', fontFamily: "Verdana, Geneva, sans-serif" }}>{m.sourceBranch}</code>
                     <span>→</span>
-                    <code className="px-1 py-0.5 rounded" style={{ background: 'var(--bg-inset)', fontSize: '9px' }}>{m.targetBranch}</code>
+                    <code className="px-1 py-0.5 rounded" style={{ background: 'var(--bg-inset)', fontSize: '10px', fontFamily: "Verdana, Geneva, sans-serif" }}>{m.targetBranch}</code>
                     <span className="ml-1">· {m.date}</span>
                   </div>
                 </div>
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 mt-0.5" style={{ background: `${cfg.color}15`, color: cfg.color, border: `1px solid ${cfg.color}30` }}>
+                <span className="font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 mt-0.5" style={{ fontSize: '10px', background: `${cfg.color}15`, color: cfg.color, border: `1px solid ${cfg.color}30` }}>
                   {cfg.label}
                 </span>
               </a>
@@ -351,18 +366,18 @@ export const RepoDetailPanel = ({ repo }: { repo: Repository }) => {
                   style={{ color: cfg.color }}
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="text-[11px] font-medium truncate" style={{ color: 'var(--text-primary)' }}>{b.name}</div>
-                  <div className="flex items-center gap-1.5 mt-0.5 text-[10px]" style={{ color: 'var(--text-faint)' }}>
-                    <code className="px-1 py-0.5 rounded" style={{ background: 'var(--bg-inset)', fontSize: '9px' }}>{b.branch}</code>
+                  <div className="font-medium truncate" style={{ fontSize: '12px', color: 'var(--text-primary)' }}>{b.name}</div>
+                  <div className="flex items-center gap-1.5 mt-0.5" style={{ fontSize: '11px', color: 'var(--text-faint)' }}>
+                    <code className="px-1 py-0.5 rounded" style={{ background: 'var(--bg-inset)', fontSize: '10px', fontFamily: "Verdana, Geneva, sans-serif" }}>{b.branch}</code>
                     <span>·</span>
-                    <code style={{ fontSize: '9px' }}>{b.commit}</code>
+                    <code style={{ fontSize: '10px', fontFamily: "Verdana, Geneva, sans-serif" }}>{b.commit}</code>
                     <span>·</span>
                     <span>{b.duration}</span>
                     <span>·</span>
                     <span>{b.date}</span>
                   </div>
                 </div>
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 mt-0.5" style={{ background: `${cfg.color}15`, color: cfg.color, border: `1px solid ${cfg.color}30` }}>
+                <span className="font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 mt-0.5" style={{ fontSize: '10px', background: `${cfg.color}15`, color: cfg.color, border: `1px solid ${cfg.color}30` }}>
                   {cfg.label}
                 </span>
               </a>
@@ -370,6 +385,8 @@ export const RepoDetailPanel = ({ repo }: { repo: Repository }) => {
           })}
         </div>
       )}
+
+      </div>{/* end tab content area */}
     </div>
   );
 };

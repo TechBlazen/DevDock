@@ -1,0 +1,16 @@
+{
+  "port": 3000,
+  "database": {
+    "provider": "sqlite",
+    "sqlite": {
+      "path": "./data/devdock.db"
+    },
+    "postgres": {
+      "connectionString": "postgresql://user:password@localhost:5432/devdock"
+    },
+    "supabase": {
+      "url": "https://your-project.supabase.co",
+      "anonKey": "your-anon-key-here"
+    }
+  }
+}

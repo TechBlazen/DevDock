@@ -27,6 +27,7 @@ export interface Repository {
   cloudPlatform?: CloudPlatform;
   owners?: RepoOwner[];
   customTags?: string[];
+  addedBy?: string; // user ID of who registered this repo
 }
 
 // ─── Repo Activity Types ─────────────────────────────────────────────────────

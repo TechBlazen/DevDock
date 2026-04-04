@@ -268,12 +268,14 @@ export const useRepoStore = create<RepoStore>()(
         set(source === 'github' ? { githubRepos: repos } : { adoRepos: repos }),
       addRepo: (repo) =>
         set((s) => {
+          const currentUserId = useAuthStore.getState().user?.id;
+          const repoWithOwner = { ...repo, addedBy: repo.addedBy ?? currentUserId };
           if (repo.source === 'github') {
             if (s.githubRepos.some((r) => r.id === repo.id)) return s;
-            return { githubRepos: [repo, ...s.githubRepos] };
+            return { githubRepos: [repoWithOwner, ...s.githubRepos] };
           }
           if (s.adoRepos.some((r) => r.id === repo.id)) return s;
-          return { adoRepos: [repo, ...s.adoRepos] };
+          return { adoRepos: [repoWithOwner, ...s.adoRepos] };
         }),
       removeRepo: (id, source) =>
         set((s) =>
