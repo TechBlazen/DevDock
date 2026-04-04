@@ -227,9 +227,14 @@ export const useSettingsStore = create<SettingsStore>()(
                 merged.settings.navigation.items.push(defaultItem);
               }
             } else if (defaultItem.type === 'group') {
-              // Group exists — merge any new children
-              const existingItem = merged.settings.navigation.items.find((i) => i.id === defaultItem.id);
-              if (existingItem && existingItem.type === 'group') {
+              const existingIdx = merged.settings.navigation.items.findIndex((i) => i.id === defaultItem.id);
+              const existingItem = existingIdx !== -1 ? merged.settings.navigation.items[existingIdx] : undefined;
+
+              if (existingItem && existingItem.type !== 'group') {
+                // Link upgraded to group — replace it
+                merged.settings.navigation.items[existingIdx] = defaultItem;
+              } else if (existingItem && existingItem.type === 'group') {
+                // Group exists — merge any new children
                 const existingChildIds = new Set(existingItem.children.map((c) => c.id));
                 for (const child of defaultItem.children) {
                   if (!existingChildIds.has(child.id)) {
