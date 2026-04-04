@@ -362,6 +362,8 @@ export const SettingsPage = () => {
         </div>
       </CollapsibleSection>
 
+      <div style={{ borderTop: '1px solid var(--border-color)', marginTop: 4, marginBottom: 30 }} />
+
       {/* Save */}
       <Button variant="primary" size="lg" onClick={handleSave}>
         {saved ? <><Check size={15} /> Saved!</> : <><Save size={15} /> Save Settings</>}
