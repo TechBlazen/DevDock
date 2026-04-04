@@ -29,6 +29,41 @@ export interface Repository {
   customTags?: string[];
 }
 
+// ─── Repo Activity Types ─────────────────────────────────────────────────────
+export interface RepoCommit {
+  sha: string;
+  message: string;
+  author: string;
+  date: string;
+  url: string;
+}
+
+export type MergeStatus = 'merged' | 'open' | 'closed';
+
+export interface RepoMerge {
+  id: string;
+  title: string;
+  author: string;
+  status: MergeStatus;
+  sourceBranch: string;
+  targetBranch: string;
+  date: string;
+  url: string;
+}
+
+export type BuildStatus = 'succeeded' | 'failed' | 'running' | 'canceled' | 'queued';
+
+export interface RepoBuild {
+  id: string;
+  name: string;
+  status: BuildStatus;
+  branch: string;
+  commit: string;
+  duration: string;
+  date: string;
+  url: string;
+}
+
 // ─── MCP Types ────────────────────────────────────────────────────────────────
 export type MCPStatus = 'running' | 'idle' | 'stopped' | 'error';
 
@@ -347,6 +382,46 @@ export interface PageView {
   userName: string;
   path: string;
   timestamp: string;
+}
+
+// ─── Bookmark Types ──────────────────────────────────────────────────────────
+export type ContentType = 'article' | 'video' | 'image' | 'document' | 'audio' | 'link';
+
+export interface Bookmark {
+  id: string;
+  userId: string;
+  title: string;
+  url: string;
+  description?: string;
+  favicon?: string;
+  screenshot?: string;
+  collectionId?: string;
+  tags: string[];
+  favorite: boolean;
+  note?: string;
+  contentType: ContentType;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BookmarkCollection {
+  id: string;
+  userId: string;
+  name: string;
+  icon?: string;
+  color?: string;
+  parentId?: string | null;
+  bookmarkCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BookmarkFilter {
+  search?: string;
+  collectionId?: string;
+  tags?: string[];
+  favorite?: boolean;
+  contentType?: ContentType;
 }
 
 export interface ClientError {

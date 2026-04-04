@@ -16,6 +16,9 @@ export function verifyPassword(password: string, hash: string): boolean {
 }
 
 // ─── Default permissions per role ────────────────────────────────────────────
+// Admin: Full access including widget/plugin management
+// Editor (Contributor): Can use all features but cannot manage widgets/plugins
+// Viewer (Reader): Read-only access
 export const ROLE_PERMISSIONS: Record<UserRole, Permission> = {
   admin: {
     pages: ['*'],
@@ -35,7 +38,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission> = {
     widgets: ['*'],
     plugins: ['*'],
     canManageUsers: false,
-    canManagePlugins: true,
+    canManagePlugins: false,  // Contributors cannot manage plugins/widgets
     canEditDocs: true,
     canAccessTerminal: true,
     canAccessNetwork: true,
@@ -54,7 +57,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission> = {
   },
 };
 
-// ─── Seed admin account ──────────────────────────────────────────────────────
+// ─── Seed accounts ──────────────────────────────────────────────────────────
 export const SEED_ADMIN: UserAccount = {
   id: 'admin-001',
   username: 'admin',
@@ -65,6 +68,30 @@ export const SEED_ADMIN: UserAccount = {
   permissions: ROLE_PERMISSIONS.admin,
   createdAt: new Date().toISOString(),
 };
+
+export const SEED_EDITOR: UserAccount = {
+  id: 'editor-001',
+  username: 'editor',
+  passwordHash: hashPassword('workbench'),
+  displayName: 'Editor User',
+  email: 'editor@forgeportal.dev',
+  role: 'editor',
+  permissions: ROLE_PERMISSIONS.editor,
+  createdAt: new Date().toISOString(),
+};
+
+export const SEED_READER: UserAccount = {
+  id: 'reader-001',
+  username: 'reader',
+  passwordHash: hashPassword('workbench'),
+  displayName: 'Reader User',
+  email: 'reader@forgeportal.dev',
+  role: 'viewer',
+  permissions: ROLE_PERMISSIONS.viewer,
+  createdAt: new Date().toISOString(),
+};
+
+export const SEED_ACCOUNTS = [SEED_ADMIN, SEED_EDITOR, SEED_READER];
 
 // ─── Permission checks ──────────────────────────────────────────────────────
 export function canAccessPage(permissions: Permission, path: string): boolean {
@@ -83,7 +110,7 @@ export function canAccessPlugin(permissions: Permission, pluginId: string): bool
 }
 
 export function getRoleLabel(role: UserRole): string {
-  return { admin: 'Admin', editor: 'Editor', viewer: 'Viewer' }[role];
+  return { admin: 'Admin', editor: 'Contributor', viewer: 'Reader' }[role];
 }
 
 export function getRoleColor(role: UserRole): string {

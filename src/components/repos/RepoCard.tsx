@@ -3,6 +3,7 @@ import { Star, GitBranch, Lock, Globe, ExternalLink, Code2, Download, Copy, Chec
 import { Card, Pill, Button, Tooltip } from '../ui';
 import { openInVSCode, openInVSCodeWeb } from '../../lib/repos';
 import { useRepoStore, useAuthStore, useUserAccountsStore } from '../../store';
+import { RepoDetailPanel } from './RepoDetailPanel';
 import type { Repository, RepoEnvironment, CloudPlatform, RepoOwner } from '../../types';
 
 const langColors: Record<string, string> = {
@@ -333,6 +334,9 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
             </div>
           </div>
         )}
+
+        {/* Detail panel: commits, merges, builds */}
+        {expanded && !editing && <RepoDetailPanel repo={repo} />}
       </div>
     </Card>
   );

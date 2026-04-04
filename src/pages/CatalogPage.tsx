@@ -1,14 +1,17 @@
-import { useSettingsStore } from '../store';
+import { useSettingsStore, useAuthStore } from '../store';
 import { CORE_WIDGET_CATALOG } from '../components/dashboard/DashboardGrid';
 import { usePluginExtensions } from '../lib/plugins';
 import { SectionTitle, Button, Card } from '../components/ui';
+import { ShieldCheck } from 'lucide-react';
 import type { WidgetId } from '../types';
 
 export const CatalogPage = () => {
   const { settings, updateDashboardWidgets } = useSettingsStore();
+  const currentUser = useAuthStore((s) => s.user);
   const active = settings.dashboardWidgets;
   const { widgetCatalog: pluginWidgets } = usePluginExtensions();
   const allWidgets = [...CORE_WIDGET_CATALOG, ...pluginWidgets];
+  const isAdmin = currentUser?.role === 'admin';
 
   const toggle = (id: WidgetId) => {
     if (active.includes(id)) {
@@ -23,6 +26,17 @@ export const CatalogPage = () => {
       <SectionTitle sub="Add, remove, and reorder widgets on your dashboard. Drag to reorder from the dashboard.">
         Widget Catalog
       </SectionTitle>
+
+      {!isAdmin && (
+        <div className="mb-5 px-4 py-3 rounded-xl flex items-center gap-2" style={{
+          background: 'rgba(239,68,68,0.08)',
+          border: '1px solid rgba(239,68,68,0.2)',
+          color: '#ef4444',
+        }}>
+          <ShieldCheck size={16} />
+          <span className="text-xs font-medium">Only administrators can add or remove widgets. Contact an admin to modify the dashboard.</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {allWidgets.map((w) => {
@@ -43,6 +57,7 @@ export const CatalogPage = () => {
                 variant={isActive ? 'danger' : 'outline'}
                 size="sm"
                 onClick={() => toggle(w.id)}
+                disabled={!isAdmin}
               >
                 {isActive ? 'Remove' : 'Add'}
               </Button>

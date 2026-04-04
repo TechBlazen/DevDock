@@ -36,7 +36,13 @@
       "Bash(do)",
       "Bash(if git:*)",
       "Bash(then echo:*)",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(gh pr:*)",
+      "Bash(find /Users/terry/Public/Apps/Personal/forge-portal-clean/src -name *GitHub* -o -name *github* -o -name *ADO* -o -name *ado*)",
+      "Bash(echo \"export { useForumStore } from ''./forum-store'';\")",
+      "Bash(gh run:*)",
+      "WebFetch(domain:kvmpods.com)",
+      "Bash(echo \"export { useAnalyticsStore } from ''./analytics-store'';\")"
     ]
   }
 }

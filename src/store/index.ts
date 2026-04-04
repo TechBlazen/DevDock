@@ -19,10 +19,13 @@ import type {
   UserAccount,
   UserRole,
   UserPreferences,
+  Bookmark,
+  BookmarkCollection,
+  BookmarkFilter,
 } from '../types';
 import { nanoid } from 'nanoid';
 import { createGuestUser } from '../lib/auth';
-import { SEED_ADMIN, ROLE_PERMISSIONS, hashPassword, verifyPassword } from '../lib/rbac';
+import { SEED_ACCOUNTS, ROLE_PERMISSIONS, hashPassword, verifyPassword } from '../lib/rbac';
 
 // ─── User Preferences Defaults ───────────────────────────────────────────────
 export const DEFAULT_PREFERENCES: UserPreferences = {
@@ -746,7 +749,7 @@ interface UserAccountsStore {
 export const useUserAccountsStore = create<UserAccountsStore>()(
   persist(
     (set, get) => ({
-      accounts: [SEED_ADMIN],
+      accounts: SEED_ACCOUNTS,
 
       addAccount: (username, password, displayName, role, email) => {
         const existing = get().accounts.find((a) => a.username === username);
@@ -872,10 +875,12 @@ export const useUserAccountsStore = create<UserAccountsStore>()(
       merge: (persisted, current) => {
         const p = persisted as Partial<UserAccountsStore> | undefined;
         const accounts = p?.accounts ?? [];
-        // Ensure admin always exists
-        if (!accounts.find((a) => a.username === 'admin')) {
-          accounts.push(SEED_ADMIN);
-        }
+        // Ensure all seed accounts exist
+        SEED_ACCOUNTS.forEach((seed) => {
+          if (!accounts.find((a) => a.username === seed.username)) {
+            accounts.push(seed);
+          }
+        });
         return { ...current, accounts };
       },
     }
@@ -890,3 +895,151 @@ export { useForumStore } from './forum-store';
 
 // ─── Analytics Store (re-export) ─────────────────────────────────────────────
 export { useAnalyticsStore } from './analytics-store';
+
+// ─── Bookmark Store ──────────────────────────────────────────────────────────
+interface BookmarkStore {
+  bookmarks: Bookmark[];
+  collections: BookmarkCollection[];
+  addBookmark: (bookmark: Omit<Bookmark, 'id' | 'createdAt' | 'updatedAt'>) => string;
+  updateBookmark: (id: string, partial: Partial<Omit<Bookmark, 'id' | 'userId' | 'createdAt'>>) => void;
+  deleteBookmark: (id: string) => void;
+  toggleFavorite: (id: string) => void;
+  addCollection: (name: string, userId: string, parentId?: string) => string;
+  updateCollection: (id: string, partial: Partial<Pick<BookmarkCollection, 'name' | 'icon' | 'color' | 'parentId'>>) => void;
+  deleteCollection: (id: string) => void;
+  getFilteredBookmarks: (userId: string, filter: BookmarkFilter) => Bookmark[];
+  getAllTags: (userId: string) => string[];
+}
+
+export const useBookmarkStore = create<BookmarkStore>()(
+  persist(
+    (set, get) => ({
+      bookmarks: [],
+      collections: [],
+
+      addBookmark: (bookmark) => {
+        const id = nanoid();
+        const now = new Date().toISOString();
+        const newBookmark: Bookmark = { ...bookmark, id, createdAt: now, updatedAt: now };
+        set((s) => ({ bookmarks: [newBookmark, ...s.bookmarks] }));
+        
+        // Update collection bookmark count
+        if (bookmark.collectionId) {
+          set((s) => ({
+            collections: s.collections.map((c) =>
+              c.id === bookmark.collectionId ? { ...c, bookmarkCount: c.bookmarkCount + 1 } : c
+            ),
+          }));
+        }
+        return id;
+      },
+
+      updateBookmark: (id, partial) =>
+        set((s) => ({
+          bookmarks: s.bookmarks.map((b) =>
+            b.id === id ? { ...b, ...partial, updatedAt: new Date().toISOString() } : b
+          ),
+        })),
+
+      deleteBookmark: (id) => {
+        const bookmark = get().bookmarks.find((b) => b.id === id);
+        set((s) => ({ bookmarks: s.bookmarks.filter((b) => b.id !== id) }));
+        
+        // Update collection bookmark count
+        if (bookmark?.collectionId) {
+          set((s) => ({
+            collections: s.collections.map((c) =>
+              c.id === bookmark.collectionId ? { ...c, bookmarkCount: Math.max(0, c.bookmarkCount - 1) } : c
+            ),
+          }));
+        }
+      },
+
+      toggleFavorite: (id) =>
+        set((s) => ({
+          bookmarks: s.bookmarks.map((b) =>
+            b.id === id ? { ...b, favorite: !b.favorite, updatedAt: new Date().toISOString() } : b
+          ),
+        })),
+
+      addCollection: (name, userId, parentId) => {
+        const id = nanoid();
+        const now = new Date().toISOString();
+        const collection: BookmarkCollection = {
+          id,
+          userId,
+          name,
+          parentId: parentId ?? null,
+          bookmarkCount: 0,
+          createdAt: now,
+          updatedAt: now,
+        };
+        set((s) => ({ collections: [...s.collections, collection] }));
+        return id;
+      },
+
+      updateCollection: (id, partial) =>
+        set((s) => ({
+          collections: s.collections.map((c) =>
+            c.id === id ? { ...c, ...partial, updatedAt: new Date().toISOString() } : c
+          ),
+        })),
+
+      deleteCollection: (id) => {
+        // Move bookmarks to unsorted (no collection)
+        set((s) => ({
+          bookmarks: s.bookmarks.map((b) => (b.collectionId === id ? { ...b, collectionId: undefined } : b)),
+          collections: s.collections.filter((c) => c.id !== id && c.parentId !== id),
+        }));
+      },
+
+      getFilteredBookmarks: (userId, filter) => {
+        let filtered = get().bookmarks.filter((b) => b.userId === userId);
+
+        if (filter.search) {
+          const searchLower = filter.search.toLowerCase();
+          filtered = filtered.filter(
+            (b) =>
+              b.title.toLowerCase().includes(searchLower) ||
+              b.url.toLowerCase().includes(searchLower) ||
+              b.description?.toLowerCase().includes(searchLower) ||
+              b.note?.toLowerCase().includes(searchLower)
+          );
+        }
+
+        if (filter.collectionId !== undefined) {
+          filtered = filtered.filter((b) => b.collectionId === filter.collectionId);
+        }
+
+        if (filter.tags && filter.tags.length > 0) {
+          filtered = filtered.filter((b) =>
+            filter.tags!.some((tag) => b.tags.includes(tag))
+          );
+        }
+
+        if (filter.favorite !== undefined) {
+          filtered = filtered.filter((b) => b.favorite === filter.favorite);
+        }
+
+        if (filter.contentType) {
+          filtered = filtered.filter((b) => b.contentType === filter.contentType);
+        }
+
+        return filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      },
+
+      getAllTags: (userId) => {
+        const tags = new Set<string>();
+        get()
+          .bookmarks.filter((b) => b.userId === userId)
+          .forEach((b) => b.tags.forEach((t) => tags.add(t)));
+        return Array.from(tags).sort();
+      },
+    }),
+    {
+      name: 'devdock-bookmarks',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (s) => ({ bookmarks: s.bookmarks, collections: s.collections }),
+    }
+  )
+);

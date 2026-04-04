@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { traceRepoFetch } from '../otel';
-import type { Repository } from '../types';
+import type { Repository, RepoCommit, RepoMerge, RepoBuild, MergeStatus, BuildStatus } from '../types';
 
 // ─── GitHub ───────────────────────────────────────────────────────────────────
 export async function fetchGitHubRepos(token: string, orgs: string[], includePersonal: boolean): Promise<Repository[]> {
@@ -298,6 +298,167 @@ export async function pushADOFile(
       }],
     }],
   }, { headers });
+}
+
+// ─── GitHub Commits, PRs, Builds ────────────────────────────────────────────
+export async function fetchGitHubCommits(owner: string, repo: string, token?: string, count = 10): Promise<RepoCommit[]> {
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const { data } = await axios.get(`https://api.github.com/repos/${owner}/${repo}/commits`, {
+    headers,
+    params: { per_page: count },
+  });
+
+  return data.map((c: Record<string, unknown>) => {
+    const commit = c.commit as Record<string, unknown>;
+    const author = commit.author as Record<string, unknown>;
+    return {
+      sha: String(c.sha).slice(0, 7),
+      message: String((commit.message as string)?.split('\n')[0] ?? ''),
+      author: String(author?.name ?? 'unknown'),
+      date: new Date(String(author?.date)).toLocaleDateString(),
+      url: String(c.html_url),
+    };
+  });
+}
+
+export async function fetchGitHubPRs(owner: string, repo: string, token?: string, count = 10): Promise<RepoMerge[]> {
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const { data } = await axios.get(`https://api.github.com/repos/${owner}/${repo}/pulls`, {
+    headers,
+    params: { per_page: count, state: 'all', sort: 'updated', direction: 'desc' },
+  });
+
+  return data.map((pr: Record<string, unknown>) => {
+    const head = pr.head as Record<string, unknown>;
+    const base = pr.base as Record<string, unknown>;
+    let status: MergeStatus = 'open';
+    if (pr.merged_at) status = 'merged';
+    else if (pr.state === 'closed') status = 'closed';
+    return {
+      id: String(pr.number),
+      title: String(pr.title),
+      author: String((pr.user as Record<string, unknown>)?.login ?? 'unknown'),
+      status,
+      sourceBranch: String(head?.ref ?? ''),
+      targetBranch: String(base?.ref ?? ''),
+      date: new Date(String(pr.updated_at)).toLocaleDateString(),
+      url: String(pr.html_url),
+    };
+  });
+}
+
+export async function fetchGitHubBuilds(owner: string, repo: string, token?: string, count = 10): Promise<RepoBuild[]> {
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const { data } = await axios.get(`https://api.github.com/repos/${owner}/${repo}/actions/runs`, {
+    headers,
+    params: { per_page: count },
+  });
+
+  return (data.workflow_runs ?? []).map((run: Record<string, unknown>) => {
+    const statusMap: Record<string, BuildStatus> = {
+      completed: run.conclusion === 'success' ? 'succeeded' : run.conclusion === 'failure' ? 'failed' : 'canceled',
+      in_progress: 'running',
+      queued: 'queued',
+    };
+    return {
+      id: String(run.id),
+      name: String(run.name),
+      status: statusMap[String(run.status)] ?? 'queued',
+      branch: String(run.head_branch ?? ''),
+      commit: String(run.head_sha ?? '').slice(0, 7),
+      duration: run.run_started_at
+        ? `${Math.round((new Date(String(run.updated_at)).getTime() - new Date(String(run.run_started_at)).getTime()) / 1000)}s`
+        : '—',
+      date: new Date(String(run.updated_at)).toLocaleDateString(),
+      url: String(run.html_url),
+    };
+  });
+}
+
+// ─── ADO Commits, PRs, Builds ───────────────────────────────────────────────
+export async function fetchADOCommits(org: string, project: string, repo: string, pat?: string, count = 10): Promise<RepoCommit[]> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (pat) headers.Authorization = `Basic ${btoa(':' + pat)}`;
+
+  const url = `https://dev.azure.com/${org}/${project}/_apis/git/repositories/${repo}/commits?$top=${count}&api-version=7.1`;
+  const { data } = await axios.get(url, { headers });
+
+  return (data.value ?? []).map((c: Record<string, unknown>) => {
+    const author = c.author as Record<string, unknown>;
+    return {
+      sha: String(c.commitId ?? '').slice(0, 7),
+      message: String((c.comment as string)?.split('\n')[0] ?? ''),
+      author: String(author?.name ?? 'unknown'),
+      date: new Date(String(author?.date)).toLocaleDateString(),
+      url: String(c.remoteUrl ?? ''),
+    };
+  });
+}
+
+export async function fetchADOPRs(org: string, project: string, repo: string, pat?: string, count = 10): Promise<RepoMerge[]> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (pat) headers.Authorization = `Basic ${btoa(':' + pat)}`;
+
+  const url = `https://dev.azure.com/${org}/${project}/_apis/git/repositories/${repo}/pullrequests?$top=${count}&searchCriteria.status=all&api-version=7.1`;
+  const { data } = await axios.get(url, { headers });
+
+  return (data.value ?? []).map((pr: Record<string, unknown>) => {
+    const statusMap: Record<string, MergeStatus> = { completed: 'merged', active: 'open', abandoned: 'closed' };
+    return {
+      id: String(pr.pullRequestId),
+      title: String(pr.title),
+      author: String((pr.createdBy as Record<string, unknown>)?.displayName ?? 'unknown'),
+      status: statusMap[String(pr.status)] ?? 'open',
+      sourceBranch: String(pr.sourceRefName ?? '').replace('refs/heads/', ''),
+      targetBranch: String(pr.targetRefName ?? '').replace('refs/heads/', ''),
+      date: new Date(String(pr.closedDate ?? pr.creationDate)).toLocaleDateString(),
+      url: `https://dev.azure.com/${org}/${project}/_git/${repo}/pullrequest/${pr.pullRequestId}`,
+    };
+  });
+}
+
+export async function fetchADOBuilds(org: string, project: string, pat?: string, count = 10): Promise<RepoBuild[]> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (pat) headers.Authorization = `Basic ${btoa(':' + pat)}`;
+
+  const url = `https://dev.azure.com/${org}/${project}/_apis/build/builds?$top=${count}&api-version=7.1`;
+  const { data } = await axios.get(url, { headers });
+
+  return (data.value ?? []).map((b: Record<string, unknown>) => {
+    const statusMap: Record<string, BuildStatus> = {
+      completed: (b.result as string) === 'succeeded' ? 'succeeded' : (b.result as string) === 'failed' ? 'failed' : 'canceled',
+      inProgress: 'running',
+      notStarted: 'queued',
+    };
+    const def = b.definition as Record<string, unknown>;
+    return {
+      id: String(b.id),
+      name: String(def?.name ?? 'Build'),
+      status: statusMap[String(b.status)] ?? 'queued',
+      branch: String(b.sourceBranch ?? '').replace('refs/heads/', ''),
+      commit: String(b.sourceVersion ?? '').slice(0, 7),
+      duration: b.startTime && b.finishTime
+        ? `${Math.round((new Date(String(b.finishTime)).getTime() - new Date(String(b.startTime)).getTime()) / 1000)}s`
+        : '—',
+      date: new Date(String(b.finishTime ?? b.queueTime)).toLocaleDateString(),
+      url: String((b._links as Record<string, Record<string, string>>)?.web?.href ?? ''),
+    };
+  });
 }
 
 // ─── VS Code deep-link helpers ────────────────────────────────────────────────

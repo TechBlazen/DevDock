@@ -213,13 +213,18 @@ export const Toggle = ({
   onChange,
   label,
   color = BLUE,
+  disabled = false,
 }: {
   checked: boolean;
   onChange: (val: boolean) => void;
   label?: string;
   color?: string;
+  disabled?: boolean;
 }) => (
-  <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => onChange(!checked)}>
+  <div 
+    className={`flex items-center gap-2.5 ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`} 
+    onClick={() => !disabled && onChange(!checked)}
+  >
     <div
       style={{
         width: 36,
