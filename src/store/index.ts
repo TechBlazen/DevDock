@@ -115,6 +115,7 @@ interface SettingsStore {
   updateADOConfig: (partial: Partial<AppSettings['ado']>) => void;
   updateDashboardWidgets: (widgets: WidgetId[]) => void;
   updateGoogleDriveConfig: (partial: Partial<AppSettings['googleDrive']>) => void;
+  updateActiveDirectoryConfig: (partial: Partial<AppSettings['activeDirectory']>) => void;
   updateNavigation: (navigation: NavigationConfig) => void;
   resetNavigation: () => void;
 }
@@ -150,6 +151,16 @@ const defaultSettings: AppSettings = {
     accessToken: '',
     connected: false,
   },
+  activeDirectory: {
+    enabled: false,
+    tenantId: '',
+    clientId: '',
+    clientSecret: '',
+    domain: '',
+    ldapUrl: '',
+    baseDn: '',
+    securityGroups: [],
+  },
   theme: 'dark',
   dashboardWidgets: ['repos_github', 'repos_ado', 'mcp_status', 'telemetry', 'quick_actions', 'activity_feed', 'favorite_repos'],
   navigation: defaultNavigation,
@@ -178,6 +189,8 @@ export const useSettingsStore = create<SettingsStore>()(
         set((s) => ({ settings: { ...s.settings, dashboardWidgets: widgets } })),
       updateGoogleDriveConfig: (partial) =>
         set((s) => ({ settings: { ...s.settings, googleDrive: { ...s.settings.googleDrive, ...partial } } })),
+      updateActiveDirectoryConfig: (partial) =>
+        set((s) => ({ settings: { ...s.settings, activeDirectory: { ...s.settings.activeDirectory, ...partial } } })),
       updateNavigation: (navigation) =>
         set((s) => ({ settings: { ...s.settings, navigation } })),
       resetNavigation: () =>
@@ -348,17 +361,24 @@ export const useRepoStore = create<RepoStore>()(
       selectedRepo: null,
       setRepos: (source, repos) =>
         set(source === 'github' ? { githubRepos: repos } : { adoRepos: repos }),
-      addRepo: (repo) =>
+      addRepo: (repo) => {
+        const currentUserId = useAuthStore.getState().user?.id;
+        const repoWithOwner = { ...repo, addedBy: repo.addedBy ?? currentUserId };
+
         set((s) => {
-          const currentUserId = useAuthStore.getState().user?.id;
-          const repoWithOwner = { ...repo, addedBy: repo.addedBy ?? currentUserId };
           if (repo.source === 'github') {
             if (s.githubRepos.some((r) => r.id === repo.id)) return s;
             return { githubRepos: [repoWithOwner, ...s.githubRepos] };
           }
           if (s.adoRepos.some((r) => r.id === repo.id)) return s;
           return { adoRepos: [repoWithOwner, ...s.adoRepos] };
-        }),
+        });
+
+        // Auto-import markdown files in the background
+        import('../lib/auto-import-docs').then(({ autoImportRepoMarkdown }) => {
+          autoImportRepoMarkdown(repoWithOwner);
+        });
+      },
       removeRepo: (id, source) =>
         set((s) =>
           source === 'github'

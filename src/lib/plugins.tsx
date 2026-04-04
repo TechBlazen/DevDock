@@ -574,7 +574,6 @@ const ObsidianCollectionWidget = () => {
     const lines = selectedNote.content.split('\n');
     return (
       <div className="flex flex-col h-full">
-        {/* Header */}
         <div className="flex items-center gap-2 pb-2 mb-2" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
           <button
             onClick={() => { setSelectedNote(null); setEditMode(false); }}
@@ -588,12 +587,7 @@ const ObsidianCollectionWidget = () => {
           </span>
           <button
             onClick={() => {
-              if (editMode) {
-                setEditMode(false);
-              } else {
-                setEditContent(selectedNote.content);
-                setEditMode(true);
-              }
+              if (editMode) { setEditMode(false); } else { setEditContent(selectedNote.content); setEditMode(true); }
             }}
             className="text-[10px] font-semibold px-2 py-1 rounded-md"
             style={{
@@ -605,20 +599,12 @@ const ObsidianCollectionWidget = () => {
             {editMode ? 'Preview' : 'Edit'}
           </button>
         </div>
-
-        {/* Tags */}
         <div className="flex gap-1 mb-2 flex-wrap">
-          <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: '#7c3aed18', color: '#7c3aed' }}>
-            {selectedNote.folder}
-          </span>
+          <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: '#7c3aed18', color: '#7c3aed' }}>{selectedNote.folder}</span>
           {selectedNote.tags.map((t) => (
-            <span key={t} className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: 'var(--bg-inset)', color: 'var(--text-muted)' }}>
-              #{t}
-            </span>
+            <span key={t} className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: 'var(--bg-inset)', color: 'var(--text-muted)' }}>#{t}</span>
           ))}
         </div>
-
-        {/* Content */}
         <div className="flex-1 overflow-y-auto">
           {editMode ? (
             <textarea
@@ -650,7 +636,6 @@ const ObsidianCollectionWidget = () => {
   // ── Collection list view ──
   return (
     <div className="flex flex-col h-full">
-      {/* Search */}
       <div className="relative mb-2">
         <input
           value={search}
@@ -661,8 +646,6 @@ const ObsidianCollectionWidget = () => {
         />
         <Search size={11} className="absolute right-2.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-faint)' }} />
       </div>
-
-      {/* Notes */}
       <div className="flex-1 overflow-y-auto space-y-0.5">
         {filtered.length === 0 ? (
           <div className="text-center py-6">
@@ -670,37 +653,28 @@ const ObsidianCollectionWidget = () => {
           </div>
         ) : (
           filtered.map((note) => {
-            const preview = note.content
-              .split('\n')
-              .find((l) => l.trim() && !l.startsWith('#') && !l.startsWith('```'));
+            const preview = note.content.split('\n').find((l) => l.trim() && !l.startsWith('#') && !l.startsWith('```'));
             return (
               <div
                 key={note.id}
                 onClick={() => setSelectedNote(note)}
                 className="px-2.5 py-2 rounded-lg cursor-pointer transition-colors"
-                style={{ background: 'transparent' }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
               >
                 <div className="flex items-start gap-2">
                   <FileText size={12} className="flex-shrink-0 mt-0.5" style={{ color: '#7c3aed' }} />
                   <div className="flex-1 min-w-0">
-                    <div className="text-[11px] font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
-                      {note.title}
-                    </div>
+                    <div className="text-[11px] font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{note.title}</div>
                     {preview && (
                       <div className="text-[10px] mt-0.5 truncate" style={{ color: 'var(--text-faint)' }}>
                         {preview.slice(0, 60)}{preview.length > 60 ? '...' : ''}
                       </div>
                     )}
                     <div className="flex items-center gap-1.5 mt-1">
-                      <span className="text-[9px]" style={{ color: 'var(--text-faint)' }}>
-                        {note.folder}
-                      </span>
+                      <span className="text-[9px]" style={{ color: 'var(--text-faint)' }}>{note.folder}</span>
                       {note.tags.slice(0, 2).map((t) => (
-                        <span key={t} className="text-[8px] px-1 py-0.5 rounded" style={{ background: '#7c3aed12', color: '#7c3aed' }}>
-                          #{t}
-                        </span>
+                        <span key={t} className="text-[8px] px-1 py-0.5 rounded" style={{ background: '#7c3aed12', color: '#7c3aed' }}>#{t}</span>
                       ))}
                     </div>
                   </div>
@@ -711,8 +685,6 @@ const ObsidianCollectionWidget = () => {
           })
         )}
       </div>
-
-      {/* Footer */}
       <div className="pt-2 mt-1 text-center" style={{ borderTop: '1px solid var(--border-subtle)' }}>
         <span className="text-[9px]" style={{ color: 'var(--text-faint)' }}>
           {notes.length} notes &middot; {[...new Set(notes.map((n) => n.folder))].length} folders

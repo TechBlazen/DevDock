@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import { Copy, Check } from 'lucide-react';
 import { MermaidDiagram } from './MermaidDiagram';
 import type { Components } from 'react-markdown';
@@ -320,6 +321,7 @@ export const MarkdownViewer = ({ content }: MarkdownViewerProps) => {
     <div className="techdocs-content max-w-4xl">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw]}
         components={components}
       >
         {content}
