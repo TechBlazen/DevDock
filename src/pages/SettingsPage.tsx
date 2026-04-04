@@ -22,12 +22,14 @@ const CollapsibleSection = ({
   icon,
   iconColor,
   title,
+  description,
   children,
   defaultOpen = false,
 }: {
   icon: ReactNode;
   iconColor?: string;
   title: string;
+  description?: string;
   children: ReactNode;
   defaultOpen?: boolean;
 }) => {
@@ -55,6 +57,11 @@ const CollapsibleSection = ({
           {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
         </span>
       </button>
+      {description && (
+        <p className="text-[12px] mt-2 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+          {description}
+        </p>
+      )}
       {open && (
         <div className="mt-4 animate-[fadeIn_0.15s_ease]">
           {children}
@@ -97,12 +104,15 @@ export const SettingsPage = () => {
         Settings
       </SectionTitle>
 
+      <div style={{ borderTop: '1px solid var(--border-color)', marginTop: 4, marginBottom: 30 }} />
+
       {/* ═══════════════════════════════════════════════════════════════════
            SECTION 1 — Sidebar Navigation (placeholder for nav editor PR)
            ═══════════════════════════════════════════════════════════════════ */}
       <CollapsibleSection
         icon={<LayoutDashboard size={16} className="text-[#8b5cf6]" />}
         title="Sidebar Navigation"
+        description="Customize the sidebar layout by adding, removing, or reordering navigation items. Supports groups, dividers, and external links."
       >
         <NavigationEditor />
       </CollapsibleSection>
@@ -113,6 +123,7 @@ export const SettingsPage = () => {
       <CollapsibleSection
         icon={<GitFork size={16} className="text-[#8090b0]" />}
         title="Organizations &amp; Repositories"
+        description="Connect your GitHub and Azure DevOps accounts to browse repositories. Add access tokens and specify which organizations or projects to include."
       >
         <div className="space-y-4">
           {/* GitHub Token + Orgs */}
@@ -195,6 +206,7 @@ export const SettingsPage = () => {
       <CollapsibleSection
         icon={<Activity size={16} className="text-[#00e5a0]" />}
         title="OpenTelemetry Configuration"
+        description="Configure the OTLP collector endpoint and choose which telemetry signals to export. Changes take effect after applying the config."
       >
         <Card>
           <CardHeader>
@@ -252,6 +264,7 @@ export const SettingsPage = () => {
       <CollapsibleSection
         icon={<Code2 size={16} className="text-[#007acc]" />}
         title="IDE Extensions"
+        description="Install IDE extensions to open repositories directly from the portal and get AI-assisted code review in your editor."
       >
         <Card>
           <CardHeader>
@@ -287,6 +300,7 @@ export const SettingsPage = () => {
       <CollapsibleSection
         icon={<Globe size={16} className="text-[#2a6fff]" />}
         title="Search Sources"
+        description="Manage federated search sources to include external data providers in your search results."
       >
         <FederatedSourcesPage embedded />
       </CollapsibleSection>
@@ -297,6 +311,7 @@ export const SettingsPage = () => {
       <CollapsibleSection
         icon={<Key size={16} className="text-[#2a6fff]" />}
         title="API Keys &amp; Authentication"
+        description="Set API keys for AI providers used by the chat panel. Keys are stored locally and sent directly to each provider."
       >
         <div className="space-y-4">
           {/* AI Provider Keys */}
@@ -346,6 +361,8 @@ export const SettingsPage = () => {
           </Card>
         </div>
       </CollapsibleSection>
+
+      <div style={{ borderTop: '1px solid var(--border-color)', marginTop: 4, marginBottom: 30 }} />
 
       {/* Save */}
       <Button variant="primary" size="lg" onClick={handleSave}>
