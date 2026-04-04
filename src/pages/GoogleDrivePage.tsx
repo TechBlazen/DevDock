@@ -83,11 +83,12 @@ const DriveConnectPrompt = () => {
               </a>
             </li>
             <li>
-              In <strong style={{ color: 'var(--text-secondary)' }}>Step 1</strong>, scroll to{' '}
-              <strong style={{ color: 'var(--text-secondary)' }}>Drive API v3</strong> and select{' '}
+              In <strong style={{ color: 'var(--text-secondary)' }}>Step 1</strong>, find and expand{' '}
+              <strong style={{ color: 'var(--text-secondary)' }}>Drive API v3</strong> in the list on the left, then check the box for{' '}
               <code style={{ color: 'var(--accent)', fontSize: 10, background: 'var(--accent-bg)', padding: '1px 4px', borderRadius: 3 }}>
                 https://www.googleapis.com/auth/drive
               </code>
+              {' '}(do not type the scope manually — select it from the list)
             </li>
             <li>
               Click <strong style={{ color: 'var(--text-secondary)' }}>Authorize APIs</strong> and sign in with your Google account
