@@ -254,12 +254,31 @@ export interface DriveBreadcrumb {
   name: string;
 }
 
+export interface ActiveDirectorySecurityGroup {
+  id: string;
+  name: string;
+  description: string;
+  role: UserRole;
+}
+
+export interface ActiveDirectoryConfig {
+  enabled: boolean;
+  tenantId: string;
+  clientId: string;
+  clientSecret: string;
+  domain: string;
+  ldapUrl: string;
+  baseDn: string;
+  securityGroups: ActiveDirectorySecurityGroup[];
+}
+
 export interface AppSettings {
   ai: AIConfig;
   otel: OTelConfig;
   github: GitHubConfig;
   ado: ADOConfig;
   googleDrive: GoogleDriveConfig;
+  activeDirectory: ActiveDirectoryConfig;
   theme: 'dark' | 'light';
   dashboardWidgets: WidgetId[];
   navigation: NavigationConfig;
