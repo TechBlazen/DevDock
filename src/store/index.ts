@@ -348,17 +348,24 @@ export const useRepoStore = create<RepoStore>()(
       selectedRepo: null,
       setRepos: (source, repos) =>
         set(source === 'github' ? { githubRepos: repos } : { adoRepos: repos }),
-      addRepo: (repo) =>
+      addRepo: (repo) => {
+        const currentUserId = useAuthStore.getState().user?.id;
+        const repoWithOwner = { ...repo, addedBy: repo.addedBy ?? currentUserId };
+
         set((s) => {
-          const currentUserId = useAuthStore.getState().user?.id;
-          const repoWithOwner = { ...repo, addedBy: repo.addedBy ?? currentUserId };
           if (repo.source === 'github') {
             if (s.githubRepos.some((r) => r.id === repo.id)) return s;
             return { githubRepos: [repoWithOwner, ...s.githubRepos] };
           }
           if (s.adoRepos.some((r) => r.id === repo.id)) return s;
           return { adoRepos: [repoWithOwner, ...s.adoRepos] };
-        }),
+        });
+
+        // Auto-import markdown files in the background
+        import('../lib/auto-import-docs').then(({ autoImportRepoMarkdown }) => {
+          autoImportRepoMarkdown(repoWithOwner);
+        });
+      },
       removeRepo: (id, source) =>
         set((s) =>
           source === 'github'
