@@ -1,0 +1,243 @@
+import Database from 'better-sqlite3';
+import { readFileSync, readdirSync } from 'fs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import type {
+  DatabaseProvider, UserRow, RepoRow, SettingsRow,
+  BookmarkRow, CollectionRow, DocRow, PluginStateRow,
+  PageViewRow, ErrorRow,
+} from '../provider.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+export class SqliteProvider implements DatabaseProvider {
+  private db!: Database.Database;
+
+  constructor(private dbPath: string) {}
+
+  async connect(): Promise<void> {
+    this.db = new Database(this.dbPath);
+    this.db.pragma('journal_mode = WAL');
+    this.db.pragma('foreign_keys = ON');
+  }
+
+  async disconnect(): Promise<void> {
+    this.db.close();
+  }
+
+  async migrate(): Promise<void> {
+    // Ensure _migrations table exists
+    this.db.exec(`CREATE TABLE IF NOT EXISTS _migrations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE,
+      applied_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`);
+
+    const applied = new Set(
+      this.db.prepare('SELECT name FROM _migrations').all().map((r) => (r as { name: string }).name)
+    );
+
+    const migrationsDir = resolve(__dirname, 'migrations');
+    const files = readdirSync(migrationsDir)
+      .filter((f) => f.endsWith('.sql'))
+      .sort();
+
+    for (const file of files) {
+      if (applied.has(file)) continue;
+      const sql = readFileSync(resolve(migrationsDir, file), 'utf-8');
+      this.db.exec(sql);
+      this.db.prepare('INSERT INTO _migrations (name) VALUES (?)').run(file);
+      console.log(`  Applied migration: ${file}`);
+    }
+  }
+
+  // ─── Users ──────────────────────────────────────────────────────────────────
+
+  async getUsers(): Promise<UserRow[]> {
+    return this.db.prepare('SELECT * FROM users ORDER BY created_at DESC').all() as UserRow[];
+  }
+
+  async getUserById(id: string): Promise<UserRow | null> {
+    return (this.db.prepare('SELECT * FROM users WHERE id = ?').get(id) as UserRow) ?? null;
+  }
+
+  async getUserByUsername(username: string): Promise<UserRow | null> {
+    return (this.db.prepare('SELECT * FROM users WHERE username = ?').get(username) as UserRow) ?? null;
+  }
+
+  async createUser(user: UserRow): Promise<UserRow> {
+    this.db.prepare(`INSERT INTO users (id, username, password_hash, display_name, email, avatar_url, role, permissions, dashboard_widgets, favorite_repos, preferences, created_at, last_login)
+      VALUES (@id, @username, @password_hash, @display_name, @email, @avatar_url, @role, @permissions, @dashboard_widgets, @favorite_repos, @preferences, @created_at, @last_login)`).run(user);
+    return user;
+  }
+
+  async updateUser(id: string, partial: Partial<UserRow>): Promise<UserRow | null> {
+    const existing = await this.getUserById(id);
+    if (!existing) return null;
+    const updated = { ...existing, ...partial };
+    const sets = Object.keys(partial).map((k) => `${k} = @${k}`).join(', ');
+    this.db.prepare(`UPDATE users SET ${sets} WHERE id = @id`).run({ ...partial, id });
+    return updated;
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    this.db.prepare('DELETE FROM users WHERE id = ?').run(id);
+  }
+
+  // ─── Repos ──────────────────────────────────────────────────────────────────
+
+  async getRepos(source?: string): Promise<RepoRow[]> {
+    if (source) {
+      return this.db.prepare('SELECT * FROM repos WHERE source = ? ORDER BY updated_at DESC').all(source) as RepoRow[];
+    }
+    return this.db.prepare('SELECT * FROM repos ORDER BY updated_at DESC').all() as RepoRow[];
+  }
+
+  async getRepoById(id: string): Promise<RepoRow | null> {
+    return (this.db.prepare('SELECT * FROM repos WHERE id = ?').get(id) as RepoRow) ?? null;
+  }
+
+  async upsertRepo(repo: RepoRow): Promise<RepoRow> {
+    this.db.prepare(`INSERT OR REPLACE INTO repos (id, name, full_name, description, source, language, default_branch, stars, forks, is_private, updated_at, clone_url, web_url, topics, environments, cloud_platform, owners, custom_tags, added_by)
+      VALUES (@id, @name, @full_name, @description, @source, @language, @default_branch, @stars, @forks, @is_private, @updated_at, @clone_url, @web_url, @topics, @environments, @cloud_platform, @owners, @custom_tags, @added_by)`).run(repo);
+    return repo;
+  }
+
+  async updateRepo(id: string, partial: Partial<RepoRow>): Promise<RepoRow | null> {
+    const existing = await this.getRepoById(id);
+    if (!existing) return null;
+    const sets = Object.keys(partial).map((k) => `${k} = @${k}`).join(', ');
+    this.db.prepare(`UPDATE repos SET ${sets} WHERE id = @id`).run({ ...partial, id });
+    return { ...existing, ...partial };
+  }
+
+  async deleteRepo(id: string): Promise<void> {
+    this.db.prepare('DELETE FROM repos WHERE id = ?').run(id);
+  }
+
+  // ─── Settings ───────────────────────────────────────────────────────────────
+
+  async getSettings(userId?: string): Promise<SettingsRow | null> {
+    if (userId) {
+      return (this.db.prepare('SELECT * FROM settings WHERE user_id = ?').get(userId) as SettingsRow) ?? null;
+    }
+    return (this.db.prepare('SELECT * FROM settings WHERE user_id IS NULL').get() as SettingsRow) ?? null;
+  }
+
+  async upsertSettings(settings: SettingsRow): Promise<SettingsRow> {
+    this.db.prepare(`INSERT OR REPLACE INTO settings (id, user_id, ai_config, otel_config, github_config, ado_config, theme, dashboard_widgets)
+      VALUES (@id, @user_id, @ai_config, @otel_config, @github_config, @ado_config, @theme, @dashboard_widgets)`).run(settings);
+    return settings;
+  }
+
+  // ─── Bookmarks ──────────────────────────────────────────────────────────────
+
+  async getBookmarks(userId: string): Promise<BookmarkRow[]> {
+    return this.db.prepare('SELECT * FROM bookmarks WHERE user_id = ? ORDER BY created_at DESC').all(userId) as BookmarkRow[];
+  }
+
+  async createBookmark(bookmark: BookmarkRow): Promise<BookmarkRow> {
+    this.db.prepare(`INSERT INTO bookmarks (id, user_id, title, url, description, favicon, screenshot, collection_id, tags, favorite, note, content_type, created_at, updated_at)
+      VALUES (@id, @user_id, @title, @url, @description, @favicon, @screenshot, @collection_id, @tags, @favorite, @note, @content_type, @created_at, @updated_at)`).run(bookmark);
+    return bookmark;
+  }
+
+  async updateBookmark(id: string, partial: Partial<BookmarkRow>): Promise<BookmarkRow | null> {
+    const existing = this.db.prepare('SELECT * FROM bookmarks WHERE id = ?').get(id) as BookmarkRow | undefined;
+    if (!existing) return null;
+    const sets = Object.keys(partial).map((k) => `${k} = @${k}`).join(', ');
+    this.db.prepare(`UPDATE bookmarks SET ${sets} WHERE id = @id`).run({ ...partial, id });
+    return { ...existing, ...partial };
+  }
+
+  async deleteBookmark(id: string): Promise<void> {
+    this.db.prepare('DELETE FROM bookmarks WHERE id = ?').run(id);
+  }
+
+  // ─── Collections ────────────────────────────────────────────────────────────
+
+  async getCollections(userId: string): Promise<CollectionRow[]> {
+    return this.db.prepare('SELECT * FROM collections WHERE user_id = ? ORDER BY name').all(userId) as CollectionRow[];
+  }
+
+  async createCollection(collection: CollectionRow): Promise<CollectionRow> {
+    this.db.prepare(`INSERT INTO collections (id, user_id, name, icon, color, parent_id, created_at, updated_at)
+      VALUES (@id, @user_id, @name, @icon, @color, @parent_id, @created_at, @updated_at)`).run(collection);
+    return collection;
+  }
+
+  async updateCollection(id: string, partial: Partial<CollectionRow>): Promise<CollectionRow | null> {
+    const existing = this.db.prepare('SELECT * FROM collections WHERE id = ?').get(id) as CollectionRow | undefined;
+    if (!existing) return null;
+    const sets = Object.keys(partial).map((k) => `${k} = @${k}`).join(', ');
+    this.db.prepare(`UPDATE collections SET ${sets} WHERE id = @id`).run({ ...partial, id });
+    return { ...existing, ...partial };
+  }
+
+  async deleteCollection(id: string): Promise<void> {
+    this.db.prepare('DELETE FROM collections WHERE id = ?').run(id);
+  }
+
+  // ─── Docs ───────────────────────────────────────────────────────────────────
+
+  async getDocs(): Promise<DocRow[]> {
+    return this.db.prepare('SELECT * FROM docs ORDER BY updated_at DESC').all() as DocRow[];
+  }
+
+  async createDoc(doc: DocRow): Promise<DocRow> {
+    this.db.prepare(`INSERT INTO docs (id, title, content, source_url, tags, created_at, updated_at)
+      VALUES (@id, @title, @content, @source_url, @tags, @created_at, @updated_at)`).run(doc);
+    return doc;
+  }
+
+  async updateDoc(id: string, partial: Partial<DocRow>): Promise<DocRow | null> {
+    const existing = this.db.prepare('SELECT * FROM docs WHERE id = ?').get(id) as DocRow | undefined;
+    if (!existing) return null;
+    const sets = Object.keys(partial).map((k) => `${k} = @${k}`).join(', ');
+    this.db.prepare(`UPDATE docs SET ${sets} WHERE id = @id`).run({ ...partial, id });
+    return { ...existing, ...partial };
+  }
+
+  async deleteDoc(id: string): Promise<void> {
+    this.db.prepare('DELETE FROM docs WHERE id = ?').run(id);
+  }
+
+  // ─── Plugins ────────────────────────────────────────────────────────────────
+
+  async getPluginState(): Promise<PluginStateRow> {
+    const row = this.db.prepare('SELECT * FROM plugins_state WHERE id = ?').get('singleton') as PluginStateRow | undefined;
+    if (row) return row;
+    const defaultState: PluginStateRow = { id: 'singleton', enabled_plugins: '{}', plugin_settings: '{}' };
+    this.db.prepare('INSERT INTO plugins_state (id, enabled_plugins, plugin_settings) VALUES (@id, @enabled_plugins, @plugin_settings)').run(defaultState);
+    return defaultState;
+  }
+
+  async updatePluginState(state: Partial<PluginStateRow>): Promise<PluginStateRow> {
+    await this.getPluginState(); // ensure row exists
+    const sets = Object.keys(state).filter(k => k !== 'id').map((k) => `${k} = @${k}`).join(', ');
+    if (sets) {
+      this.db.prepare(`UPDATE plugins_state SET ${sets} WHERE id = 'singleton'`).run(state);
+    }
+    return this.getPluginState();
+  }
+
+  // ─── Analytics ──────────────────────────────────────────────────────────────
+
+  async trackPageView(view: PageViewRow): Promise<void> {
+    this.db.prepare(`INSERT INTO analytics_page_views (id, user_id, user_name, path, timestamp)
+      VALUES (@id, @user_id, @user_name, @path, @timestamp)`).run(view);
+  }
+
+  async trackError(error: ErrorRow): Promise<void> {
+    this.db.prepare(`INSERT INTO analytics_errors (id, user_id, user_name, message, stack, path, timestamp)
+      VALUES (@id, @user_id, @user_name, @message, @stack, @path, @timestamp)`).run(error);
+  }
+
+  async getPageViews(limit = 100): Promise<PageViewRow[]> {
+    return this.db.prepare('SELECT * FROM analytics_page_views ORDER BY timestamp DESC LIMIT ?').all(limit) as PageViewRow[];
+  }
+
+  async getErrors(limit = 100): Promise<ErrorRow[]> {
+    return this.db.prepare('SELECT * FROM analytics_errors ORDER BY timestamp DESC LIMIT ?').all(limit) as ErrorRow[];
+  }
+}

@@ -6,5 +6,9 @@ dist
 *.log
 .vite
 
+# Database
+data/
+dist-server/
+
 # Claude AI configuration
 CLAUDE.md
