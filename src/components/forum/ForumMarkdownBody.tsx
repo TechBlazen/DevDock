@@ -1,4 +1,22 @@
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
+
+// Allow common HTML tags but sanitize dangerous ones
+const sanitizeSchema = {
+  ...defaultSchema,
+  tagNames: [
+    ...(defaultSchema.tagNames ?? []),
+    'details', 'summary', 'kbd', 'mark', 'abbr', 'sub', 'sup',
+    'table', 'thead', 'tbody', 'tr', 'th', 'td',
+    'br', 'hr', 'div', 'span', 'p',
+  ],
+  attributes: {
+    ...defaultSchema.attributes,
+    '*': [...(defaultSchema.attributes?.['*'] ?? []), 'className', 'style'],
+    code: [...(defaultSchema.attributes?.['code'] ?? []), 'className'],
+  },
+};
 
 interface ForumMarkdownBodyProps {
   content: string;
@@ -10,6 +28,7 @@ export const ForumMarkdownBody = ({ content }: ForumMarkdownBodyProps) => (
     style={{ color: 'var(--text-secondary)' }}
   >
     <ReactMarkdown
+      rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
       components={{
         code: ({ children, className, ...props }) => {
           const isBlock = className?.includes('language-');

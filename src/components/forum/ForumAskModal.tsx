@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '../ui';
+import { ForumMarkdownEditor } from './ForumMarkdownEditor';
 import { useForumStore } from '../../store';
 import { useAuthStore } from '../../store';
 import { FORUM_CATEGORIES, DEPARTMENTS, TECHNOLOGIES } from '../../lib/forum-constants';
@@ -143,25 +144,11 @@ export const ForumAskModal = ({ isOpen, onClose }: ForumAskModalProps) => {
             <label className="text-[12px] font-medium" style={{ color: 'var(--text-secondary)' }}>
               Details
             </label>
-            <textarea
+            <ForumMarkdownEditor
               value={body}
-              onChange={(e) => setBody(e.target.value)}
-              placeholder="Provide details, code snippets, or context..."
-              className="w-full rounded-md px-3 py-2 text-[13px] outline-none transition-all duration-200 resize-y"
-              style={{
-                minHeight: 160,
-                background: 'var(--bg-input)',
-                border: '1px solid var(--border-input)',
-                color: 'var(--text-primary)',
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.border = '1px solid var(--accent)';
-                e.currentTarget.style.boxShadow = '0 0 0 2px var(--accent-bg)';
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.border = '1px solid var(--border-input)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
+              onChange={setBody}
+              placeholder="Provide details, code snippets, or context... Supports Markdown and HTML."
+              minHeight={160}
             />
           </div>
 
