@@ -241,7 +241,7 @@ const GroupChildrenEditor = ({
               {child.label}
             </span>
             <span className="text-[10px] font-mono" style={{ color: 'var(--text-faint)' }}>{child.route}</span>
-            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <IconBtn icon={ChevronUp} title="Move up" onClick={() => move(idx, -1)} disabled={idx === 0} />
               <IconBtn icon={ChevronDown} title="Move down" onClick={() => move(idx, 1)} disabled={idx === children.length - 1} />
               <IconBtn icon={Pencil} title="Edit" onClick={() => setEditingId(child.id)} />
@@ -290,12 +290,12 @@ const IconBtn = ({
     title={title}
     onClick={onClick}
     disabled={disabled}
-    className="p-1 rounded transition-colors disabled:opacity-30"
+    className="p-1.5 rounded-md transition-colors disabled:opacity-30"
     style={{ color: danger ? '#d32f2f' : 'var(--text-faint)' }}
     onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.background = 'var(--bg-hover)'; }}
     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
   >
-    <Icon size={13} />
+    <Icon size={18} />
   </button>
 );
 
@@ -465,7 +465,7 @@ export const NavigationEditor = () => {
               <div key={item.id} className="flex items-center gap-2 py-1.5 group" style={{ opacity: item.visible ? 1 : 0.4 }}>
                 <div className="flex-1" style={{ borderTop: '1px dashed var(--border-color)', margin: '0 8px' }} />
                 <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-faint)' }}>divider</span>
-                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <IconBtn icon={ChevronUp} title="Move up" onClick={() => move(idx, -1)} disabled={idx === 0} />
                   <IconBtn icon={ChevronDown} title="Move down" onClick={() => move(idx, 1)} disabled={idx === items.length - 1} />
                   <IconBtn icon={item.visible ? Eye : EyeOff} title={item.visible ? 'Hide' : 'Show'} onClick={() => toggleVisibility(idx)} />
@@ -488,7 +488,7 @@ export const NavigationEditor = () => {
                 <span className="text-[11px] flex-1" style={{ color: 'var(--text-muted)' }}>
                   Dynamic plugin nav items appear here
                 </span>
-                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <IconBtn icon={ChevronUp} title="Move up" onClick={() => move(idx, -1)} disabled={idx === 0} />
                   <IconBtn icon={ChevronDown} title="Move down" onClick={() => move(idx, 1)} disabled={idx === items.length - 1} />
                   <IconBtn icon={item.visible ? Eye : EyeOff} title={item.visible ? 'Hide' : 'Show'} onClick={() => toggleVisibility(idx)} />
@@ -534,7 +534,7 @@ export const NavigationEditor = () => {
                 {isLocked && <Lock size={11} style={{ color: 'var(--text-faint)' }} />}
 
                 {/* Actions */}
-                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <IconBtn icon={ChevronUp} title="Move up" onClick={() => move(idx, -1)} disabled={idx === 0} />
                   <IconBtn icon={ChevronDown} title="Move down" onClick={() => move(idx, 1)} disabled={idx === items.length - 1} />
                   <IconBtn icon={Pencil} title="Edit" onClick={() => setEditingId(item.id)} />
