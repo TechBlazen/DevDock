@@ -97,6 +97,50 @@ body {
 
 main > * { animation: fadeIn 0.2s ease both; }
 
+/* ─── Forum Markdown HTML elements ──────────────────────────────────────── */
+.forum-markdown kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  line-height: 1.4;
+  color: var(--text-primary);
+  background: var(--bg-inset);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: 0 1px 0 var(--border-color);
+}
+.forum-markdown mark {
+  background: rgba(245, 158, 11, 0.25);
+  color: inherit;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+.forum-markdown details {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+}
+.forum-markdown details summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+.forum-markdown details[open] summary {
+  margin-bottom: 6px;
+}
+.forum-markdown del {
+  text-decoration: line-through;
+  color: var(--text-faint);
+}
+.forum-markdown input[type="checkbox"] {
+  margin-right: 6px;
+  accent-color: var(--accent);
+}
+
 .font-mono { font-family: 'Source Code Pro', monospace; }
 
 /* ─── TechDocs Content Styling ────────────────────────────────────────────── */
