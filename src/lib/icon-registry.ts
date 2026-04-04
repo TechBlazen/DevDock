@@ -9,6 +9,7 @@ import {
   Terminal, BookOpen, Bookmark, Folder, Home, Star,
   Zap, Cloud, Shield, Lock, Bell, Mail,
   Calendar, Clock, Map, Tag, Heart, Flag,
+  HardDrive, Upload, Image, Film, FileSpreadsheet,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -23,6 +24,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Terminal, BookOpen, Bookmark, Folder, Home, Star,
   Zap, Cloud, Shield, Lock, Bell, Mail,
   Calendar, Clock, Map, Tag, Heart, Flag,
+  HardDrive, Upload, Image, Film, FileSpreadsheet,
   Circle,
 };
 

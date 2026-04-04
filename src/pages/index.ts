@@ -10,6 +10,7 @@ export {
   GitGeneratorPage, DockerGeneratorPage,
 } from './DevToolsPage';
 export { DocsPage } from './DocsPage';
+export { GoogleDrivePage } from './GoogleDrivePage';
 export { LoginPage } from './LoginPage';
 export { NetworkPage } from './NetworkPage';
 export { PluginsPage } from './PluginsPage';

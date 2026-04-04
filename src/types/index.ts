@@ -231,11 +231,35 @@ export interface ADOConfig {
   projects: string[];
 }
 
+export interface GoogleDriveConfig {
+  accessToken: string;
+  connected: boolean;
+}
+
+export interface DriveFile {
+  id: string;
+  name: string;
+  mimeType: string;
+  size?: string;
+  modifiedTime?: string;
+  iconLink?: string;
+  webViewLink?: string;
+  webContentLink?: string;
+  parents?: string[];
+  thumbnailLink?: string;
+}
+
+export interface DriveBreadcrumb {
+  id: string;
+  name: string;
+}
+
 export interface AppSettings {
   ai: AIConfig;
   otel: OTelConfig;
   github: GitHubConfig;
   ado: ADOConfig;
+  googleDrive: GoogleDriveConfig;
   theme: 'dark' | 'light';
   dashboardWidgets: WidgetId[];
   navigation: NavigationConfig;
