@@ -225,12 +225,12 @@ export const RepoDetailPanel = ({ repo }: { repo: Repository }) => {
       </div>
 
       {/* Tabs */}
-      <div className="flex" style={{ borderBottom: '2px solid var(--border-subtle)' }}>
+      <div className="flex gap-3" style={{ borderBottom: '2px solid var(--border-subtle)' }}>
         {tabs.map(({ key, label, icon: Icon, count }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className="flex items-center gap-1.5 font-semibold px-4 py-2 transition-all relative"
+            className="flex items-center gap-2 font-semibold px-5 py-2.5 transition-all relative"
             style={{
               fontFamily: "Verdana, Geneva, sans-serif",
               fontSize: '12px',
