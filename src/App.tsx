@@ -35,6 +35,7 @@ import {
   GitGeneratorPage,
   DockerGeneratorPage,
   DocsPage,
+  GoogleDrivePage,
   NetworkPage,
   PluginsPage,
   UsersPage,
@@ -146,7 +147,8 @@ function PluginRoutes({ editMode }: { editMode: boolean }) {
       <Route path="/devtools/csv"        element={<CsvViewerPage />} />
       <Route path="/devtools/git-gen"    element={<GitGeneratorPage />} />
       <Route path="/devtools/docker-gen" element={<DockerGeneratorPage />} />
-      <Route path="/docs"      element={<DocsPage />} />
+      <Route path="/docs"               element={<DocsPage />} />
+      <Route path="/docs/google-drive"  element={<GoogleDrivePage />} />
       <Route path="/network"   element={<NetworkPage />} />
       <Route path="/plugins"   element={<PluginsPage />} />
       <Route path="/profile"   element={<ProfilePage />} />

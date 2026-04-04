@@ -12,7 +12,19 @@ export const defaultNavigation: NavigationConfig = {
     { id: 'telemetry',  type: 'link', label: 'Observability', icon: 'Activity',       route: '/telemetry', visible: true },
     { id: 'catalog',    type: 'link', label: 'Widgets',       icon: 'Layers',         route: '/catalog',   visible: true },
     { id: 'scaffold',   type: 'link', label: 'Scaffold',      icon: 'Hammer',         route: '/scaffold',  visible: true },
-    { id: 'docs',       type: 'link', label: 'Docs',          icon: 'FileText',       route: '/docs',      visible: true },
+    {
+      id: 'docs',
+      type: 'group',
+      label: 'Docs',
+      icon: 'FileText',
+      route: '/docs',
+      visible: true,
+      defaultExpanded: false,
+      children: [
+        { id: 'docs-main',    type: 'link', label: 'Markdown Docs', icon: 'FileText',  route: '/docs',              visible: true },
+        { id: 'google-drive', type: 'link', label: 'Google Drive',  icon: 'HardDrive', route: '/docs/google-drive', visible: true },
+      ],
+    },
     { id: 'network',    type: 'link', label: 'Network',       icon: 'Network',        route: '/network',   visible: true },
     { id: 'forum',      type: 'link', label: 'Community',     icon: 'MessageSquare',  route: '/forum',     visible: true },
 

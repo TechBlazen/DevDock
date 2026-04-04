@@ -114,6 +114,7 @@ interface SettingsStore {
   updateGitHubConfig: (partial: Partial<AppSettings['github']>) => void;
   updateADOConfig: (partial: Partial<AppSettings['ado']>) => void;
   updateDashboardWidgets: (widgets: WidgetId[]) => void;
+  updateGoogleDriveConfig: (partial: Partial<AppSettings['googleDrive']>) => void;
   updateNavigation: (navigation: NavigationConfig) => void;
   resetNavigation: () => void;
 }
@@ -145,6 +146,10 @@ const defaultSettings: AppSettings = {
     personalAccessToken: '',
     projects: [],
   },
+  googleDrive: {
+    accessToken: '',
+    connected: false,
+  },
   theme: 'dark',
   dashboardWidgets: ['repos_github', 'repos_ado', 'mcp_status', 'telemetry', 'quick_actions', 'activity_feed', 'favorite_repos'],
   navigation: defaultNavigation,
@@ -171,6 +176,8 @@ export const useSettingsStore = create<SettingsStore>()(
         set((s) => ({ settings: { ...s.settings, ado: { ...s.settings.ado, ...partial } } })),
       updateDashboardWidgets: (widgets) =>
         set((s) => ({ settings: { ...s.settings, dashboardWidgets: widgets } })),
+      updateGoogleDriveConfig: (partial) =>
+        set((s) => ({ settings: { ...s.settings, googleDrive: { ...s.settings.googleDrive, ...partial } } })),
       updateNavigation: (navigation) =>
         set((s) => ({ settings: { ...s.settings, navigation } })),
       resetNavigation: () =>
