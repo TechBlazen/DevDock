@@ -114,17 +114,17 @@ const getVariantStyle = (variant: NonNullable<ButtonProps['variant']>) => {
 };
 
 const sizeStyles: Record<NonNullable<ButtonProps['size']>, string> = {
-  sm: 'px-2.5 py-1 text-[12px]',
-  md: 'px-3.5 py-1.5 text-[13px]',
-  lg: 'px-5 py-2.5 text-sm',
+  sm: 'px-4 py-1.5 text-[12px]',
+  md: 'px-5 py-2 text-[13px]',
+  lg: 'px-7 py-3 text-sm',
 };
 
 export const Button = ({ variant = 'ghost', size = 'md', className, children, ...props }: ButtonProps) => (
   <button
     className={clsx(
-      'inline-flex items-center gap-1.5 rounded-md font-medium',
+      'inline-flex items-center justify-center gap-2 rounded-full font-semibold',
       'transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed',
-      'hover:opacity-90 active:opacity-80',
+      'hover:opacity-90 active:scale-[0.97]',
       sizeStyles[size],
       className
     )}
