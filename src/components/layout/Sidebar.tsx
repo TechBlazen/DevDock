@@ -118,15 +118,20 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
     return (
       <div key={item.id}>
         <div className="flex items-center">
-          <NavLink
-            to={item.route}
-            className="flex-1 flex items-center gap-2.5 px-3 py-[10px] rounded-md text-[13px] font-medium transition-all duration-200"
-            style={() => navLinkStyle(pathname.startsWith(item.route))}
+          <button
+            onClick={() => toggleGroup(item.id)}
+            className="flex-1 flex items-center gap-2.5 px-3 py-[10px] rounded-md text-[13px] font-medium transition-all duration-200 text-left"
+            style={{
+              ...navLinkStyle(pathname.startsWith(item.route)),
+              background: pathname.startsWith(item.route) ? 'var(--accent-bg)' : 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+            }}
             {...hoverHandlers}
           >
             <Icon size={16} className="flex-shrink-0" />
             <span className="truncate">{item.label}</span>
-          </NavLink>
+          </button>
           {visibleChildren.length > 0 && (
             <button
               onClick={(e) => { e.stopPropagation(); toggleGroup(item.id); }}
