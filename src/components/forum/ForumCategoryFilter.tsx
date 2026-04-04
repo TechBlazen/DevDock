@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { FORUM_CATEGORIES, DEPARTMENTS, TECHNOLOGIES } from '../../lib/forum-constants';
 import type { ForumCategory } from '../../types';
 
@@ -14,6 +15,7 @@ export const ForumCategoryFilter = ({
   activeTag,
   onTagChange,
 }: ForumCategoryFilterProps) => {
+  const navigate = useNavigate();
   const allTags = [...DEPARTMENTS, ...TECHNOLOGIES].sort();
 
   return (
@@ -48,6 +50,18 @@ export const ForumCategoryFilter = ({
             </button>
           );
         })}
+        {/* Feature Request pseudo-category */}
+        <button
+          onClick={() => navigate('/forum/feature-requests')}
+          className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-all duration-200 cursor-pointer"
+          style={{
+            background: 'transparent',
+            color: 'var(--text-faint)',
+            border: 'none',
+          }}
+        >
+          Feature Request
+        </button>
       </div>
 
       {/* Tag dropdown */}

@@ -1,5 +1,6 @@
-import { Lightbulb, ThumbsUp, Paperclip, ChevronRight } from 'lucide-react';
+import { Lightbulb, ThumbsUp, Paperclip, ChevronRight, ArrowRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader } from '../ui';
 import { useForumStore } from '../../store/forum-store';
 import { useAuthStore } from '../../store';
@@ -18,6 +19,7 @@ interface ForumTopFeatureRequestsProps {
 }
 
 export const ForumTopFeatureRequests = ({ onSubmitClick }: ForumTopFeatureRequestsProps) => {
+  const navigate = useNavigate();
   const getTopFeatureRequests = useForumStore((s) => s.getTopFeatureRequests);
   const voteFeatureRequest = useForumStore((s) => s.voteFeatureRequest);
   const user = useAuthStore((s) => s.user);
@@ -89,8 +91,8 @@ export const ForumTopFeatureRequests = ({ onSubmitClick }: ForumTopFeatureReques
         })}
       </div>
 
-      {/* Submit button */}
-      <div className="px-4 py-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+      {/* Actions */}
+      <div className="flex flex-col gap-2 px-4 py-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
         <button
           onClick={onSubmitClick}
           className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-semibold transition-all cursor-pointer"
@@ -105,6 +107,20 @@ export const ForumTopFeatureRequests = ({ onSubmitClick }: ForumTopFeatureReques
           <Lightbulb size={13} />
           Submit a Feature Request
           <ChevronRight size={12} />
+        </button>
+        <button
+          onClick={() => navigate('/forum/feature-requests')}
+          className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-medium transition-all cursor-pointer"
+          style={{
+            background: 'transparent',
+            color: 'var(--text-muted)',
+            border: '1px solid var(--border-subtle)',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-inset)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+        >
+          View All
+          <ArrowRight size={11} />
         </button>
       </div>
     </Card>

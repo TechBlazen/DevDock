@@ -100,7 +100,7 @@ export const ForumListView = () => {
               <ForumThreadCard
                 key={thread.id}
                 thread={thread}
-                onClick={() => navigate(`/forum/${thread.id}`)}
+                onClick={() => navigate(`/forum/thread/${thread.id}`)}
               />
             ))
           )}

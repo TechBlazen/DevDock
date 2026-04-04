@@ -348,7 +348,7 @@ export interface ForgePlugin {
 }
 
 // ─── Forum Types ────────────────────────────────────────────────────────────
-export type ForumCategory = 'bug' | 'feature-request' | 'question' | 'discussion' | 'how-to';
+export type ForumCategory = 'bug' | 'question' | 'discussion' | 'how-to';
 export type ForumDepartment = 'Engineering' | 'DevOps' | 'Platform' | 'Security' | 'Data';
 export type ForumTechnology =
   | 'React' | 'TypeScript' | 'Python' | 'Go' | 'Rust' | 'Java'
