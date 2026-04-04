@@ -113,10 +113,10 @@ const getVariantStyle = (variant: NonNullable<ButtonProps['variant']>) => {
   }
 };
 
-const sizeStyles: Record<NonNullable<ButtonProps['size']>, string> = {
-  sm: 'px-8 py-2.5 text-[12px]',
-  md: 'px-10 py-3 text-[13px]',
-  lg: 'px-14 py-4 text-sm',
+const sizePadding: Record<NonNullable<ButtonProps['size']>, { padding: string; fontSize: number }> = {
+  sm: { padding: '10px 32px', fontSize: 12 },
+  md: { padding: '12px 40px', fontSize: 13 },
+  lg: { padding: '16px 56px', fontSize: 14 },
 };
 
 export const Button = ({ variant = 'ghost', size = 'md', className, children, ...props }: ButtonProps) => (
@@ -125,10 +125,13 @@ export const Button = ({ variant = 'ghost', size = 'md', className, children, ..
       'inline-flex items-center justify-center gap-2 rounded-full font-semibold',
       'transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed',
       'hover:opacity-90 active:scale-[0.97]',
-      sizeStyles[size],
       className
     )}
-    style={getVariantStyle(variant)}
+    style={{
+      ...getVariantStyle(variant),
+      padding: sizePadding[size].padding,
+      fontSize: sizePadding[size].fontSize,
+    }}
     {...props}
   >
     {children}
