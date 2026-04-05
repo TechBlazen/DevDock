@@ -65,6 +65,7 @@ export const SEED_ADMIN: UserAccount = {
   displayName: 'Administrator',
   email: 'admin@forgeportal.dev',
   role: 'admin',
+  group: 'Admins',
   permissions: ROLE_PERMISSIONS.admin,
   createdAt: new Date().toISOString(),
 };
@@ -76,6 +77,7 @@ export const SEED_EDITOR: UserAccount = {
   displayName: 'Editor User',
   email: 'editor@forgeportal.dev',
   role: 'editor',
+  group: 'Contributors',
   permissions: ROLE_PERMISSIONS.editor,
   createdAt: new Date().toISOString(),
 };
@@ -87,9 +89,17 @@ export const SEED_READER: UserAccount = {
   displayName: 'Reader User',
   email: 'reader@forgeportal.dev',
   role: 'viewer',
+  group: 'Readers',
   permissions: ROLE_PERMISSIONS.viewer,
   createdAt: new Date().toISOString(),
 };
+
+// ─── Group definitions ─────────────────────────────────────────────────────
+export const USER_GROUPS = [
+  { name: 'Admins', role: 'admin' as UserRole, color: '#ef4444', description: 'Full access to all features and user management' },
+  { name: 'Contributors', role: 'editor' as UserRole, color: '#3b82f6', description: 'Can use all features but cannot manage users or plugins' },
+  { name: 'Readers', role: 'viewer' as UserRole, color: '#10b981', description: 'Read-only access to repos, telemetry, and docs' },
+];
 
 export const SEED_ACCOUNTS = [SEED_ADMIN, SEED_EDITOR, SEED_READER];
 

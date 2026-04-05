@@ -844,7 +844,7 @@ interface UserAccountsStore {
   accounts: UserAccount[];
   addAccount: (username: string, password: string, displayName: string, role: UserRole, email?: string) => UserAccount | null;
   removeAccount: (id: string) => void;
-  updateAccount: (id: string, partial: Partial<Pick<UserAccount, 'displayName' | 'email' | 'role' | 'permissions' | 'dashboardWidgets' | 'preferences'>>) => void;
+  updateAccount: (id: string, partial: Partial<Pick<UserAccount, 'displayName' | 'email' | 'role' | 'group' | 'permissions' | 'dashboardWidgets' | 'preferences'>>) => void;
   updatePassword: (id: string, newPassword: string) => void;
   authenticate: (username: string, password: string) => UserAccount | null;
   setDashboardWidgets: (userId: string, widgets: string[]) => void;
