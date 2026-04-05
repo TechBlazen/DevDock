@@ -109,7 +109,7 @@ export const UsersPage = () => {
 
       {/* Add user form */}
       {showAddForm && (
-        <Card className="mb-5">
+        <Card style={{ marginBottom: 32 }}>
           <div className="p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>New User Account</h3>
