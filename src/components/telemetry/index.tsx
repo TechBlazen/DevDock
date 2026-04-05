@@ -19,7 +19,7 @@ export const MetricsBar = () => {
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mt-2">
+    <div className="grid grid-cols-2 sm:grid-cols-5 gap-4" style={{ marginTop: 24 }}>
       {metrics.map(({ label, value, unit, color, icon: Icon }) => (
         <Card key={label}>
           <div style={{ padding: '18px 22px' }}>
