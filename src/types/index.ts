@@ -285,6 +285,14 @@ export interface ActiveDirectoryConfig {
   securityGroups: ActiveDirectorySecurityGroup[];
 }
 
+export interface BrandingConfig {
+  appName: string;                // e.g. "DevDock"
+  tagline: string;                // e.g. "AI Developer Portal"
+  logoUrl: string;                // URL or data URL for the logo image
+  logoType: 'default' | 'upload'; // whether using default or custom logo
+  faviconUrl: string;             // URL or data URL for the favicon
+}
+
 export interface AppSettings {
   ai: AIConfig;
   otel: OTelConfig;
@@ -292,6 +300,7 @@ export interface AppSettings {
   ado: ADOConfig;
   googleDrive: GoogleDriveConfig;
   activeDirectory: ActiveDirectoryConfig;
+  branding: BrandingConfig;
   theme: 'dark' | 'light';
   dashboardWidgets: WidgetId[];
   navigation: NavigationConfig;

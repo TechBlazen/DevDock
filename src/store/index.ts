@@ -116,6 +116,7 @@ interface SettingsStore {
   updateDashboardWidgets: (widgets: WidgetId[]) => void;
   updateGoogleDriveConfig: (partial: Partial<AppSettings['googleDrive']>) => void;
   updateActiveDirectoryConfig: (partial: Partial<AppSettings['activeDirectory']>) => void;
+  updateBranding: (partial: Partial<AppSettings['branding']>) => void;
   updateNavigation: (navigation: NavigationConfig) => void;
   resetNavigation: () => void;
 }
@@ -169,6 +170,13 @@ const defaultSettings: AppSettings = {
     useSsl: true,
     securityGroups: [],
   },
+  branding: {
+    appName: 'DevDock',
+    tagline: 'AI Developer Portal',
+    logoUrl: '/devdock-logo.svg',
+    logoType: 'default',
+    faviconUrl: '/favicon.svg',
+  },
   theme: 'dark',
   dashboardWidgets: ['repos_github', 'repos_ado', 'mcp_status', 'telemetry', 'quick_actions', 'activity_feed', 'favorite_repos'],
   navigation: defaultNavigation,
@@ -199,6 +207,8 @@ export const useSettingsStore = create<SettingsStore>()(
         set((s) => ({ settings: { ...s.settings, googleDrive: { ...s.settings.googleDrive, ...partial } } })),
       updateActiveDirectoryConfig: (partial) =>
         set((s) => ({ settings: { ...s.settings, activeDirectory: { ...s.settings.activeDirectory, ...partial } } })),
+      updateBranding: (partial) =>
+        set((s) => ({ settings: { ...s.settings, branding: { ...s.settings.branding, ...partial } } })),
       updateNavigation: (navigation) =>
         set((s) => ({ settings: { ...s.settings, navigation } })),
       resetNavigation: () =>

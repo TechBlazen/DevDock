@@ -3,7 +3,7 @@ import {
   Zap, GitFork, Building2, Globe, UserCircle, LogIn,
   ChevronDown, ChevronUp, AlertCircle, Loader2,
 } from 'lucide-react';
-import { useAuthStore, useUserAccountsStore } from '../store';
+import { useAuthStore, useUserAccountsStore, useSettingsStore } from '../store';
 import {
   AUTH_PROVIDERS,
   buildOAuthUrl,
@@ -16,6 +16,7 @@ import type { AuthProvider } from '../types';
 export const LoginPage = () => {
   const { signIn, signInAsGuest, setLoading } = useAuthStore();
   const { authenticate } = useUserAccountsStore();
+  const branding = useSettingsStore((s) => s.settings.branding);
   const [showTokenEntry, setShowTokenEntry] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<AuthProvider>('github');
   const [tokenInput, setTokenInput] = useState('');
@@ -107,16 +108,20 @@ export const LoginPage = () => {
       <div className="w-full max-w-md">
         {/* Logo / Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg mb-4" style={{
-            background: 'var(--accent)',
-          }}>
-            <Zap size={28} color="#fff" strokeWidth={2.5} />
-          </div>
+          {branding?.logoType === 'upload' && branding.logoUrl ? (
+            <img src={branding.logoUrl} alt={branding.appName} style={{ height: 48, maxWidth: 200, objectFit: 'contain', margin: '0 auto 16px' }} />
+          ) : (
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg mb-4" style={{
+              background: 'var(--accent)',
+            }}>
+              <Zap size={28} color="#fff" strokeWidth={2.5} />
+            </div>
+          )}
           <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-            DEVDOCK
+            {(branding?.appName || 'DEVDOCK').toUpperCase()}
           </h1>
           <p className="text-xs uppercase tracking-[2px] mt-1" style={{ color: 'var(--text-muted)' }}>
-            AI Developer Portal
+            {branding?.tagline || 'AI Developer Portal'}
           </p>
         </div>
 
@@ -127,7 +132,7 @@ export const LoginPage = () => {
           boxShadow: 'var(--shadow-md)',
         }}>
           <h2 className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
-            Sign in to DevDock
+            Sign in to {branding?.appName || 'DevDock'}
           </h2>
           <p className="text-[11px] mb-5" style={{ color: 'var(--text-muted)' }}>
             Choose an authentication method to get started.
