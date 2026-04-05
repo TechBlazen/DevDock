@@ -302,6 +302,7 @@ export interface AppSettings {
   googleDrive: GoogleDriveConfig;
   activeDirectory: ActiveDirectoryConfig;
   branding: BrandingConfig;
+  defaultLanguage: AppLanguage;
   theme: 'dark' | 'light';
   dashboardWidgets: WidgetId[];
   navigation: NavigationConfig;
@@ -389,10 +390,13 @@ export interface Permission {
   canAccessNetwork: boolean;
 }
 
+export type AppLanguage = 'en' | 'es' | 'fr' | 'de' | 'ja' | 'pt' | 'zh' | 'ko';
+
 export interface UserPreferences {
   theme: 'dark' | 'light' | 'system';
   accentColor: string;
   greeting: 'time-based' | 'simple';
+  language?: AppLanguage;
 }
 
 export interface UserAccount {

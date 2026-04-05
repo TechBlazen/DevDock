@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Shell } from './components/layout/Shell'
 import { initOTel } from './otel'
-import { useSettingsStore, useAuthStore, usePluginStore } from './store'
+import { useSettingsStore, useAuthStore, usePluginStore, useUserAccountsStore } from './store'
+import { changeLanguage } from './i18n'
 import { BUILT_IN_PLUGINS, usePluginExtensions } from './lib/plugins'
 import { LoginPage } from './pages/LoginPage'
 import { ProfilePage } from './pages/ProfilePage'
@@ -71,6 +72,14 @@ export default function App() {
   useEffect(() => {
     document.title = settings.branding?.appName || 'DevDock'
   }, [settings.branding?.appName])
+
+  // Sync language: user preference → app default → browser
+  const user = useAuthStore((s) => s.user)
+  const userAccount = useUserAccountsStore((s) => s.accounts.find((a) => a.id === user?.id))
+  useEffect(() => {
+    const lang = userAccount?.preferences?.language || settings.defaultLanguage || 'en'
+    changeLanguage(lang)
+  }, [userAccount?.preferences?.language, settings.defaultLanguage])
 
   // Auth gate — show login page if not authenticated
   if (authStatus === 'unauthenticated') {

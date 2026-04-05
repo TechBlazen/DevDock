@@ -1,9 +1,11 @@
 import { Sun, Moon, Monitor, User, Shield, Clock, Mail, Key, Bookmark } from 'lucide-react';
-import { useAuthStore, useUserAccountsStore } from '../store';
+import { useAuthStore, useUserAccountsStore, useSettingsStore } from '../store';
 import { useUserPreferences } from '../hooks/useUserPreferences';
 import { useTheme } from '../hooks/useTheme';
 import { formatDistanceToNow } from 'date-fns';
 import { BookmarkWidget } from '../components/profile/BookmarkWidget';
+import { SUPPORTED_LANGUAGES } from '../i18n';
+import type { UserPreferences } from '../types';
 
 const ACCENT_COLORS = [
   { value: '#005DAA', label: 'Blue' },
@@ -25,6 +27,7 @@ export const ProfilePage = () => {
   const provider = useAuthStore((s) => s.provider);
   const accounts = useUserAccountsStore((s) => s.accounts);
   const { prefs, update } = useUserPreferences();
+  const settingsLang = useSettingsStore((s) => s.settings.defaultLanguage);
   useTheme(); // ensure theme is applied
 
   const userAccount = accounts.find((a) => a.id === user?.id);
@@ -181,6 +184,26 @@ export const ProfilePage = () => {
               <div style={{ fontSize: 11, marginTop: 4, opacity: 0.7 }}>{desc}</div>
             </button>
           ))}
+        </div>
+      </SectionCard>
+
+      {/* Language */}
+      <SectionCard title="Language">
+        <div>
+          <select
+            value={prefs.language ?? ''}
+            onChange={(e) => update({ language: (e.target.value || undefined) as UserPreferences['language'] })}
+            className="w-full max-w-xs rounded-lg px-3 py-2.5 text-[13px] outline-none cursor-pointer"
+            style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
+          >
+            <option value="">Use default ({SUPPORTED_LANGUAGES.find(l => l.code === (settingsLang ?? 'en'))?.name ?? 'English'})</option>
+            {SUPPORTED_LANGUAGES.map((lang) => (
+              <option key={lang.code} value={lang.code}>{lang.flag} {lang.name}</option>
+            ))}
+          </select>
+          <p className="text-[10px] mt-2" style={{ color: 'var(--text-faint)' }}>
+            Override the default application language for your account. Leave as "Use default" to follow the admin setting.
+          </p>
         </div>
       </SectionCard>
 

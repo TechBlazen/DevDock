@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import {
   Key, Activity, GitFork, GitBranch, Code2, Save, Check, Lock, AlertTriangle, Globe,
   ChevronDown, ChevronRight, LayoutDashboard, Shield, Plus, Trash2, Users, Palette,
+  Languages as LanguagesIcon,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { useSettingsStore } from '../store';
@@ -408,7 +409,8 @@ const ActiveDirectorySettings = ({
 };
 
 // ─── Import AppSettings type for AD component ────────────────────────────────
-import type { AppSettings } from '../types';
+import type { AppSettings, AppLanguage } from '../types';
+import { SUPPORTED_LANGUAGES } from '../i18n';
 
 export const SettingsPage = () => {
   const {
@@ -554,6 +556,68 @@ export const SettingsPage = () => {
               onChange={(e) => updateBranding({ tagline: e.target.value })}
               placeholder="AI Developer Portal"
             />
+          </div>
+        </Card>
+      </CollapsibleSection>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+           SECTION 1.6 — Localization
+           ═══════════════════════════════════════════════════════════════════ */}
+      <CollapsibleSection
+        icon={<LanguagesIcon size={16} className="text-[#0891b2]" />}
+        title="Localization"
+        description="Set the default application language. Individual users can override this in their profile preferences."
+      >
+        <Card>
+          <CardHeader>
+            <LanguagesIcon size={14} className="text-[#0891b2]" />
+            <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Language</span>
+          </CardHeader>
+          <div className="p-5 space-y-4">
+            <div>
+              <label className="text-[12px] font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>Default Application Language</label>
+              <select
+                value={settings.defaultLanguage ?? 'en'}
+                onChange={(e) => {
+                  const newSettings = { ...settings, defaultLanguage: e.target.value as AppLanguage };
+                  useSettingsStore.setState({ settings: newSettings });
+                }}
+                className="w-full max-w-xs rounded-lg px-3 py-2.5 text-[13px] outline-none cursor-pointer"
+                style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
+              >
+                {SUPPORTED_LANGUAGES.map((lang) => (
+                  <option key={lang.code} value={lang.code}>{lang.flag} {lang.name}</option>
+                ))}
+              </select>
+              <p className="text-[10px] mt-2" style={{ color: 'var(--text-faint)' }}>
+                Sets the default language for all users. Individual users can override this in their profile preferences.
+              </p>
+            </div>
+
+            <div className="rounded-lg p-4" style={{ background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}>
+              <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Available Languages</div>
+              <div className="flex flex-wrap gap-2">
+                {SUPPORTED_LANGUAGES.map((lang) => {
+                  const isActive = (settings.defaultLanguage ?? 'en') === lang.code;
+                  const hasTranslation = ['en', 'es'].includes(lang.code);
+                  return (
+                    <span
+                      key={lang.code}
+                      className="text-[11px] px-2.5 py-1 rounded-lg font-medium"
+                      style={{
+                        background: isActive ? 'var(--accent-bg)' : 'transparent',
+                        color: isActive ? 'var(--accent)' : hasTranslation ? 'var(--text-secondary)' : 'var(--text-faint)',
+                        border: isActive ? '1px solid var(--accent)' : '1px solid var(--border-subtle)',
+                        opacity: hasTranslation ? 1 : 0.6,
+                      }}
+                    >
+                      {lang.flag} {lang.name}
+                      {!hasTranslation && <span className="ml-1 text-[9px]">(coming soon)</span>}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </Card>
       </CollapsibleSection>
