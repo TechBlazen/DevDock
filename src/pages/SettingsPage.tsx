@@ -115,16 +115,37 @@ const ActiveDirectorySettings = ({
     });
   };
 
-  const handleTestConnection = () => {
+  const handleTestConnection = async () => {
     setTestStatus('testing');
-    // Simulate connection test
-    setTimeout(() => {
-      const isValid = config.mode === 'azure-ad'
-        ? (config.tenantId && config.clientId && config.domain)
-        : (config.ldapUrl && config.baseDn && config.bindDn);
+
+    if (config.mode === 'azure-ad') {
+      // Azure AD: validate fields locally (no server-side OAuth test yet)
+      const isValid = config.tenantId && config.clientId && config.domain;
       setTestStatus(isValid ? 'success' : 'error');
       setTimeout(() => setTestStatus('idle'), 3000);
-    }, 1500);
+      return;
+    }
+
+    // On-prem: call the real LDAP test endpoint
+    try {
+      const { directoryApi } = await import('../lib/api');
+      const result = await directoryApi.testConnection({
+        ldapUrl: config.ldapUrl,
+        baseDn: config.baseDn,
+        bindDn: config.bindDn,
+        bindPassword: config.bindPassword,
+        useSsl: config.useSsl,
+        userSearchFilter: config.userSearchFilter,
+        userDisplayNameAttr: config.userDisplayNameAttr,
+        userEmailAttr: config.userEmailAttr,
+        groupSearchFilter: config.groupSearchFilter,
+      });
+      setTestStatus(result.success ? 'success' : 'error');
+      setTimeout(() => setTestStatus('idle'), 4000);
+    } catch {
+      setTestStatus('error');
+      setTimeout(() => setTestStatus('idle'), 3000);
+    }
   };
 
   const adFont: React.CSSProperties = { fontFamily: 'Verdana, Geneva, sans-serif' };
