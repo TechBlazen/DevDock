@@ -67,6 +67,11 @@ export default function App() {
     }
   }, [settings.otel.endpoint, settings.otel.enabled])
 
+  // Update document title when branding changes
+  useEffect(() => {
+    document.title = settings.branding?.appName || 'DevDock'
+  }, [settings.branding?.appName])
+
   // Auth gate — show login page if not authenticated
   if (authStatus === 'unauthenticated') {
     return <LoginPage />

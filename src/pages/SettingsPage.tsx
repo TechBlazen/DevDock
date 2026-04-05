@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import {
   Key, Activity, GitFork, GitBranch, Code2, Save, Check, Lock, AlertTriangle, Globe,
-  ChevronDown, ChevronRight, LayoutDashboard, Shield, Plus, Trash2, Users,
+  ChevronDown, ChevronRight, LayoutDashboard, Shield, Plus, Trash2, Users, Palette,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { useSettingsStore } from '../store';
@@ -418,6 +418,7 @@ export const SettingsPage = () => {
     updateGitHubConfig,
     updateADOConfig,
     updateActiveDirectoryConfig,
+    updateBranding,
   } = useSettingsStore();
 
   const [saved, setSaved] = useState(false);
@@ -455,6 +456,106 @@ export const SettingsPage = () => {
         description="Customize the sidebar layout by adding, removing, or reordering navigation items. Supports groups, dividers, and external links."
       >
         <NavigationEditor />
+      </CollapsibleSection>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+           SECTION 1.5 — Branding
+           ═══════════════════════════════════════════════════════════════════ */}
+      <CollapsibleSection
+        icon={<Palette size={16} className="text-[#a855f7]" />}
+        title="Branding"
+        description="Customize the application logo, title, and tagline. Upload a PNG, JPEG, or provide an SVG to replace the default logo."
+      >
+        <Card>
+          <CardHeader>
+            <Palette size={14} className="text-[#a855f7]" />
+            <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Logo &amp; Title</span>
+          </CardHeader>
+          <div className="p-5 space-y-5">
+            {/* Current logo preview */}
+            <div>
+              <label className="text-[12px] font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>Current Logo</label>
+              <div className="flex items-center gap-4 p-4 rounded-lg" style={{ background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}>
+                <img
+                  src={settings.branding?.logoUrl || '/devdock-logo.svg'}
+                  alt="Logo preview"
+                  style={{ height: 40, maxWidth: 200, objectFit: 'contain' }}
+                />
+                {settings.branding?.logoType === 'upload' && (
+                  <Button variant="ghost" size="sm" onClick={() => updateBranding({ logoUrl: '/devdock-logo.svg', logoType: 'default' })}>
+                    Reset to Default
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Upload logo */}
+            <div>
+              <label className="text-[12px] font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                Upload New Logo
+                <span className="font-normal ml-1" style={{ color: 'var(--text-faint)' }}>(PNG, JPEG, or SVG — recommended 200x50px)</span>
+              </label>
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/svg+xml"
+                className="text-[12px]"
+                style={{ color: 'var(--text-muted)' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 2 * 1024 * 1024) {
+                    alert('Logo file must be under 2 MB');
+                    return;
+                  }
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    updateBranding({ logoUrl: reader.result as string, logoType: 'upload' });
+                  };
+                  reader.readAsDataURL(file);
+                }}
+              />
+            </div>
+
+            {/* SVG input */}
+            <div>
+              <label className="text-[12px] font-medium mb-1.5 block" style={{ color: 'var(--text-secondary)' }}>
+                Or Paste SVG Markup
+              </label>
+              <textarea
+                placeholder='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50">...</svg>'
+                className="w-full rounded-lg px-3 py-2 text-xs outline-none resize-y font-mono"
+                style={{ minHeight: 80, background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
+                onBlur={(e) => {
+                  const svg = e.target.value.trim();
+                  if (svg && svg.startsWith('<svg')) {
+                    const encoded = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
+                    updateBranding({ logoUrl: encoded, logoType: 'upload' });
+                    e.target.value = '';
+                  }
+                }}
+              />
+              <p className="text-[10px] mt-1" style={{ color: 'var(--text-faint)' }}>
+                Paste raw SVG code and click outside to apply. Must start with {'<svg'}.
+              </p>
+            </div>
+
+            {/* App name */}
+            <Input
+              label="Application Name"
+              value={settings.branding?.appName ?? 'DevDock'}
+              onChange={(e) => updateBranding({ appName: e.target.value })}
+              placeholder="DevDock"
+            />
+
+            {/* Tagline */}
+            <Input
+              label="Tagline"
+              value={settings.branding?.tagline ?? 'AI Developer Portal'}
+              onChange={(e) => updateBranding({ tagline: e.target.value })}
+              placeholder="AI Developer Portal"
+            />
+          </div>
+        </Card>
       </CollapsibleSection>
 
       {/* ═══════════════════════════════════════════════════════════════════

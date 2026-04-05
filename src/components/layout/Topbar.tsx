@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Bell, Bot, ChevronDown } from 'lucide-react';
-import { useChatStore, useTelemetryStore, useAuthStore, useUserAccountsStore } from '../../store';
+import { useChatStore, useTelemetryStore, useAuthStore, useUserAccountsStore, useSettingsStore } from '../../store';
 import { Button, Pill } from '../ui';
 import { useUserPreferences } from '../../hooks/useUserPreferences';
 import { UserPreferencesPanel } from './UserPreferencesPanel';
@@ -29,6 +29,7 @@ export const Topbar = () => {
   const { reqPerSec, errorRate } = useTelemetryStore();
   const user = useAuthStore((s) => s.user);
   const accounts = useUserAccountsStore((s) => s.accounts);
+  const branding = useSettingsStore((s) => s.settings.branding);
   const { prefs } = useUserPreferences();
 
   const userAccount = accounts.find((a) => a.id === user?.id);
@@ -52,7 +53,7 @@ export const Topbar = () => {
       borderBottom: '1px solid var(--border-color)',
     }}>
       {/* Logo */}
-      <img src="/devdock-logo.svg" alt="DevDock" style={{ height: 32 }} />
+      <img src={branding?.logoUrl || '/devdock-logo.svg'} alt={branding?.appName || 'DevDock'} style={{ height: 32, maxWidth: 180, objectFit: 'contain' }} />
 
       {/* Spacer */}
       <div className="flex-1" />
@@ -82,7 +83,7 @@ export const Topbar = () => {
           onClick={() => setOpen(!isOpen)}
         >
           <Bot size={13} />
-          DevDock AI
+          {branding?.appName || 'DevDock'} AI
         </Button>
 
         {/* Separator */}
