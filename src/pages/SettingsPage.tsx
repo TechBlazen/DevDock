@@ -133,7 +133,7 @@ const ActiveDirectorySettings = ({
   const adSelect: React.CSSProperties = { ...adInput, cursor: 'pointer' };
 
   return (
-    <div className="space-y-6" style={adFont}>
+    <div className="space-y-8" style={adFont}>
       {/* Connection */}
       <Card>
         <CardHeader>
@@ -147,7 +147,7 @@ const ActiveDirectorySettings = ({
             color="#0078d4"
           />
         </CardHeader>
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-6">
           {/* Mode toggle */}
           <div>
             <label style={{ ...adLabel, marginBottom: 10 }}>Directory Type</label>
@@ -289,7 +289,7 @@ const ActiveDirectorySettings = ({
             </>
           )}
 
-          <div className="flex items-center gap-3 pt-3">
+          <div style={{ paddingTop: 20, marginTop: 12, borderTop: '1px solid var(--border-subtle)' }} className="flex items-center gap-3">
             <Button variant="outline" size="sm" onClick={handleTestConnection} disabled={testStatus === 'testing'}>
               {testStatus === 'testing' ? <>Testing...</> : testStatus === 'success' ? <><Check size={12} className="text-[#2e7d32]" /> Connected</> : testStatus === 'error' ? <><AlertTriangle size={12} className="text-[#d32f2f]" /> Failed</> : <>Test Connection</>}
             </Button>
@@ -314,8 +314,8 @@ const ActiveDirectorySettings = ({
             {config.securityGroups.length} group{config.securityGroups.length !== 1 ? 's' : ''}
           </span>
         </CardHeader>
-        <div className="p-6 space-y-5">
-          <p style={{ ...adFont, fontSize: 13, lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 4 }}>
+        <div className="p-6 space-y-6">
+          <p style={{ ...adFont, fontSize: 13, lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 8 }}>
             Map Active Directory security groups to portal roles. Users in these groups will be automatically assigned the corresponding role when they sign in via AD.
           </p>
 
