@@ -1110,6 +1110,9 @@ export { useFederatedSourceStore } from './federated-source-store';
 // ─── SQL Tool Store (re-export) ─────────────────────────────────────────────
 export { useSqlToolStore } from './sql-tool-store';
 
+// ─── Builder Store (re-export) ──────────────────────────────────────────────
+export { useBuilderStore } from './builder-store';
+
 // ─── Bookmark Store ──────────────────────────────────────────────────────────
 interface BookmarkStore {
   bookmarks: Bookmark[];
