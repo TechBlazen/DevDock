@@ -57,6 +57,7 @@ export const defaultNavigation: NavigationConfig = {
         { id: 'dt-git-gen',    type: 'link', label: 'Git Generator',     icon: 'GitMerge',     route: '/devtools/git-gen',    visible: true },
         { id: 'dt-docker-gen', type: 'link', label: 'Docker Generator',  icon: 'Container',    route: '/devtools/docker-gen', visible: true },
         { id: 'dt-sql',        type: 'link', label: 'SQL Tool',           icon: 'Database',     route: '/devtools/sql',        visible: true },
+        { id: 'dt-playground', type: 'link', label: 'Code Playground',   icon: 'Play',         route: '/devtools/playground', visible: true },
       ],
     },
 

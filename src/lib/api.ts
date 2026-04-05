@@ -102,6 +102,12 @@ export const sqlApi = {
   getProcedures: (conn: Record<string, unknown>) => api.post('/sql/procedures', conn).then(r => r.data),
 };
 
+// ─── Code Runner ────────────────────────────────────────────────────────────
+export const codeApi = {
+  run: (language: string, code: string) => api.post('/code/run', { language, code }).then(r => r.data),
+  getLanguages: () => api.get<Record<string, { installed: boolean; version: string }>>('/code/languages').then(r => r.data),
+};
+
 // ─── Directory (LDAP) ───────────────────────────────────────────────────────
 export const directoryApi = {
   testConnection: (config: Record<string, unknown>) => api.post('/directory/test', config).then(r => r.data),
