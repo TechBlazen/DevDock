@@ -96,6 +96,35 @@ npx -y @modelcontextprotocol/server-sequential-thinking
 
 Provides: `think`, `plan` capabilities for chain-of-thought reasoning.
 
+### Playwright Server (Browser Automation)
+
+```bash
+npx -y @anthropic-ai/mcp-server-playwright
+```
+
+Provides: `navigate`, `screenshot`, `click`, `fill`, `evaluate`, `pdf` capabilities for browser automation and testing.
+
+**What it enables:**
+- AI can navigate to web pages and take screenshots
+- Fill out forms, click buttons, and interact with web elements
+- Execute JavaScript in the browser context
+- Generate PDFs from web pages
+- Run end-to-end test scenarios described in natural language
+
+**Setup:**
+1. Register the server in DevDock with transport `stdio` and command `npx -y @anthropic-ai/mcp-server-playwright`
+2. Start the server from the MCP Registry
+3. In the AI Chat, ask the AI to perform browser tasks like:
+   - "Navigate to example.com and take a screenshot"
+   - "Fill out the login form with username 'test' and password 'demo'"
+   - "Check if the homepage has a navigation bar with 5 links"
+
+**Note:** Playwright requires Chromium to be installed. On first run, it will auto-download the browser binaries (~150MB). You can pre-install them with:
+
+```bash
+npx playwright install chromium
+```
+
 ---
 
 ## Configuration in DevDock
