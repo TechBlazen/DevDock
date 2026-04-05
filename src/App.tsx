@@ -14,6 +14,7 @@ import { AnalyticsPage } from './pages/AnalyticsPage'
 import { DirectoryPage } from './pages/DirectoryPage'
 import { SqlToolPage } from './pages/SqlToolPage'
 import { CodePlaygroundPage } from './pages/CodePlaygroundPage'
+import { AgentBuilderPage } from './pages/AgentBuilderPage'
 import {
   DashboardPage,
   GitHubPage,
@@ -166,6 +167,7 @@ function PluginRoutes({ editMode }: { editMode: boolean }) {
       <Route path="/devtools/docker-gen" element={<DockerGeneratorPage />} />
       <Route path="/devtools/sql"        element={<SqlToolPage />} />
       <Route path="/devtools/playground" element={<CodePlaygroundPage />} />
+      <Route path="/devtools/agent-builder" element={<AgentBuilderPage />} />
       <Route path="/docs"               element={<DocsPage />} />
       <Route path="/docs/google-drive"  element={<GoogleDrivePage />} />
       <Route path="/network"   element={<NetworkPage />} />

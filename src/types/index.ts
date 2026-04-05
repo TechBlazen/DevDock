@@ -572,6 +572,29 @@ export interface FeatureRequest {
   updatedAt: string;
 }
 
+// ─── Agent & Skill Builder Types ────────────────────────────────────────────
+export type BuilderItemType = 'agent' | 'skill';
+
+export interface MockMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface BuilderItem {
+  id: string;
+  userId: string;
+  type: BuilderItemType;
+  name: string;
+  description: string;
+  content: string;            // markdown/YAML definition
+  mockConversation: MockMessage[];
+  tags: string[];
+  templateId?: string;        // which template it was created from
+  exportedTo?: string;        // repo fullName if exported
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ─── SQL Tool Types ─────────────────────────────────────────────────────────
 export type DatabaseEngine = 'postgresql' | 'mysql' | 'mariadb' | 'sqlserver' | 'oracle' | 'sqlite';
 
