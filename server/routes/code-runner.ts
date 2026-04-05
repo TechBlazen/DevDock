@@ -83,22 +83,6 @@ const runners: Record<string, (code: string) => RunResult> = {
   ruby: (code) => runWithTempFile('rb', (p) => `ruby "${p}" 2>&1`, code),
   go: (code) => runWithTempFile('go', (p) => `go run "${p}" 2>&1`, code),
   bash: (code) => runWithTempFile('sh', (p) => `bash "${p}" 2>&1`, code),
-  php: (code) => runWithTempFile('php', (p) => `php "${p}" 2>&1`, code),
-  perl: (code) => runWithTempFile('pl', (p) => `perl "${p}" 2>&1`, code),
-  rust: (code) => {
-    const dir = mkdtempSync(join(tmpdir(), 'devdock-'));
-    const srcPath = join(dir, 'main.rs');
-    const binPath = join(dir, 'main');
-    try {
-      writeFileSync(srcPath, code, 'utf-8');
-      const compile = runInShell(`rustc "${srcPath}" -o "${binPath}" 2>&1`);
-      if (compile.exitCode !== 0) return compile;
-      return runInShell(`"${binPath}" 2>&1`);
-    } finally {
-      try { unlinkSync(srcPath); } catch { /* ignore */ }
-      try { unlinkSync(binPath); } catch { /* ignore */ }
-    }
-  },
 };
 
 export function registerCodeRunnerRoutes(app: FastifyInstance, _db: DatabaseProvider, _jwtSecret: string) {
@@ -136,9 +120,6 @@ export function registerCodeRunnerRoutes(app: FastifyInstance, _db: DatabaseProv
       ruby: 'ruby --version',
       go: 'go version',
       bash: 'bash --version',
-      php: 'php --version',
-      perl: 'perl --version',
-      rust: 'rustc --version',
     };
 
     const available: Record<string, { installed: boolean; version: string }> = {};
