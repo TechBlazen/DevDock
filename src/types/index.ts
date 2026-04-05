@@ -380,6 +380,7 @@ export interface UserAccount {
   email?: string;
   avatarUrl?: string;
   role: UserRole;
+  group?: string;              // group name (Admins, Contributors, Readers)
   permissions: Permission;
   dashboardWidgets?: string[];  // per-user dashboard layout
   favoriteRepos?: string[];     // repo IDs

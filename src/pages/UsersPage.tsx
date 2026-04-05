@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { UserPlus, Trash2, Shield, Pencil, X, Check } from 'lucide-react';
+import { UserPlus, Trash2, Shield, Pencil, X, Check, Users, ChevronDown, ChevronRight, UserMinus } from 'lucide-react';
 import { useUserAccountsStore, useAuthStore } from '../store';
 import { SectionTitle, Card, Button, Pill, Toggle } from '../components/ui';
-import { getRoleLabel, getRoleColor } from '../lib/rbac';
+import { getRoleLabel, getRoleColor, USER_GROUPS, ROLE_PERMISSIONS } from '../lib/rbac';
 import type { UserRole, Permission } from '../types';
 
 const ALL_PAGES = [
@@ -35,8 +35,11 @@ export const UsersPage = () => {
   const [newDisplayName, setNewDisplayName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newRole, setNewRole] = useState<UserRole>('viewer');
+  const [newGroup, setNewGroup] = useState('Readers');
   const [error, setError] = useState('');
   const [passwordChange, setPasswordChange] = useState<Record<string, string>>({});
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
+  const [addToGroupUser, setAddToGroupUser] = useState<string | null>(null);
 
   const handleAdd = () => {
     setError('');
@@ -44,13 +47,19 @@ export const UsersPage = () => {
       setError('Username, password, and display name are required.');
       return;
     }
+    if (!newGroup) {
+      setError('A group must be selected.');
+      return;
+    }
     const account = addAccount(newUsername.trim(), newPassword, newDisplayName.trim(), newRole, newEmail.trim() || undefined);
     if (!account) {
       setError('Username already exists.');
       return;
     }
+    // Assign to selected group
+    updateAccount(account.id, { group: newGroup });
     setShowAddForm(false);
-    setNewUsername(''); setNewPassword(''); setNewDisplayName(''); setNewEmail(''); setNewRole('viewer');
+    setNewUsername(''); setNewPassword(''); setNewDisplayName(''); setNewEmail(''); setNewRole('viewer'); setNewGroup('Readers');
   };
 
   const handlePermToggle = (accountId: string, perms: Permission, key: keyof Permission, value: unknown) => {
@@ -80,7 +89,7 @@ export const UsersPage = () => {
       </SectionTitle>
 
       {/* Summary */}
-      <div className="flex gap-3 mb-5 flex-wrap">
+      <div className="flex gap-3 flex-wrap" style={{ marginTop: 24, marginBottom: 28 }}>
         {(['admin', 'editor', 'viewer'] as UserRole[]).map((role) => {
           const count = accounts.filter((a) => a.role === role).length;
           const color = getRoleColor(role);
@@ -100,7 +109,8 @@ export const UsersPage = () => {
 
       {/* Add user form */}
       {showAddForm && (
-        <Card className="mb-5">
+        <div style={{ marginBottom: 32 }}>
+        <Card>
           <div className="p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>New User Account</h3>
@@ -117,20 +127,189 @@ export const UsersPage = () => {
               <input value={newDisplayName} onChange={(e) => setNewDisplayName(e.target.value)} placeholder="Display Name" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
               <input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Email (optional)" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
             </div>
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>Role:</span>
-              {(['admin', 'editor', 'viewer'] as UserRole[]).map((r) => (
-                <button key={r} onClick={() => setNewRole(r)} className="px-3 py-1 rounded-xl text-[11px] font-semibold transition-all" style={newRole === r ? { background: `${getRoleColor(r)}15`, color: getRoleColor(r), border: `1px solid ${getRoleColor(r)}30` } : { color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>
-                  {getRoleLabel(r)}
-                </button>
-              ))}
+            {/* Group selector (required) */}
+            <div className="rounded-xl mb-4" style={{ padding: '14px 16px', background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}>
+              <div className="text-[10px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
+                <Users size={11} className="inline mr-1" style={{ verticalAlign: '-1px' }} />
+                Group <span style={{ color: '#ef4444' }}>*</span>
+              </div>
+              <div className="flex gap-2.5 flex-wrap">
+                {USER_GROUPS.map((g) => (
+                  <button
+                    key={g.name}
+                    onClick={() => { setNewGroup(g.name); setNewRole(g.role); }}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[12px] font-semibold transition-all cursor-pointer"
+                    style={newGroup === g.name
+                      ? { background: `${g.color}15`, color: g.color, border: `2px solid ${g.color}`, boxShadow: `0 0 0 3px ${g.color}12` }
+                      : { color: 'var(--text-muted)', border: '2px solid var(--border-subtle)', background: 'transparent' }
+                    }
+                  >
+                    <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: newGroup === g.name ? `${g.color}20` : 'var(--bg-input)' }}>
+                      <Users size={12} style={{ color: newGroup === g.name ? g.color : 'var(--text-faint)' }} />
+                    </div>
+                    <div className="text-left">
+                      <div>{g.name}</div>
+                      <div className="text-[9px] font-normal" style={{ color: newGroup === g.name ? g.color : 'var(--text-faint)', opacity: 0.8 }}>
+                        {getRoleLabel(g.role)} role
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Role (auto-set by group, can override) */}
+            <div className="rounded-xl mb-4" style={{ padding: '14px 16px', background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}>
+              <div className="text-[10px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
+                <Shield size={11} className="inline mr-1" style={{ verticalAlign: '-1px' }} />
+                Role
+              </div>
+              <div className="flex gap-2.5 flex-wrap">
+                {(['admin', 'editor', 'viewer'] as UserRole[]).map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setNewRole(r)}
+                    className="px-4 py-2 rounded-xl text-[12px] font-semibold transition-all cursor-pointer"
+                    style={newRole === r
+                      ? { background: `${getRoleColor(r)}15`, color: getRoleColor(r), border: `2px solid ${getRoleColor(r)}`, boxShadow: `0 0 0 3px ${getRoleColor(r)}12` }
+                      : { color: 'var(--text-muted)', border: '2px solid var(--border-subtle)', background: 'transparent' }
+                    }
+                  >
+                    {getRoleLabel(r)}
+                  </button>
+                ))}
+              </div>
             </div>
             <Button variant="primary" size="md" onClick={handleAdd}>Create User</Button>
           </div>
         </Card>
+        </div>
       )}
 
+      {/* Groups */}
+      <div style={{ marginBottom: 36 }}>
+        <h2 className="text-xs font-bold uppercase tracking-widest px-1" style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>
+          <Users size={13} className="inline mr-1.5" style={{ verticalAlign: '-2px' }} />
+          Groups
+        </h2>
+        <div className="space-y-2">
+          {USER_GROUPS.map((group) => {
+            const members = accounts.filter((a) => a.group === group.name);
+            const nonMembers = accounts.filter((a) => a.group !== group.name);
+            const isExpanded = expandedGroup === group.name;
+
+            return (
+              <Card key={group.name}>
+                <div style={{ padding: '14px 22px' }}>
+                  {/* Group header */}
+                  <div
+                    className="flex items-center gap-3 cursor-pointer"
+                    onClick={() => setExpandedGroup(isExpanded ? null : group.name)}
+                  >
+                    {isExpanded ? <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} /> : <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />}
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${group.color}15`, border: `1px solid ${group.color}30` }}>
+                      <Users size={14} style={{ color: group.color }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>{group.name}</span>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${group.color}12`, color: group.color }}>{members.length} member{members.length !== 1 ? 's' : ''}</span>
+                      </div>
+                      <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{group.description}</div>
+                    </div>
+                    <Pill color={group.color}>{getRoleLabel(group.role)}</Pill>
+                  </div>
+
+                  {/* Expanded: members + add */}
+                  {isExpanded && (
+                    <div className="mt-3 pt-3 animate-[fadeIn_0.15s_ease]" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                      {/* Member list */}
+                      {members.length === 0 ? (
+                        <div className="text-[11px] py-2" style={{ color: 'var(--text-faint)' }}>No members in this group.</div>
+                      ) : (
+                        <div className="space-y-1.5 mb-3">
+                          {members.map((m) => (
+                            <div key={m.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg" style={{ background: 'var(--bg-inset)' }}>
+                              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0" style={{ background: `${group.color}aa` }}>
+                                {m.displayName.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-[12px] font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{m.displayName}</div>
+                                <div className="text-[10px]" style={{ color: 'var(--text-faint)' }}>@{m.username}</div>
+                              </div>
+                              {m.username !== 'admin' && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); updateAccount(m.id, { group: undefined }); }}
+                                  className="p-1 rounded transition-colors cursor-pointer"
+                                  style={{ color: 'var(--text-faint)', background: 'transparent', border: 'none' }}
+                                  onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; }}
+                                  onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-faint)'; }}
+                                  title="Remove from group"
+                                >
+                                  <UserMinus size={12} />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Add user to group */}
+                      {nonMembers.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          {addToGroupUser === group.name ? (
+                            <>
+                              <select
+                                className="flex-1 rounded-lg px-3 py-1.5 text-[11px] outline-none cursor-pointer"
+                                style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
+                                onChange={(e) => {
+                                  if (e.target.value) {
+                                    updateAccount(e.target.value, { group: group.name, role: group.role, permissions: { ...ROLE_PERMISSIONS[group.role] } });
+                                    setAddToGroupUser(null);
+                                  }
+                                }}
+                                defaultValue=""
+                              >
+                                <option value="" disabled>Select a user...</option>
+                                {nonMembers.map((u) => (
+                                  <option key={u.id} value={u.id}>{u.displayName} (@{u.username})</option>
+                                ))}
+                              </select>
+                              <button
+                                onClick={() => setAddToGroupUser(null)}
+                                className="p-1 cursor-pointer"
+                                style={{ color: 'var(--text-faint)', background: 'transparent', border: 'none' }}
+                              >
+                                <X size={14} />
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={() => setAddToGroupUser(group.name)}
+                              className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                              style={{ color: group.color, background: `${group.color}08`, border: `1px solid ${group.color}20` }}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = `${group.color}15`; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = `${group.color}08`; }}
+                            >
+                              <UserPlus size={12} /> Add User to {group.name}
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+
       {/* User list */}
+      <h2 className="text-xs font-bold uppercase tracking-widest px-1" style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>
+        <Shield size={13} className="inline mr-1.5" style={{ verticalAlign: '-2px' }} />
+        Users
+      </h2>
       <div className="space-y-3">
         {accounts.map((account) => {
           const isEditing = editingId === account.id;
@@ -139,7 +318,7 @@ export const UsersPage = () => {
 
           return (
             <Card key={account.id} highlight={isSelf}>
-              <div className="p-4">
+              <div style={{ padding: '18px 22px' }}>
                 {/* User header */}
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black text-white flex-shrink-0" style={{
@@ -152,6 +331,11 @@ export const UsersPage = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>{account.displayName}</span>
                       <Pill color={roleColor}>{getRoleLabel(account.role)}</Pill>
+                      {account.group && (
+                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--bg-inset)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>
+                          <Users size={8} className="inline mr-0.5" style={{ verticalAlign: '-1px' }} />{account.group}
+                        </span>
+                      )}
                       {isSelf && <Pill color="#3b82f6">you</Pill>}
                     </div>
                     <div className="text-[11px] font-mono" style={{ color: 'var(--text-muted)' }}>
@@ -177,12 +361,24 @@ export const UsersPage = () => {
                 {/* Expanded edit panel */}
                 {isEditing && (
                   <div className="pt-3 space-y-4 animate-[fadeIn_0.15s_ease]" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                    {/* Group selector */}
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Group</div>
+                      <div className="flex gap-2">
+                        {USER_GROUPS.map((g) => (
+                          <button key={g.name} onClick={() => updateAccount(account.id, { group: g.name, role: g.role, permissions: { ...ROLE_PERMISSIONS[g.role] } })} className="px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all cursor-pointer" style={account.group === g.name ? { background: `${g.color}15`, color: g.color, border: `1px solid ${g.color}30` } : { color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>
+                            <Users size={11} className="inline mr-1" />{g.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     {/* Role selector */}
                     <div>
                       <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Role</div>
                       <div className="flex gap-2">
                         {(['admin', 'editor', 'viewer'] as UserRole[]).map((r) => (
-                          <button key={r} onClick={() => updateAccount(account.id, { role: r })} className="px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all" style={account.role === r ? { background: `${getRoleColor(r)}15`, color: getRoleColor(r), border: `1px solid ${getRoleColor(r)}30` } : { color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>
+                          <button key={r} onClick={() => updateAccount(account.id, { role: r })} className="px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all cursor-pointer" style={account.role === r ? { background: `${getRoleColor(r)}15`, color: getRoleColor(r), border: `1px solid ${getRoleColor(r)}30` } : { color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>
                             <Shield size={11} className="inline mr-1" />{getRoleLabel(r)}
                           </button>
                         ))}
