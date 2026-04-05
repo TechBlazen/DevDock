@@ -115,17 +115,37 @@ const ActiveDirectorySettings = ({
     });
   };
 
-  const handleTestConnection = () => {
+  const handleTestConnection = async () => {
     setTestStatus('testing');
-    // Simulate connection test
-    setTimeout(() => {
-      if (config.tenantId && config.clientId && config.domain) {
-        setTestStatus('success');
-      } else {
-        setTestStatus('error');
-      }
+
+    if (config.mode === 'azure-ad') {
+      // Azure AD: validate fields locally (no server-side OAuth test yet)
+      const isValid = config.tenantId && config.clientId && config.domain;
+      setTestStatus(isValid ? 'success' : 'error');
       setTimeout(() => setTestStatus('idle'), 3000);
-    }, 1500);
+      return;
+    }
+
+    // On-prem: call the real LDAP test endpoint
+    try {
+      const { directoryApi } = await import('../lib/api');
+      const result = await directoryApi.testConnection({
+        ldapUrl: config.ldapUrl,
+        baseDn: config.baseDn,
+        bindDn: config.bindDn,
+        bindPassword: config.bindPassword,
+        useSsl: config.useSsl,
+        userSearchFilter: config.userSearchFilter,
+        userDisplayNameAttr: config.userDisplayNameAttr,
+        userEmailAttr: config.userEmailAttr,
+        groupSearchFilter: config.groupSearchFilter,
+      });
+      setTestStatus(result.success ? 'success' : 'error');
+      setTimeout(() => setTestStatus('idle'), 4000);
+    } catch {
+      setTestStatus('error');
+      setTimeout(() => setTestStatus('idle'), 3000);
+    }
   };
 
   const adFont: React.CSSProperties = { fontFamily: 'Verdana, Geneva, sans-serif' };
@@ -134,7 +154,7 @@ const ActiveDirectorySettings = ({
   const adSelect: React.CSSProperties = { ...adInput, cursor: 'pointer' };
 
   return (
-    <div className="space-y-6" style={adFont}>
+    <div className="space-y-8" style={adFont}>
       {/* Connection */}
       <Card>
         <CardHeader>
@@ -148,53 +168,158 @@ const ActiveDirectorySettings = ({
             color="#0078d4"
           />
         </CardHeader>
-        <div className="p-6 space-y-5">
-          <div className="grid grid-cols-2 gap-5">
-            <div>
-              <label style={adLabel}>Azure AD Tenant ID</label>
-              <input value={config.tenantId} onChange={(e) => onUpdate({ tenantId: e.target.value })} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style={adInput} />
-            </div>
-            <div>
-              <label style={adLabel}>Domain</label>
-              <input value={config.domain} onChange={(e) => onUpdate({ domain: e.target.value })} placeholder="contoso.com" style={adInput} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-5">
-            <div>
-              <label style={adLabel}>Client ID (App Registration)</label>
-              <input value={config.clientId} onChange={(e) => onUpdate({ clientId: e.target.value })} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style={adInput} />
-            </div>
-            <div>
-              <label style={adLabel}>Client Secret</label>
-              <div className="flex items-center gap-2">
-                <Lock size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-                <input type="password" value={config.clientSecret} onChange={(e) => onUpdate({ clientSecret: e.target.value })} placeholder="Client secret..." style={{ ...adInput, flex: 1 }} />
-              </div>
+        <div className="p-6 space-y-6">
+          {/* Mode toggle */}
+          <div>
+            <label style={{ ...adLabel, marginBottom: 10 }}>Directory Type</label>
+            <div className="flex gap-3">
+              <button
+                onClick={() => onUpdate({ mode: 'azure-ad' })}
+                className="flex-1 rounded-lg text-center transition-all cursor-pointer"
+                style={{
+                  padding: '14px 16px',
+                  fontFamily: 'Verdana, Geneva, sans-serif',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  ...(config.mode === 'azure-ad'
+                    ? { background: 'rgba(0,120,212,0.1)', color: '#0078d4', border: '2px solid #0078d4' }
+                    : { color: 'var(--text-muted)', border: '2px solid var(--border-subtle)', background: 'transparent' }
+                  ),
+                }}
+              >
+                <div>Azure AD (Cloud)</div>
+                <div style={{ fontSize: 10, fontWeight: 400, marginTop: 4, opacity: 0.7 }}>Microsoft Entra ID / Azure Active Directory</div>
+              </button>
+              <button
+                onClick={() => onUpdate({ mode: 'on-prem' })}
+                className="flex-1 rounded-lg text-center transition-all cursor-pointer"
+                style={{
+                  padding: '14px 16px',
+                  fontFamily: 'Verdana, Geneva, sans-serif',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  ...(config.mode === 'on-prem'
+                    ? { background: 'rgba(107,114,128,0.1)', color: '#6b7280', border: '2px solid #6b7280' }
+                    : { color: 'var(--text-muted)', border: '2px solid var(--border-subtle)', background: 'transparent' }
+                  ),
+                }}
+              >
+                <div>On-Premises AD</div>
+                <div style={{ fontSize: 10, fontWeight: 400, marginTop: 4, opacity: 0.7 }}>Active Directory via LDAP / LDAPS</div>
+              </button>
             </div>
           </div>
 
-          <div style={{ borderTop: '2px solid var(--border-color)', paddingTop: 20, marginTop: 8 }}>
-            <div style={{ ...adFont, fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 14 }}>
-              LDAP Configuration (Optional)
-            </div>
-            <div className="grid grid-cols-2 gap-5">
-              <div>
-                <label style={adLabel}>LDAP URL</label>
-                <input value={config.ldapUrl} onChange={(e) => onUpdate({ ldapUrl: e.target.value })} placeholder="ldaps://dc.contoso.com:636" style={adInput} />
+          {/* Azure AD fields */}
+          {config.mode === 'azure-ad' && (
+            <>
+              <div className="grid grid-cols-2 gap-5">
+                <div>
+                  <label style={adLabel}>Azure AD Tenant ID</label>
+                  <input value={config.tenantId} onChange={(e) => onUpdate({ tenantId: e.target.value })} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style={adInput} />
+                </div>
+                <div>
+                  <label style={adLabel}>Domain</label>
+                  <input value={config.domain} onChange={(e) => onUpdate({ domain: e.target.value })} placeholder="contoso.com" style={adInput} />
+                </div>
               </div>
-              <div>
-                <label style={adLabel}>Base DN</label>
-                <input value={config.baseDn} onChange={(e) => onUpdate({ baseDn: e.target.value })} placeholder="DC=contoso,DC=com" style={adInput} />
+              <div className="grid grid-cols-2 gap-5">
+                <div>
+                  <label style={adLabel}>Client ID (App Registration)</label>
+                  <input value={config.clientId} onChange={(e) => onUpdate({ clientId: e.target.value })} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style={adInput} />
+                </div>
+                <div>
+                  <label style={adLabel}>Client Secret</label>
+                  <div className="flex items-center gap-2">
+                    <Lock size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                    <input type="password" value={config.clientSecret} onChange={(e) => onUpdate({ clientSecret: e.target.value })} placeholder="Client secret..." style={{ ...adInput, flex: 1 }} />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            </>
+          )}
 
-          <div className="flex items-center gap-3 pt-3">
+          {/* On-Prem AD / LDAP fields */}
+          {config.mode === 'on-prem' && (
+            <>
+              <div className="grid grid-cols-2 gap-5">
+                <div>
+                  <label style={adLabel}>LDAP Server URL</label>
+                  <input value={config.ldapUrl} onChange={(e) => onUpdate({ ldapUrl: e.target.value })} placeholder="ldaps://dc.contoso.com:636" style={adInput} />
+                  <p style={{ ...adFont, fontSize: 10, color: 'var(--text-faint)', marginTop: 4 }}>Use ldaps:// for SSL or ldap:// for non-SSL</p>
+                </div>
+                <div>
+                  <label style={adLabel}>Base DN</label>
+                  <input value={config.baseDn} onChange={(e) => onUpdate({ baseDn: e.target.value })} placeholder="DC=contoso,DC=com" style={adInput} />
+                  <p style={{ ...adFont, fontSize: 10, color: 'var(--text-faint)', marginTop: 4 }}>The root of the directory tree to search</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-5">
+                <div>
+                  <label style={adLabel}>Bind DN (Service Account)</label>
+                  <input value={config.bindDn} onChange={(e) => onUpdate({ bindDn: e.target.value })} placeholder="CN=svc-portal,OU=Service Accounts,DC=contoso,DC=com" style={adInput} />
+                </div>
+                <div>
+                  <label style={adLabel}>Bind Password</label>
+                  <div className="flex items-center gap-2">
+                    <Lock size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                    <input type="password" value={config.bindPassword} onChange={(e) => onUpdate({ bindPassword: e.target.value })} placeholder="Service account password..." style={{ ...adInput, flex: 1 }} />
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-5">
+                <div>
+                  <label style={adLabel}>Domain</label>
+                  <input value={config.domain} onChange={(e) => onUpdate({ domain: e.target.value })} placeholder="contoso.com" style={adInput} />
+                </div>
+                <div className="flex items-end pb-1">
+                  <Toggle
+                    checked={config.useSsl}
+                    onChange={(v) => onUpdate({ useSsl: v })}
+                    label="Require SSL/TLS"
+                    color="#0078d4"
+                  />
+                </div>
+              </div>
+
+              <div style={{ borderTop: '2px solid var(--border-color)', paddingTop: 20, marginTop: 8 }}>
+                <div style={{ ...adFont, fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 14 }}>
+                  LDAP Search Filters
+                </div>
+                <div className="grid grid-cols-2 gap-5">
+                  <div>
+                    <label style={adLabel}>User Search Filter</label>
+                    <input value={config.userSearchFilter} onChange={(e) => onUpdate({ userSearchFilter: e.target.value })} placeholder="(&(objectClass=user)(sAMAccountName={username}))" style={adInput} />
+                  </div>
+                  <div>
+                    <label style={adLabel}>Group Search Filter</label>
+                    <input value={config.groupSearchFilter} onChange={(e) => onUpdate({ groupSearchFilter: e.target.value })} placeholder="(&(objectClass=group)(member={userDn}))" style={adInput} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-5 mt-4">
+                  <div>
+                    <label style={adLabel}>Display Name Attribute</label>
+                    <input value={config.userDisplayNameAttr} onChange={(e) => onUpdate({ userDisplayNameAttr: e.target.value })} placeholder="displayName" style={adInput} />
+                  </div>
+                  <div>
+                    <label style={adLabel}>Email Attribute</label>
+                    <input value={config.userEmailAttr} onChange={(e) => onUpdate({ userEmailAttr: e.target.value })} placeholder="mail" style={adInput} />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          <div style={{ paddingTop: 20, marginTop: 12, borderTop: '1px solid var(--border-subtle)' }} className="flex items-center gap-3">
             <Button variant="outline" size="sm" onClick={handleTestConnection} disabled={testStatus === 'testing'}>
               {testStatus === 'testing' ? <>Testing...</> : testStatus === 'success' ? <><Check size={12} className="text-[#2e7d32]" /> Connected</> : testStatus === 'error' ? <><AlertTriangle size={12} className="text-[#d32f2f]" /> Failed</> : <>Test Connection</>}
             </Button>
             {testStatus === 'error' && (
-              <span style={{ ...adFont, fontSize: 12, color: '#d32f2f' }}>Please fill in Tenant ID, Client ID, and Domain</span>
+              <span style={{ ...adFont, fontSize: 12, color: '#d32f2f' }}>
+                {config.mode === 'azure-ad'
+                  ? 'Please fill in Tenant ID, Client ID, and Domain'
+                  : 'Please fill in LDAP URL, Base DN, and Bind DN'}
+              </span>
             )}
           </div>
         </div>
@@ -210,8 +335,8 @@ const ActiveDirectorySettings = ({
             {config.securityGroups.length} group{config.securityGroups.length !== 1 ? 's' : ''}
           </span>
         </CardHeader>
-        <div className="p-6 space-y-5">
-          <p style={{ ...adFont, fontSize: 13, lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 4 }}>
+        <div className="p-6 space-y-6">
+          <p style={{ ...adFont, fontSize: 13, lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 8 }}>
             Map Active Directory security groups to portal roles. Users in these groups will be automatically assigned the corresponding role when they sign in via AD.
           </p>
 

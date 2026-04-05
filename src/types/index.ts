@@ -261,14 +261,27 @@ export interface ActiveDirectorySecurityGroup {
   role: UserRole;
 }
 
+export type ADMode = 'azure-ad' | 'on-prem';
+
 export interface ActiveDirectoryConfig {
   enabled: boolean;
+  mode: ADMode;
+  // Azure AD (cloud)
   tenantId: string;
   clientId: string;
   clientSecret: string;
   domain: string;
+  // On-prem AD / LDAP
   ldapUrl: string;
   baseDn: string;
+  bindDn: string;
+  bindPassword: string;
+  userSearchFilter: string;
+  userDisplayNameAttr: string;
+  userEmailAttr: string;
+  groupSearchFilter: string;
+  useSsl: boolean;
+  // Shared
   securityGroups: ActiveDirectorySecurityGroup[];
 }
 

@@ -93,6 +93,17 @@ export const analyticsApi = {
   getErrors: (limit?: number) => api.get('/analytics/errors', { params: limit ? { limit } : {} }).then(r => r.data),
 };
 
+// ─── Directory (LDAP) ───────────────────────────────────────────────────────
+export const directoryApi = {
+  testConnection: (config: Record<string, unknown>) => api.post('/directory/test', config).then(r => r.data),
+  listUsers: (config: Record<string, unknown>, search?: string, limit?: number) =>
+    api.post('/directory/users', { ...config, search, limit }).then(r => r.data),
+  listGroups: (config: Record<string, unknown>, search?: string, limit?: number) =>
+    api.post('/directory/groups', { ...config, search, limit }).then(r => r.data),
+  getGroupMembers: (config: Record<string, unknown>, groupDn: string) =>
+    api.post('/directory/groups/members', { ...config, groupDn }).then(r => r.data),
+};
+
 // ─── Server availability check ──────────────────────────────────────────────
 // Returns true if the API server is reachable, false otherwise.
 // Used to decide whether to persist via API or fall back to localStorage.

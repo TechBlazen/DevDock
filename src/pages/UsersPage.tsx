@@ -1,9 +1,20 @@
 import { useState } from 'react';
-import { UserPlus, Trash2, Shield, Pencil, X, Check, Users, ChevronDown, ChevronRight, UserMinus } from 'lucide-react';
-import { useUserAccountsStore, useAuthStore } from '../store';
+import { UserPlus, Trash2, Shield, Pencil, X, Check, Users, ChevronDown, ChevronRight, UserMinus, Search, Loader2, BookUser, Mail, Building2 } from 'lucide-react';
+import { useUserAccountsStore, useAuthStore, useSettingsStore } from '../store';
+import { directoryApi } from '../lib/api';
 import { SectionTitle, Card, Button, Pill, Toggle } from '../components/ui';
 import { getRoleLabel, getRoleColor, USER_GROUPS, ROLE_PERMISSIONS } from '../lib/rbac';
 import type { UserRole, Permission } from '../types';
+
+interface ADUser {
+  dn: string;
+  sAMAccountName: string;
+  displayName: string;
+  email: string;
+  department?: string;
+  title?: string;
+  enabled: boolean;
+}
 
 const ALL_PAGES = [
   { path: '/', label: 'Dashboard' },
@@ -41,6 +52,15 @@ export const UsersPage = () => {
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [addToGroupUser, setAddToGroupUser] = useState<string | null>(null);
 
+  // AD import state
+  const [addMode, setAddMode] = useState<'manual' | 'ad'>('manual');
+  const [adSearch, setAdSearch] = useState('');
+  const [adUsers, setAdUsers] = useState<ADUser[]>([]);
+  const [adLoading, setAdLoading] = useState(false);
+  const [adError, setAdError] = useState('');
+  const settings = useSettingsStore((s) => s.settings);
+  const adConfigured = settings.activeDirectory.enabled && settings.activeDirectory.mode === 'on-prem' && settings.activeDirectory.ldapUrl;
+
   const handleAdd = () => {
     setError('');
     if (!newUsername.trim() || !newPassword.trim() || !newDisplayName.trim()) {
@@ -60,6 +80,44 @@ export const UsersPage = () => {
     updateAccount(account.id, { group: newGroup });
     setShowAddForm(false);
     setNewUsername(''); setNewPassword(''); setNewDisplayName(''); setNewEmail(''); setNewRole('viewer'); setNewGroup('Readers');
+  };
+
+  const handleAdSearch = async () => {
+    if (!adSearch.trim()) return;
+    setAdLoading(true);
+    setAdError('');
+    try {
+      const ad = settings.activeDirectory;
+      const data = await directoryApi.listUsers({
+        ldapUrl: ad.ldapUrl, baseDn: ad.baseDn, bindDn: ad.bindDn,
+        bindPassword: ad.bindPassword, useSsl: ad.useSsl,
+        userSearchFilter: ad.userSearchFilter, userDisplayNameAttr: ad.userDisplayNameAttr,
+        userEmailAttr: ad.userEmailAttr, groupSearchFilter: ad.groupSearchFilter,
+      }, adSearch, 20);
+      setAdUsers(data.users);
+      if (data.users.length === 0) setAdError('No users found matching your search.');
+    } catch (e) {
+      setAdError(e instanceof Error ? e.message : 'Failed to search Active Directory');
+    }
+    setAdLoading(false);
+  };
+
+  const handleImportAdUser = (adUser: ADUser) => {
+    if (!newGroup) {
+      setError('Select a group before importing.');
+      return;
+    }
+    // Generate a random password for AD-imported users (they'll authenticate via AD)
+    const tempPassword = `AD_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const account = addAccount(adUser.sAMAccountName, tempPassword, adUser.displayName, newRole, adUser.email || undefined);
+    if (!account) {
+      setError(`User @${adUser.sAMAccountName} already exists.`);
+      return;
+    }
+    updateAccount(account.id, { group: newGroup });
+    // Remove from search results
+    setAdUsers((prev) => prev.filter((u) => u.dn !== adUser.dn));
+    setError('');
   };
 
   const handlePermToggle = (accountId: string, perms: Permission, key: keyof Permission, value: unknown) => {
@@ -116,17 +174,127 @@ export const UsersPage = () => {
               <h3 className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>New User Account</h3>
               <button onClick={() => setShowAddForm(false)} style={{ color: 'var(--text-faint)' }}><X size={16} /></button>
             </div>
+
+            {/* Mode toggle: Manual vs Active Directory */}
+            {adConfigured && (
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => { setAddMode('manual'); setAdUsers([]); setAdError(''); }}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer"
+                  style={addMode === 'manual'
+                    ? { background: 'var(--accent-bg)', color: 'var(--accent)', border: '2px solid var(--accent)' }
+                    : { color: 'var(--text-muted)', border: '2px solid var(--border-subtle)', background: 'transparent' }
+                  }
+                >
+                  <UserPlus size={14} /> Create Manually
+                </button>
+                <button
+                  onClick={() => setAddMode('ad')}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer"
+                  style={addMode === 'ad'
+                    ? { background: 'rgba(0,120,212,0.1)', color: '#0078d4', border: '2px solid #0078d4' }
+                    : { color: 'var(--text-muted)', border: '2px solid var(--border-subtle)', background: 'transparent' }
+                  }
+                >
+                  <BookUser size={14} /> Import from Active Directory
+                </button>
+              </div>
+            )}
+
             {error && (
               <div className="text-[11px] px-3 py-2 rounded-xl mb-3" style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', color: '#ef4444' }}>
                 {error}
               </div>
             )}
-            <div className="grid grid-cols-2 gap-3 mb-3">
-              <input value={newUsername} onChange={(e) => setNewUsername(e.target.value)} placeholder="Username" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
-              <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Password" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
-              <input value={newDisplayName} onChange={(e) => setNewDisplayName(e.target.value)} placeholder="Display Name" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
-              <input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Email (optional)" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
-            </div>
+
+            {/* Manual entry fields */}
+            {addMode === 'manual' && (
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <input value={newUsername} onChange={(e) => setNewUsername(e.target.value)} placeholder="Username" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
+                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Password" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
+                <input value={newDisplayName} onChange={(e) => setNewDisplayName(e.target.value)} placeholder="Display Name" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
+                <input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Email (optional)" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
+              </div>
+            )}
+
+            {/* AD search and import */}
+            {addMode === 'ad' && (
+              <div className="mb-4">
+                <div className="flex gap-2 mb-3">
+                  <div className="flex-1 relative">
+                    <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)', pointerEvents: 'none' }} />
+                    <input
+                      value={adSearch}
+                      onChange={(e) => setAdSearch(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAdSearch()}
+                      placeholder="Search AD by name, username, or email..."
+                      className="w-full rounded-2xl pl-9 pr-3 py-2 text-xs outline-none"
+                      style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
+                    />
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleAdSearch} disabled={adLoading || !adSearch.trim()}>
+                    {adLoading ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
+                    Search AD
+                  </Button>
+                </div>
+
+                {adError && (
+                  <div className="text-[11px] px-3 py-2 rounded-xl mb-3" style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', color: '#d97706' }}>
+                    {adError}
+                  </div>
+                )}
+
+                {/* AD search results */}
+                {adUsers.length > 0 && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border-subtle)' }}>
+                    <div className="px-4 py-2" style={{ background: 'var(--bg-inset)', borderBottom: '1px solid var(--border-subtle)' }}>
+                      <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                        {adUsers.length} user{adUsers.length !== 1 ? 's' : ''} found — select to import
+                      </span>
+                    </div>
+                    <div className="max-h-[240px] overflow-y-auto">
+                      {adUsers.map((adUser) => {
+                        const alreadyExists = accounts.some((a) => a.username === adUser.sAMAccountName);
+                        return (
+                          <div
+                            key={adUser.dn}
+                            className="flex items-center gap-3 transition-colors"
+                            style={{
+                              padding: '12px 16px',
+                              borderBottom: '1px solid var(--border-subtle)',
+                              opacity: alreadyExists ? 0.5 : 1,
+                            }}
+                          >
+                            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0" style={{
+                              background: adUser.enabled ? '#0078d4' : '#9ca3af',
+                            }}>
+                              {adUser.displayName.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[12px] font-semibold" style={{ color: 'var(--text-primary)' }}>{adUser.displayName}</span>
+                                {!adUser.enabled && <Pill color="#9ca3af">Disabled</Pill>}
+                                {alreadyExists && <Pill color="#d97706">Already added</Pill>}
+                              </div>
+                              <div className="flex items-center gap-3 text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                                <span>@{adUser.sAMAccountName}</span>
+                                {adUser.email && <span className="flex items-center gap-0.5"><Mail size={9} />{adUser.email}</span>}
+                                {adUser.department && <span className="flex items-center gap-0.5"><Building2 size={9} />{adUser.department}</span>}
+                              </div>
+                            </div>
+                            {!alreadyExists && (
+                              <Button variant="outline" size="sm" onClick={() => handleImportAdUser(adUser)}>
+                                <UserPlus size={11} /> Import
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             {/* Group selector (required) */}
             <div className="rounded-xl mb-4" style={{ padding: '14px 16px', background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}>
               <div className="text-[10px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
@@ -180,7 +348,9 @@ export const UsersPage = () => {
                 ))}
               </div>
             </div>
-            <Button variant="primary" size="md" onClick={handleAdd}>Create User</Button>
+            {addMode === 'manual' && (
+              <Button variant="primary" size="md" onClick={handleAdd}>Create User</Button>
+            )}
           </div>
         </Card>
         </div>
