@@ -797,6 +797,78 @@ erDiagram
     updatedAt: new Date(Date.now() - 86400000).toISOString(),
     tags: ['architecture', 'diagrams', 'mermaid'],
   },
+  {
+    id: 'doc-mcp-onboarding',
+    title: 'MCP Server Onboarding Guide',
+    content: `# MCP Server Onboarding Guide
+
+This guide covers how to register, configure, and manage Model Context Protocol (MCP) servers in DevDock.
+
+## What Are MCP Servers?
+
+MCP servers provide tools and capabilities to AI models. Each server exposes a set of functions (tools) that the AI chat can invoke — such as reading files, querying databases, calling APIs, or running code.
+
+## Supported Transports
+
+| Transport | Description | Use Case |
+|-----------|-------------|----------|
+| **stdio** | Communicates via stdin/stdout | Local development |
+| **SSE** | Server-Sent Events over HTTP | Remote servers |
+| **WebSocket** | Full-duplex connection | Real-time tools |
+
+## Registering a Server
+
+1. Navigate to **MCP Servers** in the sidebar
+2. Click **+ Register MCP Server**
+3. Fill in: name, description, port, and transport type
+4. Click **Register Server**
+5. Click the Play button to start
+
+## Installing Official Servers
+
+\`\`\`bash
+# Filesystem
+npx -y @modelcontextprotocol/server-filesystem /path/to/dir
+
+# GitHub (requires GITHUB_TOKEN env var)
+npx -y @modelcontextprotocol/server-github
+
+# PostgreSQL
+npx -y @modelcontextprotocol/server-postgres postgresql://user:pass@localhost/db
+
+# Memory
+npx -y @modelcontextprotocol/server-memory
+
+# Sequential Thinking
+npx -y @modelcontextprotocol/server-sequential-thinking
+\`\`\`
+
+## Building a Custom Server
+
+\`\`\`typescript
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+
+const server = new Server({ name: 'my-server', version: '1.0.0' }, {
+  capabilities: { tools: {} },
+});
+
+server.setRequestHandler('tools/list', async () => ({
+  tools: [{ name: 'hello', description: 'Says hello',
+    inputSchema: { type: 'object', properties: { name: { type: 'string' } } }
+  }],
+}));
+
+const transport = new StdioServerTransport();
+await server.connect(transport);
+\`\`\`
+
+For the full guide with configuration details, environment variables, monitoring, and troubleshooting, see the **Onboarding Guide** button on the MCP Server Registry page.
+`,
+    createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000).toISOString(),
+    tags: ['mcp', 'onboarding', 'guide'],
+  },
 ];
 
 export const useDocsStore = create<DocsStore>()(

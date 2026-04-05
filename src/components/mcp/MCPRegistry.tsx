@@ -23,7 +23,8 @@ const ServerCard = ({ server }: { server: MCPServer }) => {
   return (
     <Card>
       <div
-        className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none"
+        className="flex items-center gap-3 cursor-pointer select-none"
+        style={{ padding: '14px 20px' }}
         onClick={() => setExpanded((v) => !v)}
       >
         {/* Icon */}
@@ -209,28 +210,23 @@ export const MCPRegistry = () => {
   const totalCalls = servers.reduce((sum, s) => sum + s.callCount, 0);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Summary chips */}
-      <div className="flex gap-3 flex-wrap">
+      <div className="flex gap-4 flex-wrap" style={{ marginTop: 8 }}>
         {[
           { label: 'Total', value: servers.length, color: '#8090b0' },
           { label: 'Running', value: running, color: '#00e5a0' },
           { label: 'Total Calls', value: totalCalls, color: '#2a6fff' },
         ].map(({ label, value, color }) => (
-          <div key={label} className="rounded-xl px-4 py-2.5" style={{
-            background: 'var(--bg-surface)',
-            border: `1px solid ${color}40`,
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)'
-          }}>
+          <div key={label} style={{ padding: '14px 20px', background: 'var(--bg-surface)', border: `1px solid ${color}40`, borderRadius: 12 }}>
             <div style={{ color }} className="text-lg font-black leading-none">{value}</div>
-            <div className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: 'var(--text-muted)' }}>{label}</div>
+            <div className="text-[10px] uppercase tracking-wider mt-1.5" style={{ color: 'var(--text-muted)' }}>{label}</div>
           </div>
         ))}
       </div>
 
       {/* Server list */}
-      <div className="space-y-2">
+      <div className="space-y-2" style={{ marginTop: 12 }}>
         {servers.map((s) => <ServerCard key={s.id} server={s} />)}
       </div>
 
