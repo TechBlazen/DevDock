@@ -494,7 +494,7 @@ export const SqlToolPage = () => {
                   )}
                 </div>
               ) : (
-                <div style={{ padding: '16px 20px' }} className="text-[12px]" style={{ color: 'var(--text-muted)', padding: '16px 20px' }}>
+                <div className="text-[12px]" style={{ color: 'var(--text-muted)', padding: '16px 20px' }}>
                   Query executed successfully. {result.rowCount} row{result.rowCount !== 1 ? 's' : ''} affected.
                 </div>
               )}
