@@ -155,28 +155,36 @@ export const CodePlaygroundPage = () => {
     input.click();
   };
 
+  const vFont: React.CSSProperties = { fontFamily: 'Verdana, Geneva, sans-serif' };
+
   return (
-    <div className="p-8">
+    <div className="p-8" style={vFont}>
       <SectionTitle sub="Write and execute code in multiple languages with instant output">
         Code Playground
       </SectionTitle>
 
       {/* Language selector */}
-      <div className="flex gap-2 flex-wrap" style={{ marginTop: 20, marginBottom: 20 }}>
+      <div className="flex gap-3 flex-wrap" style={{ marginTop: 24, marginBottom: 24 }}>
         {LANGUAGES.map((l) => (
           <button
             key={l.id}
             onClick={() => handleLangChange(l.id)}
-            className="px-3 py-2 rounded-lg text-[12px] font-semibold transition-all cursor-pointer"
-            style={langId === l.id
-              ? { background: `${l.color}20`, color: l.color, border: `2px solid ${l.color}` }
-              : { color: 'var(--text-muted)', border: '2px solid var(--border-subtle)', background: 'transparent' }
-            }
+            className="rounded-lg transition-all cursor-pointer"
+            style={{
+              ...vFont,
+              padding: '10px 16px',
+              fontSize: 13,
+              fontWeight: 700,
+              ...(langId === l.id
+                ? { background: `${l.color}20`, color: l.color, border: `2px solid ${l.color}` }
+                : { color: 'var(--text-primary)', border: '2px solid var(--border-color)', background: 'transparent' }
+              ),
+            }}
           >
-            <Code2 size={12} className="inline mr-1" style={{ verticalAlign: '-2px' }} />
+            <Code2 size={13} className="inline mr-1.5" style={{ verticalAlign: '-2px' }} />
             {l.label}
-            <span className="ml-1 text-[9px] opacity-60">
-              {l.runMode === 'browser' ? '(browser)' : '(server)'}
+            <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 500, opacity: 0.6 }}>
+              {l.runMode === 'browser' ? 'browser' : 'server'}
             </span>
           </button>
         ))}
@@ -189,7 +197,7 @@ export const CodePlaygroundPage = () => {
             <CardHeader className="justify-between">
               <div className="flex items-center gap-2">
                 <Code2 size={13} style={{ color: lang.color }} />
-                <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+                <span className="font-bold uppercase tracking-wider" style={{ ...vFont, fontSize: 12, color: 'var(--text-secondary)' }}>
                   {lang.label} Editor
                 </span>
               </div>
@@ -225,12 +233,12 @@ export const CodePlaygroundPage = () => {
                 {running ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
                 Run {lang.runMode === 'browser' ? '' : `(${lang.label})`}
               </Button>
-              <span className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
+              <span style={{ ...vFont, fontSize: 11, color: 'var(--text-muted)' }}>
                 {lang.runMode === 'browser' ? 'Runs in browser sandbox' : 'Runs on server'}
                 {' · Ctrl+Enter to execute'}
               </span>
               {duration != null && (
-                <span className="text-[10px] ml-auto" style={{ color: 'var(--text-muted)' }}>{duration}ms</span>
+                <span style={{ ...vFont, fontSize: 11, color: 'var(--text-secondary)' }} className="ml-auto">{duration}ms</span>
               )}
             </div>
           </Card>
@@ -243,12 +251,12 @@ export const CodePlaygroundPage = () => {
               {(lang.id === 'html' || lang.id === 'css') ? (
                 <>
                   {lang.id === 'css' ? <Paintbrush size={13} style={{ color: lang.color }} /> : <Eye size={13} style={{ color: lang.color }} />}
-                  <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Preview</span>
+                  <span className="font-bold uppercase tracking-wider" style={{ ...vFont, fontSize: 12, color: 'var(--text-secondary)' }}>Preview</span>
                 </>
               ) : (
                 <>
                   <Terminal size={13} style={{ color: 'var(--accent)' }} />
-                  <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Output</span>
+                  <span className="font-bold uppercase tracking-wider" style={{ ...vFont, fontSize: 12, color: 'var(--text-secondary)' }}>Output</span>
                 </>
               )}
             </CardHeader>
