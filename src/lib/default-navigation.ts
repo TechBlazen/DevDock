@@ -56,6 +56,7 @@ export const defaultNavigation: NavigationConfig = {
         { id: 'dt-csv',        type: 'link', label: 'CSV Viewer',        icon: 'Table',        route: '/devtools/csv',        visible: true },
         { id: 'dt-git-gen',    type: 'link', label: 'Git Generator',     icon: 'GitMerge',     route: '/devtools/git-gen',    visible: true },
         { id: 'dt-docker-gen', type: 'link', label: 'Docker Generator',  icon: 'Container',    route: '/devtools/docker-gen', visible: true },
+        { id: 'dt-sql',        type: 'link', label: 'SQL Tool',           icon: 'Database',     route: '/devtools/sql',        visible: true },
       ],
     },
 

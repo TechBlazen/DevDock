@@ -1103,6 +1103,9 @@ export { useWidgetSubmissionStore } from './widget-submission-store';
 // ─── Federated Source Store (re-export) ─────────────────────────────────────
 export { useFederatedSourceStore } from './federated-source-store';
 
+// ─── SQL Tool Store (re-export) ─────────────────────────────────────────────
+export { useSqlToolStore } from './sql-tool-store';
+
 // ─── Bookmark Store ──────────────────────────────────────────────────────────
 interface BookmarkStore {
   bookmarks: Bookmark[];

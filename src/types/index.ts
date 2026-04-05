@@ -568,6 +568,66 @@ export interface FeatureRequest {
   updatedAt: string;
 }
 
+// ─── SQL Tool Types ─────────────────────────────────────────────────────────
+export type DatabaseEngine = 'postgresql' | 'mysql' | 'mariadb' | 'sqlserver' | 'oracle' | 'sqlite';
+
+export interface DatabaseConnection {
+  id: string;
+  userId: string;
+  name: string;
+  engine: DatabaseEngine;
+  host: string;
+  port: number;
+  database: string;
+  username: string;
+  password: string;
+  connectionString?: string;   // optional override — if set, used instead of host/port/db
+  ssl: boolean;
+  color?: string;
+  createdAt: string;
+  lastUsedAt?: string;
+}
+
+export interface SavedQuery {
+  id: string;
+  userId: string;
+  connectionId?: string;
+  name: string;
+  sql: string;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface QueryResult {
+  columns: string[];
+  rows: Record<string, unknown>[];
+  rowCount: number;
+  duration: number;           // ms
+  error?: string;
+}
+
+export interface TableInfo {
+  schema: string;
+  name: string;
+  type: 'table' | 'view';
+  rowCount?: number;
+}
+
+export interface ColumnInfo {
+  name: string;
+  dataType: string;
+  nullable: boolean;
+  defaultValue?: string;
+  isPrimaryKey: boolean;
+}
+
+export interface StoredProcedure {
+  schema: string;
+  name: string;
+  language?: string;
+}
+
 // ─── Analytics Types ─────────────────────────────────────────────────────────
 export interface PageView {
   id: string;
