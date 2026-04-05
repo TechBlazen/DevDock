@@ -571,48 +571,51 @@ export const SettingsPage = () => {
         <Card>
           <CardHeader>
             <LanguagesIcon size={14} className="text-[#0891b2]" />
-            <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Language</span>
+            <span style={{ fontFamily: 'Verdana, Geneva, sans-serif', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Language</span>
           </CardHeader>
-          <div className="p-5 space-y-4">
+          <div className="p-6 space-y-6" style={{ fontFamily: 'Verdana, Geneva, sans-serif' }}>
             <div>
-              <label className="text-[12px] font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>Default Application Language</label>
+              <label style={{ fontFamily: 'Verdana, Geneva, sans-serif', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8, display: 'block' }}>Default Application Language</label>
               <select
                 value={settings.defaultLanguage ?? 'en'}
                 onChange={(e) => {
                   const newSettings = { ...settings, defaultLanguage: e.target.value as AppLanguage };
                   useSettingsStore.setState({ settings: newSettings });
                 }}
-                className="w-full max-w-xs rounded-lg px-3 py-2.5 text-[13px] outline-none cursor-pointer"
-                style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
+                className="w-full max-w-sm rounded-lg outline-none cursor-pointer"
+                style={{ fontFamily: 'Verdana, Geneva, sans-serif', fontSize: 14, padding: '12px 16px', background: 'var(--bg-input)', border: '2px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: 8 }}
               >
                 {SUPPORTED_LANGUAGES.map((lang) => (
-                  <option key={lang.code} value={lang.code}>{lang.flag} {lang.name}</option>
+                  <option key={lang.code} value={lang.code}>{lang.flag}  {lang.name}</option>
                 ))}
               </select>
-              <p className="text-[10px] mt-2" style={{ color: 'var(--text-faint)' }}>
+              <p style={{ fontFamily: 'Verdana, Geneva, sans-serif', fontSize: 12, marginTop: 8, lineHeight: 1.5, color: 'var(--text-muted)' }}>
                 Sets the default language for all users. Individual users can override this in their profile preferences.
               </p>
             </div>
 
-            <div className="rounded-lg p-4" style={{ background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}>
-              <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Available Languages</div>
-              <div className="flex flex-wrap gap-2">
+            <div className="rounded-lg" style={{ padding: '18px 20px', background: 'var(--bg-inset)', border: '2px solid var(--border-color)' }}>
+              <div style={{ fontFamily: 'Verdana, Geneva, sans-serif', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 14 }}>Available Languages</div>
+              <div className="flex flex-wrap gap-3">
                 {SUPPORTED_LANGUAGES.map((lang) => {
                   const isActive = (settings.defaultLanguage ?? 'en') === lang.code;
                   const hasTranslation = ['en', 'es'].includes(lang.code);
                   return (
                     <span
                       key={lang.code}
-                      className="text-[11px] px-2.5 py-1 rounded-lg font-medium"
+                      className="rounded-lg font-medium"
                       style={{
+                        fontFamily: 'Verdana, Geneva, sans-serif',
+                        fontSize: 13,
+                        padding: '8px 14px',
                         background: isActive ? 'var(--accent-bg)' : 'transparent',
-                        color: isActive ? 'var(--accent)' : hasTranslation ? 'var(--text-secondary)' : 'var(--text-faint)',
-                        border: isActive ? '1px solid var(--accent)' : '1px solid var(--border-subtle)',
-                        opacity: hasTranslation ? 1 : 0.6,
+                        color: isActive ? 'var(--accent)' : hasTranslation ? 'var(--text-primary)' : 'var(--text-faint)',
+                        border: isActive ? '2px solid var(--accent)' : '2px solid var(--border-subtle)',
+                        opacity: hasTranslation ? 1 : 0.5,
                       }}
                     >
-                      {lang.flag} {lang.name}
-                      {!hasTranslation && <span className="ml-1 text-[9px]">(coming soon)</span>}
+                      {lang.flag}  {lang.name}
+                      {!hasTranslation && <span style={{ marginLeft: 6, fontSize: 10, opacity: 0.7 }}>(coming soon)</span>}
                     </span>
                   );
                 })}
@@ -621,6 +624,8 @@ export const SettingsPage = () => {
           </div>
         </Card>
       </CollapsibleSection>
+
+      <div style={{ marginTop: 12 }} />
 
       {/* ═══════════════════════════════════════════════════════════════════
            SECTION 2 — Organizations & Repositories
