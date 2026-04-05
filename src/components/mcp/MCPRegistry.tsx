@@ -226,7 +226,7 @@ export const MCPRegistry = () => {
       </div>
 
       {/* Server list */}
-      <div className="space-y-2">
+      <div className="space-y-2" style={{ marginTop: 12 }}>
         {servers.map((s) => <ServerCard key={s.id} server={s} />)}
       </div>
 
