@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Star, GitBranch, Lock, Globe, ExternalLink, Code2, Download, Copy, Check, Terminal, Pencil, X, User, Users, Cloud, Tag, Plus, Trash2 } from 'lucide-react';
+import { Star, GitBranch, Lock, Globe, ExternalLink, Code2, Download, Copy, Check, Terminal, Pencil, X, User, Users, Cloud, Tag, Plus, Trash2, FileText, Loader2 } from 'lucide-react';
 import { Card, Pill, Button, Tooltip } from '../ui';
 import { openInVSCode, openInVSCodeWeb } from '../../lib/repos';
 import { useRepoStore, useAuthStore, useUserAccountsStore } from '../../store';
@@ -222,6 +222,8 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
   const [showCloneMenu, setShowCloneMenu] = useState(false);
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [importingDocs, setImportingDocs] = useState(false);
+  const [importResult, setImportResult] = useState<string | null>(null);
   const langColor = langColors[repo.language] ?? langColors.Unknown;
 
   const user = useAuthStore((s) => s.user);
@@ -235,6 +237,20 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
 
   // Delete permission: user who added the repo OR any admin
   const canDelete = user && (repo.addedBy === user.id || user.role === 'admin');
+
+  const handleImportDocs = async () => {
+    setImportingDocs(true);
+    setImportResult(null);
+    try {
+      const { autoImportRepoMarkdown } = await import('../../lib/auto-import-docs');
+      const count = await autoImportRepoMarkdown(repo);
+      setImportResult(count > 0 ? `Imported ${count} doc${count > 1 ? 's' : ''}` : 'No new docs found');
+    } catch {
+      setImportResult('Import failed — check your token in Settings');
+    }
+    setImportingDocs(false);
+    setTimeout(() => setImportResult(null), 4000);
+  };
 
   return (
     <Card highlight={expanded} onClick={() => { if (!editing) setExpanded((v) => !v); }} className="transition-all">
@@ -340,6 +356,12 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
               <Button variant="ghost" size="sm" onClick={() => setShowCloneMenu(!showCloneMenu)}><Download size={11} /> Clone</Button>
               {showCloneMenu && <CloneMenu repo={repo} onClose={() => setShowCloneMenu(false)} />}
             </div>
+            <Tooltip tip="Import markdown files from this repo into Docs">
+              <Button variant="ghost" size="sm" onClick={handleImportDocs} disabled={importingDocs}>
+                {importingDocs ? <Loader2 size={11} className="animate-spin" /> : <FileText size={11} />}
+                {importResult ?? 'Import Docs'}
+              </Button>
+            </Tooltip>
             {canDelete && (
               <Tooltip tip={user?.role === 'admin' ? 'Delete repo (admin)' : 'Delete repo'}>
                 <Button variant="danger" size="sm" onClick={() => setConfirmDelete(true)}><Trash2 size={11} /> Delete</Button>

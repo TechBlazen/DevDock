@@ -51,14 +51,15 @@ export async function autoImportRepoMarkdown(repo: Repository): Promise<number> 
       }
     } else if (repo.source === 'ado') {
       const pat = settings.ado.personalAccessToken;
-      const org = settings.ado.organization;
 
-      // Parse project from webUrl: https://dev.azure.com/{org}/{project}/_git/{repo}
-      const urlMatch = repo.webUrl.match(/dev\.azure\.com\/[^/]+\/([^/]+)\/_git\/(.+)/);
+      // Parse org, project, and repo from webUrl: https://dev.azure.com/{org}/{project}/_git/{repo}
+      const urlMatch = repo.webUrl.match(/dev\.azure\.com\/([^/]+)\/([^/]+)\/_git\/(.+)/);
       if (!urlMatch) return 0;
-      const [, project, repoName] = urlMatch;
+      const [, org, project, repoName] = urlMatch;
 
-      const files = await listADOMarkdownFiles(org, project, repoName, '/', pat || undefined);
+      if (!pat) return 0; // ADO requires auth
+
+      const files = await listADOMarkdownFiles(org, project, repoName, '/', pat);
 
       for (const file of files) {
         const sourceUrl = `${repo.webUrl}?path=${encodeURIComponent(file.path)}`;
