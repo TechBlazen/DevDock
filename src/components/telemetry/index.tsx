@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { Activity, Clock, AlertTriangle, CheckCircle, Layers } from 'lucide-react';
+import { Activity, Clock, AlertTriangle, CheckCircle, Layers, BookOpen, X } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useTelemetryStore } from '../../store';
-import { Card, Badge, SectionTitle } from '../ui';
+import { Card, Badge, SectionTitle, Button } from '../ui';
+import otelGuideContent from '../../content/otel-onboarding.md?raw';
 
 // ─── Metrics summary bar ──────────────────────────────────────────────────────
 export const MetricsBar = () => {
@@ -139,16 +142,100 @@ export const TraceList = ({ compact = false }: { compact?: boolean }) => {
   );
 };
 
-// ─── Full Telemetry page ──────────────────────────────────────────────────────
-export const TelemetryPage = () => (
-  <div className="p-6 space-y-6">
-    <SectionTitle sub="OpenTelemetry traces, metrics, and spans from all DevDock services">
-      Observability
-    </SectionTitle>
-    <MetricsBar />
-    <div>
-      <h2 className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--text-secondary)' }}>Recent Traces</h2>
-      <TraceList />
+// ─── OTel Guide Modal ────────────────────────────────────────────────────────
+const OTelGuideModal = ({ onClose }: { onClose: () => void }) => (
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    onClick={onClose}
+    style={{ background: 'var(--overlay)', backdropFilter: 'blur(2px)' }}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="rounded-xl w-full max-w-3xl flex flex-col overflow-hidden"
+      style={{
+        background: 'var(--bg-elevated)',
+        border: '1px solid var(--border-color)',
+        boxShadow: 'var(--shadow-lg)',
+        maxHeight: 'calc(100vh - 80px)',
+      }}
+    >
+      <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <div className="flex items-center gap-2">
+          <BookOpen size={16} style={{ color: 'var(--accent)' }} />
+          <h2 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>OpenTelemetry Onboarding Guide</h2>
+        </div>
+        <button
+          onClick={onClose}
+          className="p-1 rounded transition-colors hover:opacity-80 cursor-pointer"
+          style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none' }}
+        >
+          <X size={18} />
+        </button>
+      </div>
+      <div className="overflow-y-auto px-6 py-5 otel-guide-content">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            h1: ({ children }) => <h1 className="text-xl font-bold mt-6 mb-3" style={{ color: 'var(--text-primary)' }}>{children}</h1>,
+            h2: ({ children }) => <h2 className="text-base font-bold mt-5 mb-2" style={{ color: 'var(--text-primary)' }}>{children}</h2>,
+            h3: ({ children }) => <h3 className="text-sm font-bold mt-4 mb-1.5" style={{ color: 'var(--text-primary)' }}>{children}</h3>,
+            p: ({ children }) => <p className="text-[13px] leading-relaxed mb-3" style={{ color: 'var(--text-secondary)' }}>{children}</p>,
+            ul: ({ children }) => <ul className="list-disc pl-5 mb-3 space-y-1 text-[13px]" style={{ color: 'var(--text-secondary)' }}>{children}</ul>,
+            ol: ({ children }) => <ol className="list-decimal pl-5 mb-3 space-y-1 text-[13px]" style={{ color: 'var(--text-secondary)' }}>{children}</ol>,
+            li: ({ children }) => <li className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>{children}</li>,
+            strong: ({ children }) => <strong className="font-semibold" style={{ color: 'var(--text-primary)' }}>{children}</strong>,
+            a: ({ children, href }) => <a href={href} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: 'var(--accent)' }}>{children}</a>,
+            hr: () => <hr className="my-5" style={{ border: 'none', borderTop: '1px solid var(--border-subtle)' }} />,
+            code: ({ children, className }) => {
+              const isBlock = className?.includes('language-');
+              if (isBlock) {
+                return (
+                  <pre className="rounded-md p-3 my-3 overflow-x-auto text-[12px]" style={{ background: 'var(--code-bg)', color: 'var(--code-text)' }}>
+                    <code className={className}>{children}</code>
+                  </pre>
+                );
+              }
+              return <code className="rounded px-1 py-0.5 text-[12px]" style={{ background: 'var(--code-bg)', color: 'var(--code-text)' }}>{children}</code>;
+            },
+            pre: ({ children }) => <>{children}</>,
+            table: ({ children }) => (
+              <div className="my-3 overflow-x-auto rounded-md" style={{ border: '1px solid var(--border-subtle)' }}>
+                <table className="w-full text-[12px]" style={{ borderCollapse: 'collapse' }}>{children}</table>
+              </div>
+            ),
+            thead: ({ children }) => <thead style={{ background: 'var(--bg-inset)' }}>{children}</thead>,
+            th: ({ children }) => <th className="px-3 py-1.5 text-left font-semibold" style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>{children}</th>,
+            td: ({ children }) => <td className="px-3 py-1.5" style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-secondary)' }}>{children}</td>,
+            blockquote: ({ children }) => <blockquote className="pl-3 my-3 italic" style={{ borderLeft: '3px solid var(--border-color)', color: 'var(--text-muted)' }}>{children}</blockquote>,
+          }}
+        >
+          {otelGuideContent}
+        </ReactMarkdown>
+      </div>
     </div>
   </div>
 );
+
+// ─── Full Telemetry page ──────────────────────────────────────────────────────
+export const TelemetryPage = () => {
+  const [showGuide, setShowGuide] = useState(false);
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-start justify-between">
+        <SectionTitle sub="OpenTelemetry traces, metrics, and spans from all DevDock services">
+          Observability
+        </SectionTitle>
+        <Button variant="outline" size="sm" onClick={() => setShowGuide(true)}>
+          <BookOpen size={13} /> Onboarding Guide
+        </Button>
+      </div>
+      <MetricsBar />
+      <div>
+        <h2 className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--text-secondary)' }}>Recent Traces</h2>
+        <TraceList />
+      </div>
+      {showGuide && <OTelGuideModal onClose={() => setShowGuide(false)} />}
+    </div>
+  );
+};
