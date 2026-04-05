@@ -49,6 +49,35 @@ function runWithTempFile(ext: string, cmd: (path: string) => string, code: strin
   }
 }
 
+// Check if a command exists on the system
+function isCommandAvailable(cmd: string): boolean {
+  try {
+    execSync(`which ${cmd} 2>/dev/null || where ${cmd} 2>NUL`, { encoding: 'utf-8', timeout: 3000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const INSTALL_HINTS: Record<string, { cmd: string; install: string }> = {
+  python:  { cmd: 'python3', install: 'Install Python 3: https://python.org/downloads or `brew install python3`' },
+  ruby:    { cmd: 'ruby',    install: 'Install Ruby: https://ruby-lang.org or `brew install ruby`' },
+  go:      { cmd: 'go',      install: 'Install Go: https://go.dev/dl or `brew install go`' },
+  bash:    { cmd: 'bash',    install: 'Bash should be available on most systems. Install via your package manager.' },
+  php:     { cmd: 'php',     install: 'Install PHP: https://php.net or `brew install php`' },
+  perl:    { cmd: 'perl',    install: 'Install Perl: https://perl.org or `brew install perl`' },
+  rust:    { cmd: 'rustc',   install: 'Install Rust: https://rustup.rs or `curl --proto \'=https\' --tlsv1.2 -sSf https://sh.rustup.rs | sh`' },
+};
+
+function checkRuntime(language: string): string | null {
+  const hint = INSTALL_HINTS[language];
+  if (!hint) return null;
+  if (!isCommandAvailable(hint.cmd)) {
+    return `${hint.cmd} is not installed on this system.\n\n${hint.install}`;
+  }
+  return null;
+}
+
 const runners: Record<string, (code: string) => RunResult> = {
   python: (code) => runWithTempFile('py', (p) => `python3 "${p}" 2>&1`, code),
   ruby: (code) => runWithTempFile('rb', (p) => `ruby "${p}" 2>&1`, code),
@@ -57,7 +86,6 @@ const runners: Record<string, (code: string) => RunResult> = {
   php: (code) => runWithTempFile('php', (p) => `php "${p}" 2>&1`, code),
   perl: (code) => runWithTempFile('pl', (p) => `perl "${p}" 2>&1`, code),
   rust: (code) => {
-    // Compile and run in one step via rustc
     const dir = mkdtempSync(join(tmpdir(), 'devdock-'));
     const srcPath = join(dir, 'main.rs');
     const binPath = join(dir, 'main');
@@ -85,6 +113,12 @@ export function registerCodeRunnerRoutes(app: FastifyInstance, _db: DatabaseProv
     // Browser-executable languages don't need server-side execution
     if (['javascript', 'typescript', 'html', 'css'].includes(language)) {
       return { stdout: '', stderr: 'This language runs in the browser', exitCode: 0, duration: 0, browserOnly: true };
+    }
+
+    // Check if the runtime is installed before attempting execution
+    const missingMsg = checkRuntime(language);
+    if (missingMsg) {
+      return { stdout: '', stderr: missingMsg, exitCode: 1, duration: 0 };
     }
 
     const runner = runners[language];
