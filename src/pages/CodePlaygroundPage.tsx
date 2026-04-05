@@ -25,8 +25,6 @@ const LANGUAGES: Language[] = [
   { id: 'ruby', label: 'Ruby', monacoId: 'ruby', color: '#CC342D', runMode: 'server', template: `# Ruby Playground\ndef factorial(n)\n  return 1 if n <= 1\n  n * factorial(n - 1)\nend\n\n(1..10).each do |i|\n  puts "#{i}! = #{factorial(i)}"\nend\n` },
   { id: 'go', label: 'Go', monacoId: 'go', color: '#00ADD8', runMode: 'server', template: `package main\n\nimport "fmt"\n\nfunc main() {\n\tfor i := 1; i <= 10; i++ {\n\t\tif i%3 == 0 && i%5 == 0 {\n\t\t\tfmt.Println("FizzBuzz")\n\t\t} else if i%3 == 0 {\n\t\t\tfmt.Println("Fizz")\n\t\t} else if i%5 == 0 {\n\t\t\tfmt.Println("Buzz")\n\t\t} else {\n\t\t\tfmt.Println(i)\n\t\t}\n\t}\n}\n` },
   { id: 'bash', label: 'Bash', monacoId: 'shell', color: '#89E051', runMode: 'server', template: `#!/bin/bash\n# Bash Playground\n\necho "Hello from Bash!"\necho "Date: $(date)"\necho "User: $(whoami)"\necho "Shell: $SHELL"\n\nfor i in {1..5}; do\n  echo "Count: $i"\ndone\n` },
-  { id: 'php', label: 'PHP', monacoId: 'php', color: '#4F5D95', runMode: 'server', template: `<?php\n// PHP Playground\n\n$name = "DevDock";\necho "Hello from $name!\\n";\n\n$numbers = range(1, 10);\n$squares = array_map(fn($n) => $n * $n, $numbers);\necho "Squares: " . implode(", ", $squares) . "\\n";\n` },
-  { id: 'rust', label: 'Rust', monacoId: 'rust', color: '#DEA584', runMode: 'server', template: `fn main() {\n    let numbers: Vec<i32> = (1..=10).collect();\n    let sum: i32 = numbers.iter().sum();\n    println!("Numbers: {:?}", numbers);\n    println!("Sum: {}", sum);\n    println!("Average: {:.1}", sum as f64 / numbers.len() as f64);\n}\n` },
 ];
 
 const CSS_PREVIEW_HTML = `<!DOCTYPE html><html><head><style>CSS_CONTENT</style></head><body>
