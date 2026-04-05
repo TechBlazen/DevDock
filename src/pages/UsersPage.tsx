@@ -144,7 +144,7 @@ export const UsersPage = () => {
       )}
 
       {/* Groups */}
-      <div style={{ marginBottom: 28 }}>
+      <div style={{ marginBottom: 36 }}>
         <h2 className="text-xs font-bold uppercase tracking-widest px-1" style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>
           <Users size={13} className="inline mr-1.5" style={{ verticalAlign: '-2px' }} />
           Groups
@@ -263,6 +263,10 @@ export const UsersPage = () => {
       </div>
 
       {/* User list */}
+      <h2 className="text-xs font-bold uppercase tracking-widest px-1" style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>
+        <Shield size={13} className="inline mr-1.5" style={{ verticalAlign: '-2px' }} />
+        Users
+      </h2>
       <div className="space-y-3">
         {accounts.map((account) => {
           const isEditing = editingId === account.id;
