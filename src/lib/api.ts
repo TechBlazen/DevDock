@@ -93,6 +93,15 @@ export const analyticsApi = {
   getErrors: (limit?: number) => api.get('/analytics/errors', { params: limit ? { limit } : {} }).then(r => r.data),
 };
 
+// ─── SQL Tool ───────────────────────────────────────────────────────────────
+export const sqlApi = {
+  testConnection: (conn: Record<string, unknown>) => api.post('/sql/test', conn).then(r => r.data),
+  executeQuery: (conn: Record<string, unknown>, sql: string) => api.post('/sql/query', { ...conn, sql }).then(r => r.data),
+  getTables: (conn: Record<string, unknown>) => api.post('/sql/tables', conn).then(r => r.data),
+  getColumns: (conn: Record<string, unknown>, table: string, schema?: string) => api.post('/sql/columns', { ...conn, table, schema }).then(r => r.data),
+  getProcedures: (conn: Record<string, unknown>) => api.post('/sql/procedures', conn).then(r => r.data),
+};
+
 // ─── Directory (LDAP) ───────────────────────────────────────────────────────
 export const directoryApi = {
   testConnection: (config: Record<string, unknown>) => api.post('/directory/test', config).then(r => r.data),

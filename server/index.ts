@@ -13,6 +13,7 @@ import { registerPluginRoutes } from './routes/plugins.js';
 import { registerAnalyticsRoutes } from './routes/analytics.js';
 import { registerFederatedSourceRoutes } from './routes/federated-sources.js';
 import { registerDirectoryRoutes } from './routes/directory.js';
+import { registerSqlToolRoutes } from './routes/sql-tool.js';
 
 async function main() {
   const config = loadConfig();
@@ -48,6 +49,7 @@ async function main() {
   registerAnalyticsRoutes(app, db, config.jwtSecret);
   registerFederatedSourceRoutes(app, db, config.jwtSecret);
   registerDirectoryRoutes(app, db, config.jwtSecret);
+  registerSqlToolRoutes(app, db, config.jwtSecret);
 
   // Graceful shutdown
   const shutdown = async () => {
