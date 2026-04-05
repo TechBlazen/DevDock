@@ -219,12 +219,14 @@ export const CodePlaygroundPage = () => {
                 theme="vs-dark"
                 options={{
                   minimap: { enabled: false },
-                  fontSize: 13,
+                  fontFamily: "'Source Code Pro', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace",
+                  fontSize: 14,
                   lineNumbers: 'on',
                   scrollBeyondLastLine: false,
                   wordWrap: 'on',
                   padding: { top: 12 },
                   tabSize: 2,
+                  fontLigatures: true,
                 }}
               />
             </div>
