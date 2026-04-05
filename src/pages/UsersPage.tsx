@@ -80,7 +80,7 @@ export const UsersPage = () => {
       </SectionTitle>
 
       {/* Summary */}
-      <div className="flex gap-3 mb-5 flex-wrap">
+      <div className="flex gap-3 flex-wrap" style={{ marginTop: 24, marginBottom: 28 }}>
         {(['admin', 'editor', 'viewer'] as UserRole[]).map((role) => {
           const count = accounts.filter((a) => a.role === role).length;
           const color = getRoleColor(role);
