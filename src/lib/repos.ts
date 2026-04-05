@@ -206,15 +206,17 @@ export async function fetchADORepo(org: string, project: string, repo: string, p
   const { data } = await axios.get(url, { headers });
   const mapped = mapADORepo(data, org);
 
-  // Enrich with language detection and last commit date (non-blocking)
+  // Enrich with language detection, last commit date, and description
   if (pat) {
     const branch = mapped.defaultBranch;
-    const [language, lastCommitDate] = await Promise.all([
+    const [language, lastCommitDate, description] = await Promise.all([
       detectADOLanguage(org, project, repo, branch, pat),
       fetchADOLastCommitDate(org, project, repo, pat),
+      fetchADORepoDescription(org, project, repo, branch, pat),
     ]);
     if (language !== 'Unknown') mapped.language = language;
     if (lastCommitDate) mapped.updatedAt = lastCommitDate;
+    if (description) mapped.description = description;
   }
 
   return mapped;
@@ -232,6 +234,46 @@ async function fetchADOLastCommitDate(org: string, project: string, repo: string
       return new Date(String(commit.author.date)).toLocaleDateString();
     }
   } catch { /* non-critical */ }
+  return null;
+}
+
+// Fetch a description for an ADO repo:
+// 1. Try the project description from the Projects API
+// 2. Fall back to reading the first line of README.md
+async function fetchADORepoDescription(org: string, project: string, repo: string, branch: string, pat?: string): Promise<string | null> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (pat) headers.Authorization = `Basic ${btoa(':' + pat)}`;
+
+  // Try project description first
+  try {
+    const url = `https://dev.azure.com/${org}/_apis/projects/${project}?api-version=7.1`;
+    const { data } = await axios.get(url, { headers });
+    if (data.description && String(data.description).trim()) {
+      return String(data.description).trim();
+    }
+  } catch { /* non-critical */ }
+
+  // Fall back to first meaningful line of README.md
+  try {
+    const readmeHeaders: Record<string, string> = { Accept: 'text/plain' };
+    if (pat) readmeHeaders.Authorization = `Basic ${btoa(':' + pat)}`;
+
+    const url = `https://dev.azure.com/${org}/${project}/_apis/git/repositories/${repo}/items?path=%2FREADME.md&includeContent=true&$format=text&api-version=7.1`;
+    const { data } = await axios.get(url, { headers: readmeHeaders, responseType: 'text', transformResponse: [(d) => d] });
+    const content = String(data);
+
+    // Extract first non-heading, non-empty line as description
+    const lines = content.split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      if (trimmed.startsWith('#')) continue; // skip headings
+      if (trimmed.startsWith('![') || trimmed.startsWith('<!--')) continue; // skip images/comments
+      // Truncate to 200 chars
+      return trimmed.length > 200 ? trimmed.slice(0, 200) + '...' : trimmed;
+    }
+  } catch { /* no README or inaccessible */ }
+
   return null;
 }
 
