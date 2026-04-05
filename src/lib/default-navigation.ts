@@ -68,6 +68,7 @@ export const defaultNavigation: NavigationConfig = {
     // ── Profile & Admin ──
     { id: 'profile',   type: 'link', label: 'Profile',   icon: 'User',      route: '/profile',   visible: true },
     { id: 'analytics', type: 'link', label: 'Analytics',  icon: 'BarChart3', route: '/analytics', visible: true, adminOnly: true },
+    { id: 'directory', type: 'link', label: 'Directory',   icon: 'BookUser',  route: '/directory', visible: true, adminOnly: true },
     { id: 'users',     type: 'link', label: 'Users',      icon: 'Users',     route: '/users',     visible: true, adminOnly: true },
     { id: 'settings',  type: 'link', label: 'Settings',   icon: 'Settings',  route: '/settings',  visible: true, adminOnly: true, locked: true },
   ],
