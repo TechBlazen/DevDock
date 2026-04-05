@@ -47,6 +47,10 @@ export const UsersPage = () => {
       setError('Username, password, and display name are required.');
       return;
     }
+    if (!newGroup) {
+      setError('A group must be selected.');
+      return;
+    }
     const account = addAccount(newUsername.trim(), newPassword, newDisplayName.trim(), newRole, newEmail.trim() || undefined);
     if (!account) {
       setError('Username already exists.');
@@ -122,21 +126,58 @@ export const UsersPage = () => {
               <input value={newDisplayName} onChange={(e) => setNewDisplayName(e.target.value)} placeholder="Display Name" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
               <input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Email (optional)" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
             </div>
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>Group:</span>
-              {USER_GROUPS.map((g) => (
-                <button key={g.name} onClick={() => { setNewGroup(g.name); setNewRole(g.role); }} className="px-3 py-1 rounded-xl text-[11px] font-semibold transition-all cursor-pointer" style={newGroup === g.name ? { background: `${g.color}15`, color: g.color, border: `1px solid ${g.color}30` } : { color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>
-                  <Users size={10} className="inline mr-1" />{g.name}
-                </button>
-              ))}
+            {/* Group selector (required) */}
+            <div className="rounded-xl mb-4" style={{ padding: '14px 16px', background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}>
+              <div className="text-[10px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
+                <Users size={11} className="inline mr-1" style={{ verticalAlign: '-1px' }} />
+                Group <span style={{ color: '#ef4444' }}>*</span>
+              </div>
+              <div className="flex gap-2.5 flex-wrap">
+                {USER_GROUPS.map((g) => (
+                  <button
+                    key={g.name}
+                    onClick={() => { setNewGroup(g.name); setNewRole(g.role); }}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[12px] font-semibold transition-all cursor-pointer"
+                    style={newGroup === g.name
+                      ? { background: `${g.color}15`, color: g.color, border: `2px solid ${g.color}`, boxShadow: `0 0 0 3px ${g.color}12` }
+                      : { color: 'var(--text-muted)', border: '2px solid var(--border-subtle)', background: 'transparent' }
+                    }
+                  >
+                    <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: newGroup === g.name ? `${g.color}20` : 'var(--bg-input)' }}>
+                      <Users size={12} style={{ color: newGroup === g.name ? g.color : 'var(--text-faint)' }} />
+                    </div>
+                    <div className="text-left">
+                      <div>{g.name}</div>
+                      <div className="text-[9px] font-normal" style={{ color: newGroup === g.name ? g.color : 'var(--text-faint)', opacity: 0.8 }}>
+                        {getRoleLabel(g.role)} role
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>Role:</span>
-              {(['admin', 'editor', 'viewer'] as UserRole[]).map((r) => (
-                <button key={r} onClick={() => setNewRole(r)} className="px-3 py-1 rounded-xl text-[11px] font-semibold transition-all cursor-pointer" style={newRole === r ? { background: `${getRoleColor(r)}15`, color: getRoleColor(r), border: `1px solid ${getRoleColor(r)}30` } : { color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>
-                  {getRoleLabel(r)}
-                </button>
-              ))}
+
+            {/* Role (auto-set by group, can override) */}
+            <div className="rounded-xl mb-4" style={{ padding: '14px 16px', background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}>
+              <div className="text-[10px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
+                <Shield size={11} className="inline mr-1" style={{ verticalAlign: '-1px' }} />
+                Role
+              </div>
+              <div className="flex gap-2.5 flex-wrap">
+                {(['admin', 'editor', 'viewer'] as UserRole[]).map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setNewRole(r)}
+                    className="px-4 py-2 rounded-xl text-[12px] font-semibold transition-all cursor-pointer"
+                    style={newRole === r
+                      ? { background: `${getRoleColor(r)}15`, color: getRoleColor(r), border: `2px solid ${getRoleColor(r)}`, boxShadow: `0 0 0 3px ${getRoleColor(r)}12` }
+                      : { color: 'var(--text-muted)', border: '2px solid var(--border-subtle)', background: 'transparent' }
+                    }
+                  >
+                    {getRoleLabel(r)}
+                  </button>
+                ))}
+              </div>
             </div>
             <Button variant="primary" size="md" onClick={handleAdd}>Create User</Button>
           </div>
