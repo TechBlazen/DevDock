@@ -139,7 +139,7 @@ export const UsersPage = () => {
 
           return (
             <Card key={account.id} highlight={isSelf}>
-              <div className="p-4">
+              <div style={{ padding: '18px 22px' }}>
                 {/* User header */}
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black text-white flex-shrink-0" style={{
