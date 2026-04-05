@@ -340,6 +340,7 @@ interface RepoStore {
   removeRepo: (id: string, source: 'github' | 'ado') => void;
   selectRepo: (repo: Repository | null) => void;
   updateRepoMeta: (id: string, source: 'github' | 'ado', meta: Partial<Pick<Repository, 'environments' | 'cloudPlatform' | 'owners' | 'customTags'>>) => void;
+  updateRepo: (id: string, source: 'github' | 'ado', updates: Partial<Repository>) => void;
 }
 
 export const useRepoStore = create<RepoStore>()(
@@ -390,6 +391,11 @@ export const useRepoStore = create<RepoStore>()(
         set((s) => {
           const key = source === 'github' ? 'githubRepos' : 'adoRepos';
           return { [key]: (s[key] as Repository[]).map((r) => r.id === id ? { ...r, ...meta } : r) };
+        }),
+      updateRepo: (id, source, updates) =>
+        set((s) => {
+          const key = source === 'github' ? 'githubRepos' : 'adoRepos';
+          return { [key]: (s[key] as Repository[]).map((r) => r.id === id ? { ...r, ...updates } : r) };
         }),
     }),
     {

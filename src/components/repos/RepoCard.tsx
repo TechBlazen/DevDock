@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { Star, GitBranch, Lock, Globe, ExternalLink, Code2, Download, Copy, Check, Terminal, Pencil, X, User, Users, Cloud, Tag, Plus, Trash2, FileText, Loader2 } from 'lucide-react';
+import { Star, GitBranch, Lock, Globe, ExternalLink, Code2, Download, Copy, Check, Terminal, Pencil, X, User, Users, Cloud, Tag, Plus, Trash2, FileText, Loader2, RefreshCw } from 'lucide-react';
 import { Card, Pill, Button, Tooltip } from '../ui';
-import { openInVSCode, openInVSCodeWeb } from '../../lib/repos';
-import { useRepoStore, useAuthStore, useUserAccountsStore } from '../../store';
+import { openInVSCode, openInVSCodeWeb, parseRepoUrl, fetchGitHubRepo, fetchADORepo } from '../../lib/repos';
+import { useRepoStore, useAuthStore, useUserAccountsStore, useSettingsStore } from '../../store';
 import { RepoDetailPanel } from './RepoDetailPanel';
 import type { Repository, RepoEnvironment, CloudPlatform, RepoOwner } from '../../types';
 
@@ -224,10 +224,14 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [importingDocs, setImportingDocs] = useState(false);
   const [importResult, setImportResult] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshResult, setRefreshResult] = useState<string | null>(null);
   const langColor = langColors[repo.language] ?? langColors.Unknown;
 
   const user = useAuthStore((s) => s.user);
   const removeRepo = useRepoStore((s) => s.removeRepo);
+  const updateRepo = useRepoStore((s) => s.updateRepo);
+  const settings = useSettingsStore((s) => s.settings);
   const toggleFavoriteRepo = useUserAccountsStore((s) => s.toggleFavoriteRepo);
   const isFav = useUserAccountsStore((s) => {
     if (!user) return false;
@@ -250,6 +254,39 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
     }
     setImportingDocs(false);
     setTimeout(() => setImportResult(null), 4000);
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    setRefreshResult(null);
+    try {
+      const parsed = parseRepoUrl(repo.webUrl);
+      if (!parsed) throw new Error('Invalid URL');
+
+      let fresh: Repository;
+      if (parsed.source === 'github') {
+        fresh = await fetchGitHubRepo(parsed.owner, parsed.repo, settings.github.accessToken || undefined);
+      } else {
+        fresh = await fetchADORepo(parsed.org, parsed.project, parsed.repo, settings.ado.personalAccessToken || undefined);
+      }
+
+      // Merge fresh data but preserve user-set metadata
+      updateRepo(repo.id, repo.source, {
+        description: fresh.description || repo.description,
+        language: fresh.language !== 'Unknown' ? fresh.language : repo.language,
+        defaultBranch: fresh.defaultBranch,
+        stars: fresh.stars,
+        forks: fresh.forks,
+        isPrivate: fresh.isPrivate,
+        updatedAt: fresh.updatedAt,
+        topics: fresh.topics?.length ? fresh.topics : repo.topics,
+      });
+      setRefreshResult('Updated');
+    } catch {
+      setRefreshResult('Failed — check token');
+    }
+    setRefreshing(false);
+    setTimeout(() => setRefreshResult(null), 3000);
   };
 
   return (
@@ -356,6 +393,12 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
               <Button variant="ghost" size="sm" onClick={() => setShowCloneMenu(!showCloneMenu)}><Download size={11} /> Clone</Button>
               {showCloneMenu && <CloneMenu repo={repo} onClose={() => setShowCloneMenu(false)} />}
             </div>
+            <Tooltip tip="Re-fetch repo details (description, language, last updated)">
+              <Button variant="ghost" size="sm" onClick={handleRefresh} disabled={refreshing}>
+                {refreshing ? <Loader2 size={11} className="animate-spin" /> : <RefreshCw size={11} />}
+                {refreshResult ?? 'Refresh'}
+              </Button>
+            </Tooltip>
             <Tooltip tip="Import markdown files from this repo into Docs">
               <Button variant="ghost" size="sm" onClick={handleImportDocs} disabled={importingDocs}>
                 {importingDocs ? <Loader2 size={11} className="animate-spin" /> : <FileText size={11} />}
