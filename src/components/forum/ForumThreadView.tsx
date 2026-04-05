@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Eye, Check, ThumbsUp, Award } from 'lucide-react';
+import { ArrowLeft, Eye, Check, ThumbsUp, Award, GitFork, GitBranch } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button, Card } from '../ui';
 import { ForumVoteControl } from './ForumVoteControl';
@@ -96,6 +96,16 @@ export const ForumThreadView = ({ threadId }: ForumThreadViewProps) => {
             >
               {thread.title}
             </h1>
+
+            {/* Repo badge (for repo-comment threads) */}
+            {thread.repoName && (
+              <div className="flex items-center gap-1.5 mt-2">
+                <span className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg" style={{ background: '#7c3aed12', color: '#7c3aed', border: '1px solid #7c3aed30' }}>
+                  {thread.repoSource === 'github' ? <GitFork size={11} /> : <GitBranch size={11} />}
+                  {thread.repoName}
+                </span>
+              </div>
+            )}
 
             {/* Tags */}
             <div className="flex items-center gap-1.5 mt-2 flex-wrap">

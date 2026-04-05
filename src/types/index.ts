@@ -29,6 +29,7 @@ export interface Repository {
   customTags?: string[];
   addedBy?: string;          // user ID of who registered this repo
   visible?: boolean;         // false = hidden from non-admin users (default: true)
+  forumThreadId?: string;    // linked forum thread for repo comments/discussion
 }
 
 // ─── Repo Activity Types ─────────────────────────────────────────────────────
@@ -487,7 +488,7 @@ export interface PluginSubmission {
 }
 
 // ─── Forum Types ────────────────────────────────────────────────────────────
-export type ForumCategory = 'bug' | 'question' | 'discussion' | 'how-to';
+export type ForumCategory = 'bug' | 'question' | 'discussion' | 'how-to' | 'repo-comment';
 export type ForumDepartment = 'Engineering' | 'DevOps' | 'Platform' | 'Security' | 'Data';
 export type ForumTechnology =
   | 'React' | 'TypeScript' | 'Python' | 'Go' | 'Rust' | 'Java'
@@ -527,6 +528,9 @@ export interface ForumThread {
   answers: ForumAnswer[];
   viewCount: number;
   acceptedAnswerId: string | null;
+  repoId?: string;             // linked repo ID (for repo-comment threads)
+  repoName?: string;           // linked repo display name
+  repoSource?: 'github' | 'ado';
   createdAt: string;
   updatedAt: string;
 }
