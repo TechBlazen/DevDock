@@ -16,7 +16,7 @@ export const ForumTopContributors = () => {
         </span>
       </CardHeader>
 
-      <div className="flex flex-col">
+      <div className="flex flex-col" style={{ padding: '8px 0' }}>
         {contributors.map((c, i) => {
           const initials = c.displayName
             .split(' ')
@@ -28,8 +28,9 @@ export const ForumTopContributors = () => {
           return (
             <div
               key={c.userId}
-              className="flex items-center gap-2.5 px-4 py-2"
+              className="flex items-center gap-2.5"
               style={{
+                padding: '10px 20px 10px 16px',
                 borderBottom: i < contributors.length - 1 ? '1px solid var(--border-subtle)' : undefined,
               }}
             >

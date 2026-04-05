@@ -25,8 +25,8 @@ export const ForumThreadCard = ({ thread, onClick }: ForumThreadCardProps) => {
   const bodyExcerpt = thread.body.length > 150 ? thread.body.slice(0, 150) + '...' : thread.body;
 
   return (
-    <Card onClick={onClick} className="p-4">
-      <div className="flex gap-4">
+    <Card onClick={onClick}>
+      <div className="flex gap-4" style={{ padding: '20px 24px 20px 16px' }}>
         {/* Left: vote control */}
         <ForumVoteControl
           votes={thread.votes}

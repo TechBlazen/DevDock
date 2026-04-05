@@ -85,6 +85,8 @@ export const ForumListView = () => {
         />
       </div>
 
+      <div style={{ marginBottom: 8 }} />
+
       {/* Two-column layout */}
       <div className="flex gap-6 items-start">
         {/* Thread list */}

@@ -36,7 +36,7 @@ export const ForumTopFeatureRequests = ({ onSubmitClick }: ForumTopFeatureReques
         </span>
       </CardHeader>
 
-      <div className="flex flex-col">
+      <div className="flex flex-col" style={{ padding: '8px 0' }}>
         {topRequests.map((fr, i) => {
           const score = fr.votes.reduce((sum, v) => sum + v.value, 0);
           const userVote = fr.votes.find((v) => v.userId === userId);
@@ -45,8 +45,8 @@ export const ForumTopFeatureRequests = ({ onSubmitClick }: ForumTopFeatureReques
           return (
             <div
               key={fr.id}
-              className="flex items-start gap-2.5 px-4 py-3"
-              style={{ borderBottom: i < topRequests.length - 1 ? '1px solid var(--border-subtle)' : undefined }}
+              className="flex items-start gap-2.5"
+              style={{ padding: '12px 20px 12px 16px', borderBottom: i < topRequests.length - 1 ? '1px solid var(--border-subtle)' : undefined }}
             >
               {/* Vote button */}
               <button

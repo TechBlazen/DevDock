@@ -19,17 +19,22 @@ export const ForumCategoryFilter = ({
   const allTags = [...DEPARTMENTS, ...TECHNOLOGIES].sort();
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       {/* Category pills */}
-      <div className="flex items-center gap-1 flex-wrap">
+      <div className="flex items-center gap-2 flex-wrap" style={{ paddingBottom: 12, borderBottom: '1px solid var(--border-subtle)' }}>
         <button
           onClick={() => onCategoryChange(null)}
-          className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-all duration-200 cursor-pointer"
+          className="font-semibold transition-all duration-200 cursor-pointer"
           style={{
-            background: activeCategory === null ? 'var(--accent-bg)' : 'transparent',
-            color: activeCategory === null ? 'var(--accent)' : 'var(--text-faint)',
-            border: 'none',
+            padding: '6px 16px',
+            borderRadius: 20,
+            fontSize: 12,
+            background: activeCategory === null ? 'var(--accent)' : 'var(--bg-surface)',
+            color: activeCategory === null ? '#ffffff' : 'var(--text-muted)',
+            border: `1px solid ${activeCategory === null ? 'var(--accent)' : 'var(--border-color)'}`,
           }}
+          onMouseEnter={(e) => { if (activeCategory !== null) e.currentTarget.style.borderColor = 'var(--accent)'; }}
+          onMouseLeave={(e) => { if (activeCategory !== null) e.currentTarget.style.borderColor = 'var(--border-color)'; }}
         >
           All
         </button>
@@ -39,12 +44,17 @@ export const ForumCategoryFilter = ({
             <button
               key={cat.value}
               onClick={() => onCategoryChange(cat.value)}
-              className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-all duration-200 cursor-pointer"
+              className="font-semibold transition-all duration-200 cursor-pointer"
               style={{
-                background: active ? `${cat.color}18` : 'transparent',
-                color: active ? cat.color : 'var(--text-faint)',
-                border: 'none',
+                padding: '6px 16px',
+                borderRadius: 20,
+                fontSize: 12,
+                background: active ? cat.color : 'var(--bg-surface)',
+                color: active ? '#ffffff' : 'var(--text-muted)',
+                border: `1px solid ${active ? cat.color : 'var(--border-color)'}`,
               }}
+              onMouseEnter={(e) => { if (!active) e.currentTarget.style.borderColor = cat.color; }}
+              onMouseLeave={(e) => { if (!active) e.currentTarget.style.borderColor = 'var(--border-color)'; }}
             >
               {cat.label}
             </button>
@@ -53,12 +63,17 @@ export const ForumCategoryFilter = ({
         {/* Feature Request pseudo-category */}
         <button
           onClick={() => navigate('/forum/feature-requests')}
-          className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-all duration-200 cursor-pointer"
+          className="font-semibold transition-all duration-200 cursor-pointer"
           style={{
-            background: 'transparent',
-            color: 'var(--text-faint)',
-            border: 'none',
+            padding: '6px 16px',
+            borderRadius: 20,
+            fontSize: 12,
+            background: 'var(--bg-surface)',
+            color: 'var(--text-muted)',
+            border: '1px solid var(--border-color)',
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; }}
         >
           Feature Request
         </button>
