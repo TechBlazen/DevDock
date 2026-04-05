@@ -27,7 +27,8 @@ export interface Repository {
   cloudPlatform?: CloudPlatform;
   owners?: RepoOwner[];
   customTags?: string[];
-  addedBy?: string; // user ID of who registered this repo
+  addedBy?: string;          // user ID of who registered this repo
+  visible?: boolean;         // false = hidden from non-admin users (default: true)
 }
 
 // ─── Repo Activity Types ─────────────────────────────────────────────────────

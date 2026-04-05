@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Star, GitBranch, Lock, Globe, ExternalLink, Code2, Download, Copy, Check, Terminal, Pencil, X, User, Users, Cloud, Tag, Plus, Trash2, FileText, Loader2, RefreshCw } from 'lucide-react';
+import { Star, GitBranch, Lock, Globe, ExternalLink, Code2, Download, Copy, Check, Terminal, Pencil, X, User, Users, Cloud, Tag, Plus, Trash2, FileText, Loader2, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import { Card, Pill, Button, Tooltip } from '../ui';
 import { openInVSCode, openInVSCodeWeb, parseRepoUrl, fetchGitHubRepo, fetchADORepo } from '../../lib/repos';
 import { useRepoStore, useAuthStore, useUserAccountsStore, useSettingsStore } from '../../store';
@@ -241,6 +241,10 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
 
   // Delete permission: user who added the repo OR any admin
   const canDelete = user && (repo.addedBy === user.id || user.role === 'admin');
+  // Visibility control: user who added the repo OR any admin
+  const canToggleVisibility = user && (repo.addedBy === user.id || user.role === 'admin');
+  const isVisible = repo.visible !== false;
+  const updateRepoMeta = useRepoStore((s) => s.updateRepoMeta);
 
   const handleImportDocs = async () => {
     setImportingDocs(true);
@@ -316,6 +320,9 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
             >
               <Pencil size={11} />
             </button>
+            {!isVisible && (
+              <Pill color="#9ca3af"><EyeOff size={9} className="inline mr-0.5" />hidden</Pill>
+            )}
             {repo.isPrivate ? (
               <Pill color="#f59e0b"><Lock size={9} className="inline mr-0.5" />private</Pill>
             ) : (
@@ -399,6 +406,18 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
                 {refreshResult ?? 'Refresh'}
               </Button>
             </Tooltip>
+            {canToggleVisibility && (
+              <Tooltip tip={isVisible ? 'Hide from Contributors and Readers' : 'Make visible to all users'}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => updateRepoMeta(repo.id, repo.source, { visible: !isVisible })}
+                >
+                  {isVisible ? <Eye size={11} /> : <EyeOff size={11} />}
+                  {isVisible ? 'Visible' : 'Hidden'}
+                </Button>
+              </Tooltip>
+            )}
             <Tooltip tip="Import markdown files from this repo into Docs">
               <Button variant="ghost" size="sm" onClick={handleImportDocs} disabled={importingDocs}>
                 {importingDocs ? <Loader2 size={11} className="animate-spin" /> : <FileText size={11} />}

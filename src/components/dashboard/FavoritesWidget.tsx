@@ -18,8 +18,9 @@ export const FavoritesWidget = () => {
 
   const userAccount = accounts.find((a) => a.id === user?.id);
   const favIds = userAccount?.favoriteRepos ?? [];
+  const isAdmin = user?.role === 'admin';
   const allRepos = [...githubRepos, ...adoRepos];
-  const favorites = allRepos.filter((r) => favIds.includes(r.id));
+  const favorites = allRepos.filter((r) => favIds.includes(r.id) && (isAdmin || r.visible !== false));
 
   if (favorites.length === 0) {
     return (

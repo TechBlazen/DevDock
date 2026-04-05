@@ -18,9 +18,13 @@ interface RepoListProps {
 
 export const RepoList = ({ source, showFilter = true }: RepoListProps) => {
   const { githubRepos, adoRepos } = useRepoStore();
-  const repos = source === 'github' ? githubRepos : adoRepos;
+  const allRepos = source === 'github' ? githubRepos : adoRepos;
   const user = useAuthStore((s) => s.user);
   const isFavoriteRepo = useUserAccountsStore((s) => s.isFavoriteRepo);
+  const isAdmin = user?.role === 'admin';
+
+  // Filter out hidden repos for non-admin users
+  const repos = isAdmin ? allRepos : allRepos.filter((r) => r.visible !== false);
 
   const [query, setQuery] = useState('');
   const [langFilter, setLangFilter] = useState('');

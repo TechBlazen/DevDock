@@ -357,7 +357,7 @@ interface RepoStore {
   addRepo: (repo: Repository) => void;
   removeRepo: (id: string, source: 'github' | 'ado') => void;
   selectRepo: (repo: Repository | null) => void;
-  updateRepoMeta: (id: string, source: 'github' | 'ado', meta: Partial<Pick<Repository, 'environments' | 'cloudPlatform' | 'owners' | 'customTags'>>) => void;
+  updateRepoMeta: (id: string, source: 'github' | 'ado', meta: Partial<Pick<Repository, 'environments' | 'cloudPlatform' | 'owners' | 'customTags' | 'visible'>>) => void;
   updateRepo: (id: string, source: 'github' | 'ado', updates: Partial<Repository>) => void;
 }
 
