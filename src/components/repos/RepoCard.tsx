@@ -4,6 +4,7 @@ import { Card, Pill, Button, Tooltip } from '../ui';
 import { openInVSCode, openInVSCodeWeb, parseRepoUrl, fetchGitHubRepo, fetchADORepo } from '../../lib/repos';
 import { useRepoStore, useAuthStore, useUserAccountsStore, useSettingsStore } from '../../store';
 import { RepoDetailPanel } from './RepoDetailPanel';
+import { RepoCommentSection } from './RepoCommentSection';
 import type { Repository, RepoEnvironment, CloudPlatform, RepoOwner } from '../../types';
 
 const langColors: Record<string, string> = {
@@ -461,6 +462,9 @@ export const RepoCard = ({ repo }: RepoCardProps) => {
 
         {/* Detail panel: commits, merges, builds */}
         {expanded && !editing && <RepoDetailPanel repo={repo} />}
+
+        {/* Comments — visible in expanded view */}
+        {expanded && !editing && <RepoCommentSection repo={repo} />}
       </div>
     </Card>
   );
