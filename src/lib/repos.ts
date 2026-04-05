@@ -293,6 +293,12 @@ export async function listGitHubMarkdownFiles(
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
+  // If scanning from root, use the Git Trees API for full recursive listing
+  if (!path || path === '.' || path === '/') {
+    return listGitHubMarkdownFilesRecursive(owner, repo, headers);
+  }
+
+  // For a specific subdirectory, use Contents API (single level)
   const { data } = await axios.get(
     `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
     { headers }
@@ -306,6 +312,34 @@ export async function listGitHubMarkdownFiles(
     .map((f: Record<string, unknown>) => ({
       path: String(f.path),
       name: String(f.name),
+      sha: String(f.sha),
+    }));
+}
+
+// Recursively list all markdown files in a GitHub repo using the Git Trees API
+async function listGitHubMarkdownFilesRecursive(
+  owner: string, repo: string, headers: Record<string, string>
+): Promise<{ path: string; name: string; sha: string }[]> {
+  // Get default branch SHA first
+  const { data: repoData } = await axios.get(
+    `https://api.github.com/repos/${owner}/${repo}`,
+    { headers }
+  );
+  const branch = String(repoData.default_branch ?? 'main');
+
+  // Fetch full tree recursively
+  const { data: treeData } = await axios.get(
+    `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`,
+    { headers }
+  );
+
+  return (treeData.tree ?? [])
+    .filter((f: Record<string, unknown>) =>
+      String(f.type) === 'blob' && String(f.path).endsWith('.md')
+    )
+    .map((f: Record<string, unknown>) => ({
+      path: String(f.path),
+      name: String(f.path).split('/').pop() ?? '',
       sha: String(f.sha),
     }));
 }
@@ -357,7 +391,9 @@ export async function listADOMarkdownFiles(
   if (pat) headers.Authorization = `Basic ${btoa(':' + pat)}`;
 
   const scopePath = path.startsWith('/') ? path : `/${path}`;
-  const url = `https://dev.azure.com/${org}/${project}/_apis/git/repositories/${repo}/items?scopePath=${encodeURIComponent(scopePath)}&recursionLevel=OneLevel&api-version=7.1`;
+  // Use Full recursion to discover markdown files in all subdirectories
+  const recursion = (!path || path === '/' || path === '.') ? 'Full' : 'OneLevel';
+  const url = `https://dev.azure.com/${org}/${project}/_apis/git/repositories/${repo}/items?scopePath=${encodeURIComponent(scopePath)}&recursionLevel=${recursion}&api-version=7.1`;
   const { data } = await axios.get(url, { headers });
 
   return (data.value ?? [])
