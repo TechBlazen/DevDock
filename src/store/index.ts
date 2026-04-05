@@ -305,6 +305,7 @@ const defaultServers: MCPServer[] = [
   { id: 'mem', name: 'memory', description: 'Persistent memory store', port: 3004, status: 'idle', callCount: 7, transport: 'stdio', capabilities: ['remember', 'recall'] },
   { id: 'pg', name: 'postgres', description: 'PostgreSQL query tool', port: 3005, status: 'stopped', callCount: 0, transport: 'stdio', command: 'npx', capabilities: ['query', 'schema'] },
   { id: 'seq', name: 'sequential-thinking', description: 'Chain-of-thought reasoning', port: 3006, status: 'running', callCount: 211, transport: 'stdio', capabilities: ['think', 'plan'] },
+  { id: 'playwright', name: 'playwright', description: 'Browser automation and testing via Playwright', port: 3007, status: 'stopped', callCount: 0, transport: 'stdio', command: 'npx', capabilities: ['navigate', 'screenshot', 'click', 'fill', 'evaluate', 'pdf'] },
 ];
 
 export const useMCPStore = create<MCPStore>()((set) => ({
@@ -852,6 +853,9 @@ npx -y @modelcontextprotocol/server-memory
 
 # Sequential Thinking
 npx -y @modelcontextprotocol/server-sequential-thinking
+
+# Playwright (Browser Automation)
+npx -y @anthropic-ai/mcp-server-playwright
 \`\`\`
 
 ## Building a Custom Server
