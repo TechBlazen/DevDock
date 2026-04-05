@@ -332,13 +332,15 @@ export async function listADOMarkdownFiles(
 export async function fetchADOFile(
   org: string, project: string, repo: string, path: string, pat?: string
 ): Promise<string> {
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = {
+    Accept: 'text/plain',
+  };
   if (pat) headers.Authorization = `Basic ${btoa(':' + pat)}`;
 
   const scopePath = path.startsWith('/') ? path : `/${path}`;
-  const url = `https://dev.azure.com/${org}/${project}/_apis/git/repositories/${repo}/items?path=${encodeURIComponent(scopePath)}&api-version=7.1`;
-  const { data } = await axios.get(url, { headers, responseType: 'text' });
-  return typeof data === 'string' ? data : JSON.stringify(data);
+  const url = `https://dev.azure.com/${org}/${project}/_apis/git/repositories/${repo}/items?path=${encodeURIComponent(scopePath)}&includeContent=true&$format=text&api-version=7.1`;
+  const { data } = await axios.get(url, { headers, responseType: 'text', transformResponse: [(d) => d] });
+  return String(data);
 }
 
 export async function pushADOFile(
