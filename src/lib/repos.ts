@@ -84,19 +84,63 @@ export async function fetchADORepos(org: string, pat: string, projects: string[]
 
 function mapADORepo(r: Record<string, unknown>, org: string): Repository {
   const project = (r.project as Record<string, unknown>)?.name ?? '';
+  const size = Number(r.size ?? 0);
+  const isFork = Boolean(r.isFork);
   return {
     id: String(r.id),
     name: String(r.name),
     fullName: `${org}/${project}/${r.name}`,
-    description: String((r as Record<string, unknown>).description ?? ''),
+    description: String(r.description ?? ''),
     source: 'ado',
     language: 'Unknown',
     defaultBranch: String(r.defaultBranch ?? 'main').replace('refs/heads/', ''),
+    stars: 0,
+    forks: isFork ? 1 : 0,
     isPrivate: true,
-    updatedAt: new Date().toLocaleDateString(),
+    updatedAt: r.lastUpdatedDate
+      ? new Date(String(r.lastUpdatedDate)).toLocaleDateString()
+      : new Date().toLocaleDateString(),
     cloneUrl: String(r.remoteUrl ?? ''),
     webUrl: String(r.webUrl ?? ''),
+    topics: size > 0 ? [`${Math.round(size / 1024)} KB`] : [],
   };
+}
+
+// Detect primary language from file extensions in an ADO repo
+async function detectADOLanguage(org: string, project: string, repo: string, branch: string, pat?: string): Promise<string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (pat) headers.Authorization = `Basic ${btoa(':' + pat)}`;
+
+  try {
+    const url = `https://dev.azure.com/${org}/${project}/_apis/git/repositories/${repo}/items?recursionLevel=OneLevel&versionDescriptor.version=${encodeURIComponent(branch)}&api-version=7.1`;
+    const { data } = await axios.get(url, { headers });
+
+    const extMap: Record<string, string> = {
+      '.ts': 'TypeScript', '.tsx': 'TypeScript', '.js': 'JavaScript', '.jsx': 'JavaScript',
+      '.py': 'Python', '.go': 'Go', '.rs': 'Rust', '.java': 'Java', '.cs': 'C#',
+      '.rb': 'Ruby', '.php': 'PHP', '.swift': 'Swift', '.kt': 'Kotlin',
+      '.tf': 'HCL', '.hcl': 'HCL', '.yaml': 'YAML', '.yml': 'YAML',
+      '.sh': 'Shell', '.bash': 'Shell', '.ps1': 'PowerShell',
+      '.html': 'HTML', '.css': 'CSS', '.scss': 'SCSS',
+      '.sql': 'SQL', '.md': 'Markdown', '.json': 'JSON',
+      '.cpp': 'C++', '.c': 'C', '.h': 'C',
+    };
+
+    const counts: Record<string, number> = {};
+    for (const item of (data.value ?? [])) {
+      if (item.isFolder) continue;
+      const path = String(item.path ?? '');
+      const ext = path.slice(path.lastIndexOf('.')).toLowerCase();
+      const lang = extMap[ext];
+      if (lang) counts[lang] = (counts[lang] ?? 0) + 1;
+    }
+
+    // Return the most common language
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    return sorted[0]?.[0] ?? 'Unknown';
+  } catch {
+    return 'Unknown';
+  }
 }
 
 // ─── URL Parsing ─────────────────────────────────────────────────────────────
@@ -160,7 +204,35 @@ export async function fetchADORepo(org: string, project: string, repo: string, p
 
   const url = `https://dev.azure.com/${org}/${project}/_apis/git/repositories/${repo}?api-version=7.1`;
   const { data } = await axios.get(url, { headers });
-  return mapADORepo(data, org);
+  const mapped = mapADORepo(data, org);
+
+  // Enrich with language detection and last commit date (non-blocking)
+  if (pat) {
+    const branch = mapped.defaultBranch;
+    const [language, lastCommitDate] = await Promise.all([
+      detectADOLanguage(org, project, repo, branch, pat),
+      fetchADOLastCommitDate(org, project, repo, pat),
+    ]);
+    if (language !== 'Unknown') mapped.language = language;
+    if (lastCommitDate) mapped.updatedAt = lastCommitDate;
+  }
+
+  return mapped;
+}
+
+async function fetchADOLastCommitDate(org: string, project: string, repo: string, pat?: string): Promise<string | null> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (pat) headers.Authorization = `Basic ${btoa(':' + pat)}`;
+
+  try {
+    const url = `https://dev.azure.com/${org}/${project}/_apis/git/repositories/${repo}/commits?$top=1&api-version=7.1`;
+    const { data } = await axios.get(url, { headers });
+    const commit = data.value?.[0];
+    if (commit?.author?.date) {
+      return new Date(String(commit.author.date)).toLocaleDateString();
+    }
+  } catch { /* non-critical */ }
+  return null;
 }
 
 // ─── GitHub Markdown Import/Export ────────────────────────────────────────────
