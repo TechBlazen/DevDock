@@ -19,16 +19,18 @@ export const MetricsBar = () => {
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mt-2">
       {metrics.map(({ label, value, unit, color, icon: Icon }) => (
-        <Card key={label} className="px-5 py-4">
-          <div className="flex items-center justify-between mb-1.5">
-            <Icon size={14} style={{ color }} />
+        <Card key={label}>
+          <div style={{ padding: '18px 22px' }}>
+            <div className="flex items-center justify-between mb-2">
+              <Icon size={14} style={{ color }} />
+            </div>
+            <div className="font-black text-xl leading-none" style={{ color }}>
+              {value}<span className="text-xs font-normal ml-0.5" style={{ color: 'var(--text-muted)' }}>{unit}</span>
+            </div>
+            <div className="text-[10px] uppercase tracking-wider mt-2" style={{ color: 'var(--text-muted)' }}>{label}</div>
           </div>
-          <div className="font-black text-xl leading-none" style={{ color }}>
-            {value}<span className="text-xs font-normal ml-0.5" style={{ color: 'var(--text-muted)' }}>{unit}</span>
-          </div>
-          <div className="text-[10px] uppercase tracking-wider mt-1.5" style={{ color: 'var(--text-muted)' }}>{label}</div>
         </Card>
       ))}
     </div>
@@ -221,7 +223,7 @@ export const TelemetryPage = () => {
   const [showGuide, setShowGuide] = useState(false);
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 space-y-8">
       <div className="flex items-start justify-between">
         <SectionTitle sub="OpenTelemetry traces, metrics, and spans from all DevDock services">
           Observability
