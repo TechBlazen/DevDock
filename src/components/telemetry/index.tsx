@@ -54,7 +54,7 @@ const TraceRow = ({ span }: { span: ReturnType<typeof useTelemetryStore.getState
       onMouseEnter={(e) => e.currentTarget.style.border = '1px solid var(--border-color)'}
       onMouseLeave={(e) => e.currentTarget.style.border = '1px solid var(--border-subtle)'}
     >
-      <div className="flex items-center gap-3 px-4 py-3">
+      <div style={{ padding: '12px 20px' }} className="flex items-center gap-4">
         <Badge variant={span.status as 'ok' | 'error'} />
         <span className="text-xs w-20 truncate" style={{ color: 'var(--text-muted)' }}>{span.traceId.slice(0, 10)}</span>
         <span className="text-xs flex-1 truncate" style={{ color: 'var(--text-secondary)' }}>
@@ -62,14 +62,14 @@ const TraceRow = ({ span }: { span: ReturnType<typeof useTelemetryStore.getState
           <span style={{ color: 'var(--text-faint)' }} className="mx-1">›</span>
           {span.operation}
         </span>
-        <span className="text-xs w-16 text-right" style={{ color: 'var(--text-secondary)' }}>
+        <span className="text-xs w-20 text-right flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>
           {span.duration >= 1000 ? `${(span.duration / 1000).toFixed(1)}s` : `${span.duration}ms`}
         </span>
-        <span className="text-[10px] w-16 text-right" style={{ color: 'var(--text-muted)' }}>{span.timestamp}</span>
+        <span className="text-[11px] w-20 text-right flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{span.timestamp}</span>
       </div>
 
       {expanded && span.attributes && (
-        <div className="px-4 pb-3 pt-2 space-y-1" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+        <div style={{ padding: '10px 20px 14px', borderTop: '1px solid var(--border-subtle)' }} className="space-y-1">
           {Object.entries(span.attributes).map(([k, v]) => (
             <div key={k} className="flex items-center gap-2 text-[11px]">
               <span style={{ color: 'var(--text-muted)' }}>{k}:</span>
@@ -103,7 +103,7 @@ export const TraceList = ({ compact = false }: { compact?: boolean }) => {
   return (
     <div className="space-y-4">
       {!compact && (
-        <div className="flex gap-2.5 flex-wrap items-center px-1">
+        <div className="flex gap-2.5 flex-wrap items-center" style={{ padding: '0 4px' }}>
           {(['all', 'ok', 'error'] as const).map((f) => (
             <button
               key={f}
@@ -233,8 +233,8 @@ export const TelemetryPage = () => {
         </Button>
       </div>
       <MetricsBar />
-      <div>
-        <h2 className="text-xs font-bold uppercase tracking-widest mb-4 px-1" style={{ color: 'var(--text-secondary)' }}>Recent Traces</h2>
+      <div style={{ marginTop: 32 }}>
+        <h2 className="text-xs font-bold uppercase tracking-widest px-1" style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>Recent Traces</h2>
         <TraceList />
       </div>
       {showGuide && <OTelGuideModal onClose={() => setShowGuide(false)} />}
