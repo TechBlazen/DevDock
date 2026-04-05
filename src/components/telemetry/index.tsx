@@ -224,7 +224,7 @@ export const TelemetryPage = () => {
 
   return (
     <div className="p-8 space-y-8">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between mb-4">
         <SectionTitle sub="OpenTelemetry traces, metrics, and spans from all DevDock services">
           Observability
         </SectionTitle>
