@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import {
   Key, Activity, GitFork, GitBranch, Code2, Save, Check, Lock, AlertTriangle, Globe,
   ChevronDown, ChevronRight, LayoutDashboard, Shield, Plus, Trash2, Users, Palette,
-  Languages as LanguagesIcon,
+  Languages as LanguagesIcon, Wrench,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { useSettingsStore } from '../store';
@@ -411,6 +411,9 @@ const ActiveDirectorySettings = ({
 // ─── Import AppSettings type for AD component ────────────────────────────────
 import type { AppSettings, AppLanguage } from '../types';
 import { SUPPORTED_LANGUAGES } from '../i18n';
+import { TOOLS as DEV_TOOLS_LIST } from './DevToolsPage';
+
+const DEV_TOOLS_CATEGORIES = [...new Set(DEV_TOOLS_LIST.map((t) => t.category))];
 
 export const SettingsPage = () => {
   const {
@@ -827,6 +830,62 @@ export const SettingsPage = () => {
           config={settings.activeDirectory}
           onUpdate={updateActiveDirectoryConfig}
         />
+      </CollapsibleSection>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+           SECTION 6.5 — Dev Tools Visibility
+           ═══════════════════════════════════════════════════════════════════ */}
+      <CollapsibleSection
+        icon={<Wrench size={16} className="text-[#8b5cf6]" />}
+        title="Dev Tools Visibility"
+        description="Control which developer tools are available to Contributors and Readers. Disabled tools are hidden from non-admin users."
+      >
+        <Card>
+          <CardHeader>
+            <Wrench size={14} className="text-[#8b5cf6]" />
+            <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Tool Access</span>
+            <div className="flex-1" />
+            <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>
+              {DEV_TOOLS_LIST.length - (settings.disabledTools?.length ?? 0)} of {DEV_TOOLS_LIST.length} enabled
+            </span>
+          </CardHeader>
+          <div className="p-5 space-y-2">
+            {DEV_TOOLS_CATEGORIES.map((cat) => {
+              const catTools = DEV_TOOLS_LIST.filter((t) => t.category === cat);
+              return (
+                <div key={cat}>
+                  <div className="text-[10px] font-bold uppercase tracking-wider mb-2 mt-3" style={{ color: 'var(--text-muted)' }}>{cat}</div>
+                  {catTools.map((tool) => {
+                    const isEnabled = !(settings.disabledTools ?? []).includes(tool.id);
+                    return (
+                      <div key={tool.id} className="flex items-center gap-3 px-4 py-2.5 rounded-lg mb-1" style={{ background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${tool.color}12`, border: `1px solid ${tool.color}25` }}>
+                          <Wrench size={14} style={{ color: tool.color }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[12px] font-semibold" style={{ color: 'var(--text-primary)' }}>{tool.name}</div>
+                          <div className="text-[10px] truncate" style={{ color: 'var(--text-faint)' }}>{tool.description}</div>
+                        </div>
+                        <Toggle
+                          checked={isEnabled}
+                          onChange={(enabled) => {
+                            const current = settings.disabledTools ?? [];
+                            const next = enabled
+                              ? current.filter((id) => id !== tool.id)
+                              : [...current, tool.id];
+                            useSettingsStore.setState({ settings: { ...settings, disabledTools: next } });
+                          }}
+                          label={isEnabled ? 'Visible' : 'Hidden'}
+                          color={tool.color}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        </Card>
       </CollapsibleSection>
 
       <div style={{ borderTop: '1px solid var(--border-color)', marginTop: 4, marginBottom: 30 }} />

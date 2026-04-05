@@ -2,8 +2,10 @@ import { useNavigate } from 'react-router-dom';
 import {
   Braces, Send, Wrench, ArrowRight, Globe, Wifi, FileSearch,
   ShieldCheck, LayoutList, Cable, Waypoints, FileDiff, Binary,
-  Regex, Table, GitMerge, Container, type LucideIcon,
+  Regex, Table, GitMerge, Container, Database, Play, Bot,
+  type LucideIcon,
 } from 'lucide-react';
+import { useSettingsStore, useAuthStore } from '../store';
 import { JsonValidator } from '../components/devtools/JsonValidator';
 import { ApiTester } from '../components/devtools/ApiTester';
 import { DnsLookup } from '../components/devtools/DnsLookup';
@@ -32,7 +34,7 @@ interface ToolDef {
   category: string;
 }
 
-const TOOLS: ToolDef[] = [
+export const TOOLS: ToolDef[] = [
   // ── Development ──
   { id: 'json', name: 'JSON Validator', description: 'Validate, format, and minify JSON documents with syntax error detection and pretty-print.', path: '/devtools/json', icon: Braces, color: '#f59e0b', tags: ['json', 'validation', 'formatting'], category: 'Development' },
   { id: 'diff', name: 'Text Diff Checker', description: 'Compare two text inputs side-by-side and visualize additions, deletions, and unchanged lines.', path: '/devtools/diff', icon: FileDiff, color: '#8b5cf6', tags: ['diff', 'compare', 'text'], category: 'Development' },
@@ -52,9 +54,13 @@ const TOOLS: ToolDef[] = [
   // ── Security ──
   { id: 'ssl', name: 'SSL Checker', description: 'Check SSL connectivity and TLS status for any domain with connection timing analysis.', path: '/devtools/ssl', icon: ShieldCheck, color: '#16a34a', tags: ['ssl', 'tls', 'certificate', 'security'], category: 'Security' },
   { id: 'headers', name: 'HTTP Headers Analyzer', description: 'Analyze HTTP response headers with security header scoring — CSP, HSTS, X-Frame-Options, and more.', path: '/devtools/headers', icon: LayoutList, color: '#dc2626', tags: ['http', 'headers', 'security'], category: 'Security' },
+  // ── Advanced ──
+  { id: 'sql', name: 'SQL Tool', description: 'Connect to PostgreSQL, MySQL, SQL Server, and SQLite databases. Browse schemas, execute queries, and manage saved queries.', path: '/devtools/sql', icon: Database, color: '#336791', tags: ['sql', 'database', 'query'], category: 'Advanced' },
+  { id: 'playground', name: 'Code Playground', description: 'Write and execute code in JavaScript, TypeScript, Python, Ruby, Go, and Bash with instant output.', path: '/devtools/playground', icon: Play, color: '#22c55e', tags: ['code', 'execute', 'playground'], category: 'Advanced' },
+  { id: 'agent-builder', name: 'Agent & Skill Builder', description: 'Create AI agent definitions and skill files with templates, mock chat preview, and export to repos.', path: '/devtools/agent-builder', icon: Bot, color: '#7c3aed', tags: ['agent', 'skill', 'ai', 'builder'], category: 'Advanced' },
 ];
 
-const CATEGORIES = ['Development', 'API Explorers', 'Network', 'Security'];
+const CATEGORIES = ['Development', 'API Explorers', 'Network', 'Security', 'Advanced'];
 
 // ─── Page wrappers ───────────────────────────────────────────────────────────
 const glassStyle = {
@@ -100,6 +106,12 @@ export const DockerGeneratorPage = () => <ToolPage title="Docker Command Generat
 // ─── Main DevTools page ──────────────────────────────────────────────────────
 export const DevToolsPage = () => {
   const navigate = useNavigate();
+  const disabledTools = useSettingsStore((s) => s.settings.disabledTools ?? []);
+  const isAdmin = useAuthStore((s) => s.user?.role) === 'admin';
+
+  // Admins see all tools (disabled ones marked); non-admins see only enabled tools
+  const visibleTools = isAdmin ? TOOLS : TOOLS.filter((t) => !disabledTools.includes(t.id));
+  const enabledCount = TOOLS.filter((t) => !disabledTools.includes(t.id)).length;
 
   return (
     <div className="p-6">
@@ -113,21 +125,23 @@ export const DevToolsPage = () => {
           border: '1px solid rgba(139,92,246,0.2)',
         }}>
           <Wrench size={14} style={{ color: '#8b5cf6' }} />
-          <span className="text-[12px] font-semibold" style={{ color: '#8b5cf6' }}>{TOOLS.length} tools available</span>
+          <span className="text-[12px] font-semibold" style={{ color: '#8b5cf6' }}>{enabledCount} tools available</span>
         </div>
       </div>
 
       {CATEGORIES.map((cat) => {
-        const catTools = TOOLS.filter((t) => t.category === cat);
+        const catTools = visibleTools.filter((t) => t.category === cat);
+        if (catTools.length === 0) return null;
         return (
           <div key={cat} className="mb-8">
             <h2 className="text-[13px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>{cat}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {catTools.map((tool) => {
                 const Icon = tool.icon;
+                const isDisabled = disabledTools.includes(tool.id);
                 return (
-                  <Card key={tool.id} onClick={() => navigate(tool.path)}>
-                    <div className="p-5 flex flex-col gap-3 cursor-pointer group h-full">
+                  <Card key={tool.id} onClick={() => !isDisabled && navigate(tool.path)}>
+                    <div className="p-5 flex flex-col gap-3 cursor-pointer group h-full" style={{ opacity: isDisabled ? 0.45 : 1 }}>
                       <div className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110" style={{
                         background: `${tool.color}12`,
                         border: `1px solid ${tool.color}25`,

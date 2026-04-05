@@ -307,6 +307,7 @@ export interface AppSettings {
   theme: 'dark' | 'light';
   dashboardWidgets: WidgetId[];
   navigation: NavigationConfig;
+  disabledTools: string[];      // tool IDs hidden from non-admin users
 }
 
 // ─── Scaffold Types ──────────���─────────────────────────────────────���─────────

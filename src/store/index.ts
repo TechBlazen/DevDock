@@ -181,6 +181,7 @@ const defaultSettings: AppSettings = {
   theme: 'dark',
   dashboardWidgets: ['repos_github', 'repos_ado', 'mcp_status', 'telemetry', 'quick_actions', 'activity_feed', 'favorite_repos'],
   navigation: defaultNavigation,
+  disabledTools: [],
 };
 
 export const useSettingsStore = create<SettingsStore>()(
