@@ -13,6 +13,7 @@ import { ForumPage } from './pages/ForumPage'
 import { AnalyticsPage } from './pages/AnalyticsPage'
 import { DirectoryPage } from './pages/DirectoryPage'
 import { SqlToolPage } from './pages/SqlToolPage'
+import { CodePlaygroundPage } from './pages/CodePlaygroundPage'
 import {
   DashboardPage,
   GitHubPage,
@@ -164,6 +165,7 @@ function PluginRoutes({ editMode }: { editMode: boolean }) {
       <Route path="/devtools/git-gen"    element={<GitGeneratorPage />} />
       <Route path="/devtools/docker-gen" element={<DockerGeneratorPage />} />
       <Route path="/devtools/sql"        element={<SqlToolPage />} />
+      <Route path="/devtools/playground" element={<CodePlaygroundPage />} />
       <Route path="/docs"               element={<DocsPage />} />
       <Route path="/docs/google-drive"  element={<GoogleDrivePage />} />
       <Route path="/network"   element={<NetworkPage />} />
