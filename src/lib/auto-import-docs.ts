@@ -36,13 +36,15 @@ export async function autoImportRepoMarkdown(repo: Repository): Promise<number> 
 
         try {
           const fetched = await fetchGitHubFile(owner, repoName, file.path, token || undefined);
-          const title = file.name.replace(/\.md$/i, '');
+          // Preserve folder context in title for nested docs (e.g., "docs/setup" instead of just "setup")
+          const title = file.path.replace(/\.md$/i, '');
+          const folder = file.path.includes('/') ? file.path.split('/').slice(0, -1).join('/') : undefined;
 
           addDoc({
             title,
             content: fetched.content,
             sourceUrl,
-            tags: ['github', 'auto-imported', repo.name],
+            tags: ['github', 'auto-imported', repo.name, ...(folder ? [folder] : [])],
           });
           imported++;
         } catch {
@@ -67,13 +69,15 @@ export async function autoImportRepoMarkdown(repo: Repository): Promise<number> 
 
         try {
           const content = await fetchADOFile(org, project, repoName, file.path, pat || undefined);
-          const title = file.name.replace(/\.md$/i, '');
+          // Preserve folder context in title for nested docs
+          const title = file.path.replace(/^\//, '').replace(/\.md$/i, '');
+          const folder = file.path.includes('/') ? file.path.replace(/^\//, '').split('/').slice(0, -1).join('/') : undefined;
 
           addDoc({
             title,
             content,
             sourceUrl,
-            tags: ['ado', 'auto-imported', repo.name],
+            tags: ['ado', 'auto-imported', repo.name, ...(folder ? [folder] : [])],
           });
           imported++;
         } catch {
