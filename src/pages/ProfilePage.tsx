@@ -4,6 +4,7 @@ import { useUserPreferences } from '../hooks/useUserPreferences';
 import { useTheme } from '../hooks/useTheme';
 import { formatDistanceToNow } from 'date-fns';
 import { BookmarkWidget } from '../components/profile/BookmarkWidget';
+import { PasswordVault } from '../components/profile/PasswordVault';
 import { SUPPORTED_LANGUAGES } from '../i18n';
 import type { UserPreferences } from '../types';
 
@@ -208,6 +209,10 @@ export const ProfilePage = () => {
       </SectionCard>
 
       {/* Bookmarks */}
+      <SectionCard title="Password Vault">
+        <PasswordVault />
+      </SectionCard>
+
       <SectionCard title="Bookmarks">
         <BookmarkWidget />
       </SectionCard>
