@@ -7,7 +7,7 @@ export {
   DnsLookupPage, PingToolPage, WhoisLookupPage, SslCheckerPage,
   HttpHeadersPage, WebSocketDebuggerPage, GraphqlExplorerPage,
   TextDiffPage, Base64ToolPage, RegexTesterPage, CsvViewerPage,
-  GitGeneratorPage, DockerGeneratorPage, CertDecoderPage,
+  GitGeneratorPage, DockerGeneratorPage, CertDecoderPage, JwtDecoderPage,
 } from './DevToolsPage';
 export { DocsPage } from './DocsPage';
 export { GoogleDrivePage } from './GoogleDrivePage';
