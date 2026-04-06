@@ -3,14 +3,15 @@ import Editor from '@monaco-editor/react';
 import {
   Bot, Zap, Plus, Trash2, Copy, Download, Upload, Save,
   FileText, User, ChevronRight, Send, Eye, Code2,
-  GitFork, GitBranch, X, Loader2,
+  GitFork, GitBranch, X, Loader2, PlayCircle, Clock, AlertCircle,
 } from 'lucide-react';
-import { useAuthStore, useDocsStore } from '../store';
+import { useAuthStore, useDocsStore, useSettingsStore } from '../store';
 import { useBuilderStore } from '../store/builder-store';
 import { BUILDER_TEMPLATES } from '../lib/builder-templates';
+import { sendChatMessage } from '../lib/ai';
 import { ForumMarkdownBody } from '../components/forum/ForumMarkdownBody';
 import { SectionTitle, Card, CardHeader, Button, Pill } from '../components/ui';
-import type { BuilderItemType, MockMessage } from '../types';
+import type { BuilderItemType, MockMessage, ChatMessage } from '../types';
 
 export const AgentBuilderPage = () => {
   const user = useAuthStore((s) => s.user);
@@ -31,10 +32,21 @@ export const AgentBuilderPage = () => {
 
   const activeItem = items.find((i) => i.id === activeItemId) ?? null;
 
+  const aiConfig = useSettingsStore((s) => s.settings.ai);
+
   const [showTemplates, setShowTemplates] = useState(false);
   const [filter, setFilter] = useState<BuilderItemType | 'all'>('all');
   const [mockInput, setMockInput] = useState('');
-  const [previewTab, setPreviewTab] = useState<'mock' | 'preview'>('mock');
+  const [previewTab, setPreviewTab] = useState<'mock' | 'preview' | 'live'>('mock');
+
+  // Live test state
+  const [liveMessages, setLiveMessages] = useState<ChatMessage[]>([]);
+  const [liveInput, setLiveInput] = useState('');
+  const [liveStreaming, setLiveStreaming] = useState(false);
+  const [liveStreamText, setLiveStreamText] = useState('');
+  const [liveDuration, setLiveDuration] = useState<number | null>(null);
+  const [liveError, setLiveError] = useState<string | null>(null);
+  const hasApiKey = aiConfig.apiKeys[aiConfig.provider]?.trim() || aiConfig.provider === 'local';
 
   const filtered = filter === 'all' ? visibleItems : visibleItems.filter((i) => i.type === filter);
 
@@ -80,6 +92,71 @@ export const AgentBuilderPage = () => {
     if (!activeItem) return;
     const updated = activeItem.mockConversation.filter((_, i) => i !== index);
     updateItem(activeItem.id, { mockConversation: updated });
+  };
+
+  // Extract system prompt from agent/skill definition frontmatter + body
+  const parseSystemPrompt = (content: string): string => {
+    // Remove YAML frontmatter
+    const bodyMatch = content.match(/^---[\s\S]*?---\s*([\s\S]*)$/);
+    const body = bodyMatch ? bodyMatch[1].trim() : content;
+    // Extract sections that form the system prompt
+    return body || content;
+  };
+
+  const handleLiveTest = async () => {
+    if (!activeItem || !liveInput.trim() || liveStreaming) return;
+
+    const userMsg: ChatMessage = {
+      id: `live-${Date.now()}`,
+      role: 'user',
+      content: liveInput.trim(),
+      timestamp: new Date(),
+    };
+
+    const updatedMessages = [...liveMessages, userMsg];
+    setLiveMessages(updatedMessages);
+    setLiveInput('');
+    setLiveStreaming(true);
+    setLiveStreamText('');
+    setLiveError(null);
+
+    const systemPrompt = parseSystemPrompt(activeItem.content);
+    const start = Date.now();
+
+    try {
+      await sendChatMessage(
+        updatedMessages,
+        aiConfig,
+        {
+          onToken: (token) => setLiveStreamText((prev) => prev + token),
+          onDone: (fullText) => {
+            setLiveDuration(Date.now() - start);
+            setLiveMessages((prev) => [
+              ...prev,
+              { id: `live-resp-${Date.now()}`, role: 'assistant', content: fullText, timestamp: new Date(), provider: aiConfig.provider },
+            ]);
+            setLiveStreamText('');
+            setLiveStreaming(false);
+          },
+          onError: (error) => {
+            setLiveError(error);
+            setLiveStreaming(false);
+            setLiveStreamText('');
+          },
+        },
+        systemPrompt
+      );
+    } catch (e) {
+      setLiveError(e instanceof Error ? e.message : 'Failed to send message');
+      setLiveStreaming(false);
+    }
+  };
+
+  const handleClearLiveChat = () => {
+    setLiveMessages([]);
+    setLiveStreamText('');
+    setLiveDuration(null);
+    setLiveError(null);
   };
 
   const handleExportToFile = () => {
@@ -305,18 +382,22 @@ export const AgentBuilderPage = () => {
                   <Card>
                     <CardHeader className="justify-between">
                       <div className="flex gap-1">
-                        {(['mock', 'preview'] as const).map((t) => (
+                        {([
+                          { key: 'live' as const, icon: PlayCircle, label: 'Live Test', color: '#22c55e' },
+                          { key: 'mock' as const, icon: Send, label: 'Mock Chat', color: undefined },
+                          { key: 'preview' as const, icon: Eye, label: 'Preview', color: undefined },
+                        ]).map(({ key, icon: Icon, label, color }) => (
                           <button
-                            key={t}
-                            onClick={() => setPreviewTab(t)}
+                            key={key}
+                            onClick={() => setPreviewTab(key)}
                             className="px-3 py-1 rounded text-[11px] font-semibold cursor-pointer"
                             style={{
-                              color: previewTab === t ? 'var(--accent)' : 'var(--text-muted)',
-                              background: previewTab === t ? 'var(--accent-bg)' : 'transparent',
+                              color: previewTab === key ? (color ?? 'var(--accent)') : 'var(--text-muted)',
+                              background: previewTab === key ? (color ? `${color}12` : 'var(--accent-bg)') : 'transparent',
                               border: 'none',
                             }}
                           >
-                            {t === 'mock' ? <><Send size={10} className="inline mr-1" />Mock Chat</> : <><Eye size={10} className="inline mr-1" />Preview</>}
+                            <Icon size={10} className="inline mr-1" />{label}
                           </button>
                         ))}
                       </div>
@@ -383,6 +464,117 @@ export const AgentBuilderPage = () => {
                       /* Preview tab — rendered markdown */
                       <div className="overflow-y-auto" style={{ height: 420, padding: '16px 20px' }}>
                         <ForumMarkdownBody content={activeItem.content} />
+                      </div>
+                    )}
+
+                    {previewTab === 'live' && (
+                      <div className="flex flex-col" style={{ height: 470 }}>
+                        {/* Live chat messages */}
+                        <div className="flex-1 overflow-y-auto" style={{ padding: '12px 16px' }}>
+                          {liveMessages.length === 0 && !liveStreaming && (
+                            <div className="flex flex-col items-center justify-center h-full gap-2" style={{ color: 'var(--text-faint)' }}>
+                              <PlayCircle size={28} />
+                              <span className="text-[12px] text-center">
+                                Send a message to test your {activeItem.type} live
+                                <br />using <strong>{aiConfig.provider}</strong>
+                              </span>
+                              {!hasApiKey && (
+                                <div className="flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg text-[10px]" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', color: '#dc2626' }}>
+                                  <AlertCircle size={11} />
+                                  No API key configured for {aiConfig.provider}. Set it in Settings.
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {liveMessages.map((msg) => (
+                            <div key={msg.id} className="mb-3">
+                              <div className="flex items-start gap-2">
+                                <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0 mt-0.5" style={{
+                                  background: msg.role === 'user' ? '#3b82f6' : '#22c55e',
+                                }}>
+                                  {msg.role === 'user' ? <User size={10} /> : <Bot size={10} />}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-[10px] font-semibold mb-1" style={{ color: 'var(--text-faint)' }}>
+                                    {msg.role === 'user' ? 'You' : activeItem.name}
+                                    {msg.provider && <span className="ml-1 opacity-60">via {msg.provider}</span>}
+                                  </div>
+                                  <div className="rounded-lg p-3" style={{
+                                    background: msg.role === 'user' ? 'var(--bg-inset)' : 'rgba(34,197,94,0.06)',
+                                    border: `1px solid ${msg.role === 'user' ? 'var(--border-subtle)' : 'rgba(34,197,94,0.2)'}`,
+                                  }}>
+                                    <ForumMarkdownBody content={msg.content} />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+
+                          {/* Streaming response */}
+                          {liveStreaming && (
+                            <div className="mb-3">
+                              <div className="flex items-start gap-2">
+                                <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0 mt-0.5" style={{ background: '#22c55e' }}>
+                                  <Bot size={10} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-[10px] font-semibold mb-1" style={{ color: 'var(--text-faint)' }}>
+                                    {activeItem.name} <Loader2 size={9} className="inline animate-spin ml-1" />
+                                  </div>
+                                  <div className="rounded-lg p-3" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                                    {liveStreamText ? <ForumMarkdownBody content={liveStreamText} /> : (
+                                      <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>Thinking...</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Error */}
+                          {liveError && (
+                            <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] mb-3" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', color: '#dc2626' }}>
+                              <AlertCircle size={12} />
+                              {liveError}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Status bar */}
+                        {(liveDuration != null || liveMessages.length > 0) && (
+                          <div className="flex items-center gap-3 px-4 py-1.5" style={{ borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
+                            {liveDuration != null && (
+                              <span className="flex items-center gap-1 text-[10px]" style={{ color: 'var(--text-faint)' }}>
+                                <Clock size={9} />{liveDuration}ms
+                              </span>
+                            )}
+                            <span className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
+                              {liveMessages.filter((m) => m.role === 'user').length} turn{liveMessages.filter((m) => m.role === 'user').length !== 1 ? 's' : ''}
+                            </span>
+                            <button onClick={handleClearLiveChat} className="ml-auto text-[10px] font-semibold cursor-pointer" style={{ color: 'var(--text-faint)', background: 'none', border: 'none' }}>
+                              <Trash2 size={9} className="inline mr-0.5" />Clear
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Input */}
+                        <div style={{ padding: '12px 16px' }}>
+                          <div className="flex gap-2">
+                            <input
+                              value={liveInput}
+                              onChange={(e) => setLiveInput(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleLiveTest(); } }}
+                              placeholder={`Test your ${activeItem.type}... (Enter to send)`}
+                              disabled={liveStreaming || !hasApiKey}
+                              className="flex-1 rounded-lg px-3 py-2 text-[12px] outline-none"
+                              style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
+                            />
+                            <Button variant="primary" size="sm" onClick={handleLiveTest} disabled={liveStreaming || !liveInput.trim() || !hasApiKey}>
+                              {liveStreaming ? <Loader2 size={11} className="animate-spin" /> : <Send size={11} />}
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </Card>
