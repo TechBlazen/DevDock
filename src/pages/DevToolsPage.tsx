@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Braces, Send, Wrench, ArrowRight, Globe, Wifi, FileSearch,
   ShieldCheck, LayoutList, Cable, Waypoints, FileDiff, Binary,
-  Regex, Table, GitMerge, Container, Database, Play, Bot,
+  Regex, Table, GitMerge, Container, Database, Play, Bot, Key,
   type LucideIcon,
 } from 'lucide-react';
 import { useSettingsStore, useAuthStore } from '../store';
@@ -21,6 +21,7 @@ import { RegexTester } from '../components/devtools/RegexTester';
 import { CsvViewer } from '../components/devtools/CsvViewer';
 import { GitGenerator } from '../components/devtools/GitGenerator';
 import { CertDecoder } from '../components/devtools/CertDecoder';
+import { JwtDecoder } from '../components/devtools/JwtDecoder';
 import { DockerGenerator } from '../components/devtools/DockerGenerator';
 import { SectionTitle, Card } from '../components/ui';
 
@@ -56,6 +57,7 @@ export const TOOLS: ToolDef[] = [
   { id: 'ssl', name: 'SSL Checker', description: 'Check SSL connectivity and TLS status for any domain with connection timing analysis.', path: '/devtools/ssl', icon: ShieldCheck, color: '#16a34a', tags: ['ssl', 'tls', 'certificate', 'security'], category: 'Security' },
   { id: 'headers', name: 'HTTP Headers Analyzer', description: 'Analyze HTTP response headers with security header scoring — CSP, HSTS, X-Frame-Options, and more.', path: '/devtools/headers', icon: LayoutList, color: '#dc2626', tags: ['http', 'headers', 'security'], category: 'Security' },
   { id: 'cert-decoder', name: 'Certificate Decoder', description: 'Decode and validate PEM-encoded X.509 certificates — view subject, issuer, validity, key usage, and SANs.', path: '/devtools/cert-decoder', icon: ShieldCheck, color: '#059669', tags: ['certificate', 'x509', 'pem', 'ssl'], category: 'Security' },
+  { id: 'jwt', name: 'JWT Encoder/Decoder', description: 'Decode JWT tokens to inspect header, payload, and claims. Encode custom JWTs with quick-insert claim buttons.', path: '/devtools/jwt', icon: Key, color: '#7c3aed', tags: ['jwt', 'token', 'auth', 'decode'], category: 'Security' },
   // ── Advanced ──
   { id: 'sql', name: 'SQL Tool', description: 'Connect to PostgreSQL, MySQL, SQL Server, and SQLite databases. Browse schemas, execute queries, and manage saved queries.', path: '/devtools/sql', icon: Database, color: '#336791', tags: ['sql', 'database', 'query'], category: 'Advanced' },
   { id: 'playground', name: 'Code Playground', description: 'Write and execute code in JavaScript, TypeScript, Python, Ruby, Go, and Bash with instant output.', path: '/devtools/playground', icon: Play, color: '#22c55e', tags: ['code', 'execute', 'playground'], category: 'Advanced' },
@@ -105,6 +107,7 @@ export const CsvViewerPage = () => <ToolPage title="CSV/TSV Viewer" subtitle="Pa
 export const GitGeneratorPage = () => <ToolPage title="Git Command Generator" subtitle="Build git commands visually."><GitGenerator /></ToolPage>;
 export const DockerGeneratorPage = () => <ToolPage title="Docker Command Generator" subtitle="Build Docker commands with a visual builder."><DockerGenerator /></ToolPage>;
 export const CertDecoderPage = () => <ToolPage title="Certificate Decoder" subtitle="Decode and validate PEM-encoded X.509 certificates."><CertDecoder /></ToolPage>;
+export const JwtDecoderPage = () => <ToolPage title="JWT Encoder/Decoder" subtitle="Decode and encode JSON Web Tokens."><JwtDecoder /></ToolPage>;
 
 // ─── Main DevTools page ──────────────────────────────────────────────────────
 export const DevToolsPage = () => {
