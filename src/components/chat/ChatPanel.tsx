@@ -164,21 +164,28 @@ export const ChatPanel = () => {
       )}
 
       {/* Input area */}
-      <div className="px-3 pb-3 pt-1">
-        <div className="flex gap-2 bg-[#0d1526] border border-[#1c2840] rounded-xl p-2.5 items-end focus-within:border-[#2a6fff44] transition-colors">
+      <div className="px-3 pb-3 pt-2">
+        <div className="flex gap-2 rounded-xl p-3 items-end transition-all" style={{
+          background: '#0a0f1a',
+          border: '2px solid #2a3a5a',
+          boxShadow: '0 0 0 1px rgba(42,111,255,0.05)',
+        }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = '#2a6fff'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(42,111,255,0.15)'; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = '#2a3a5a'; e.currentTarget.style.boxShadow = '0 0 0 1px rgba(42,111,255,0.05)'; }}
+        >
           <textarea
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask DevDock AI anything… (⏎ send, ⇧⏎ newline)"
-            rows={1}
-            className="flex-1 bg-transparent border-none outline-none text-[#c8d8ff] text-[13px] resize-none font-sans placeholder:text-[#2a3a5a] max-h-[120px] leading-relaxed"
-            style={{ minHeight: 22 }}
+            rows={2}
+            className="flex-1 bg-transparent border-none outline-none text-[#c8d8ff] text-[14px] resize-none placeholder:text-[#3a4a6a] max-h-[160px] leading-relaxed"
+            style={{ minHeight: 44, caretColor: '#2a6fff', fontFamily: 'Verdana, Geneva, sans-serif' }}
             onInput={(e) => {
               const el = e.currentTarget;
               el.style.height = 'auto';
-              el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+              el.style.height = Math.min(el.scrollHeight, 160) + 'px';
             }}
           />
           <button
