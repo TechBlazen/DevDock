@@ -2,9 +2,9 @@ import { useState, useMemo } from 'react';
 import {
   Database, Plus, Play, Save, Download, Upload, Trash2, X,
   CheckCircle, AlertTriangle, Loader2, Table, Columns3, Code2,
-  ChevronRight, ChevronDown, Eye, Key, RefreshCw, FileText,
+  ChevronRight, ChevronDown, Eye, Key, RefreshCw, FileText, Star,
 } from 'lucide-react';
-import { useAuthStore } from '../store';
+import { useAuthStore, useUserAccountsStore } from '../store';
 import { useSqlToolStore } from '../store/sql-tool-store';
 import { sqlApi } from '../lib/api';
 import { SectionTitle, Card, CardHeader, Button, Pill, Input } from '../components/ui';
@@ -248,6 +248,20 @@ const SchemaBrowser = ({ conn }: { conn: DatabaseConnection }) => {
   );
 };
 
+// ─── Favorite Button ────────────────────────────────────────────────────────
+const FavButton = ({ toolId }: { toolId: string }) => {
+  const user = useAuthStore((s) => s.user);
+  const toggle = useUserAccountsStore((s) => s.toggleFavoriteTool);
+  const isFav = useUserAccountsStore((s) => s.isFavoriteTool);
+  const fav = user ? isFav(user.id, toolId) : false;
+  if (!user) return null;
+  return (
+    <button onClick={() => toggle(user.id, toolId)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors cursor-pointer flex-shrink-0" style={{ color: fav ? '#f59e0b' : 'var(--text-muted)', background: fav ? 'rgba(245,158,11,0.08)' : 'transparent', border: `1px solid ${fav ? 'rgba(245,158,11,0.3)' : 'var(--border-subtle)'}` }}>
+      <Star size={14} fill={fav ? '#f59e0b' : 'none'} />{fav ? 'Favorited' : 'Add to favorites'}
+    </button>
+  );
+};
+
 // ─── Main SQL Tool Page ─────────────────────────────────────────────────────
 export const SqlToolPage = () => {
   const user = useAuthStore((s) => s.user);
@@ -321,9 +335,12 @@ export const SqlToolPage = () => {
 
   return (
     <div className="p-8">
-      <SectionTitle sub="Connect to databases, browse schemas, and execute queries">
-        SQL Tool
-      </SectionTitle>
+      <div className="flex items-start justify-between">
+        <SectionTitle sub="Connect to databases, browse schemas, and execute queries">
+          SQL Tool
+        </SectionTitle>
+        <FavButton toolId="sql" />
+      </div>
 
       <div className="flex gap-6 items-start" style={{ marginTop: 24 }}>
         {/* Left sidebar: connections + schema */}

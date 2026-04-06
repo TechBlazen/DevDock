@@ -2,8 +2,9 @@ import { useState, useRef, useCallback } from 'react';
 import Editor from '@monaco-editor/react';
 import {
   Play, Loader2, Terminal, Copy, Check, Trash2, Download, Upload,
-  Code2, Eye, Paintbrush,
+  Code2, Eye, Paintbrush, Star,
 } from 'lucide-react';
+import { useAuthStore, useUserAccountsStore } from '../store';
 import { codeApi } from '../lib/api';
 import { SectionTitle, Card, CardHeader, Button } from '../components/ui';
 
@@ -32,6 +33,19 @@ const CSS_PREVIEW_HTML = `<!DOCTYPE html><html><head><style>CSS_CONTENT</style><
   <div class="box">1</div><div class="box">2</div><div class="box">3</div><div class="box">4</div>
 </div>
 </body></html>`;
+
+const FavButton = ({ toolId }: { toolId: string }) => {
+  const user = useAuthStore((s) => s.user);
+  const toggle = useUserAccountsStore((s) => s.toggleFavoriteTool);
+  const isFav = useUserAccountsStore((s) => s.isFavoriteTool);
+  const fav = user ? isFav(user.id, toolId) : false;
+  if (!user) return null;
+  return (
+    <button onClick={() => toggle(user.id, toolId)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors cursor-pointer flex-shrink-0" style={{ color: fav ? '#f59e0b' : 'var(--text-muted)', background: fav ? 'rgba(245,158,11,0.08)' : 'transparent', border: `1px solid ${fav ? 'rgba(245,158,11,0.3)' : 'var(--border-subtle)'}` }}>
+      <Star size={14} fill={fav ? '#f59e0b' : 'none'} />{fav ? 'Favorited' : 'Add to favorites'}
+    </button>
+  );
+};
 
 export const CodePlaygroundPage = () => {
   const [langId, setLangId] = useState('javascript');
@@ -157,9 +171,12 @@ export const CodePlaygroundPage = () => {
 
   return (
     <div className="p-8" style={vFont}>
-      <SectionTitle sub="Write and execute code in multiple languages with instant output">
-        Code Playground
-      </SectionTitle>
+      <div className="flex items-start justify-between">
+        <SectionTitle sub="Write and execute code in multiple languages with instant output">
+          Code Playground
+        </SectionTitle>
+        <FavButton toolId="playground" />
+      </div>
 
       {/* Language selector */}
       <div className="flex gap-3 flex-wrap" style={{ marginTop: 24, marginBottom: 24 }}>
