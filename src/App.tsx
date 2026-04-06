@@ -41,6 +41,7 @@ import {
   DockerGeneratorPage,
   CertDecoderPage,
   JwtDecoderPage,
+  UuidGeneratorPage,
   DocsPage,
   GoogleDrivePage,
   NetworkPage,
@@ -169,6 +170,7 @@ function PluginRoutes({ editMode }: { editMode: boolean }) {
       <Route path="/devtools/docker-gen" element={<DockerGeneratorPage />} />
       <Route path="/devtools/cert-decoder" element={<CertDecoderPage />} />
       <Route path="/devtools/jwt"          element={<JwtDecoderPage />} />
+      <Route path="/devtools/uuid"         element={<UuidGeneratorPage />} />
       <Route path="/devtools/sql"        element={<SqlToolPage />} />
       <Route path="/devtools/playground" element={<CodePlaygroundPage />} />
       <Route path="/devtools/agent-builder" element={<AgentBuilderPage />} />

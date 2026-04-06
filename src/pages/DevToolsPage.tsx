@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Braces, Send, Wrench, ArrowRight, Globe, Wifi, FileSearch,
   ShieldCheck, LayoutList, Cable, Waypoints, FileDiff, Binary,
-  Regex, Table, GitMerge, Container, Database, Play, Bot, Key,
+  Regex, Table, GitMerge, Container, Database, Play, Bot, Key, Fingerprint,
   type LucideIcon,
 } from 'lucide-react';
 import { useSettingsStore, useAuthStore } from '../store';
@@ -22,6 +22,7 @@ import { CsvViewer } from '../components/devtools/CsvViewer';
 import { GitGenerator } from '../components/devtools/GitGenerator';
 import { CertDecoder } from '../components/devtools/CertDecoder';
 import { JwtDecoder } from '../components/devtools/JwtDecoder';
+import { UuidGenerator } from '../components/devtools/UuidGenerator';
 import { DockerGenerator } from '../components/devtools/DockerGenerator';
 import { SectionTitle, Card } from '../components/ui';
 
@@ -58,13 +59,15 @@ export const TOOLS: ToolDef[] = [
   { id: 'headers', name: 'HTTP Headers Analyzer', description: 'Analyze HTTP response headers with security header scoring — CSP, HSTS, X-Frame-Options, and more.', path: '/devtools/headers', icon: LayoutList, color: '#dc2626', tags: ['http', 'headers', 'security'], category: 'Security' },
   { id: 'cert-decoder', name: 'Certificate Decoder', description: 'Decode and validate PEM-encoded X.509 certificates — view subject, issuer, validity, key usage, and SANs.', path: '/devtools/cert-decoder', icon: ShieldCheck, color: '#059669', tags: ['certificate', 'x509', 'pem', 'ssl'], category: 'Security' },
   { id: 'jwt', name: 'JWT Encoder/Decoder', description: 'Decode JWT tokens to inspect header, payload, and claims. Encode custom JWTs with quick-insert claim buttons.', path: '/devtools/jwt', icon: Key, color: '#7c3aed', tags: ['jwt', 'token', 'auth', 'decode'], category: 'Security' },
+  // ── Generators ──
+  { id: 'uuid', name: 'UUID Generator', description: 'Generate UUIDs v1, v4, and v7 with configurable hyphens, case, and batch count. Click to copy, export, and history.', path: '/devtools/uuid', icon: Fingerprint, color: '#0891b2', tags: ['uuid', 'guid', 'generator', 'id'], category: 'Generators' },
   // ── Advanced ──
   { id: 'sql', name: 'SQL Tool', description: 'Connect to PostgreSQL, MySQL, SQL Server, and SQLite databases. Browse schemas, execute queries, and manage saved queries.', path: '/devtools/sql', icon: Database, color: '#336791', tags: ['sql', 'database', 'query'], category: 'Advanced' },
   { id: 'playground', name: 'Code Playground', description: 'Write and execute code in JavaScript, TypeScript, Python, Ruby, Go, and Bash with instant output.', path: '/devtools/playground', icon: Play, color: '#22c55e', tags: ['code', 'execute', 'playground'], category: 'Advanced' },
   { id: 'agent-builder', name: 'Agent & Skill Builder', description: 'Create AI agent definitions and skill files with templates, mock chat preview, and export to repos.', path: '/devtools/agent-builder', icon: Bot, color: '#7c3aed', tags: ['agent', 'skill', 'ai', 'builder'], category: 'Advanced' },
 ];
 
-const CATEGORIES = ['Development', 'API Explorers', 'Network', 'Security', 'Advanced'];
+const CATEGORIES = ['Development', 'API Explorers', 'Network', 'Security', 'Generators', 'Advanced'];
 
 // ─── Page wrappers ───────────────────────────────────────────────────────────
 const glassStyle = {
@@ -108,6 +111,7 @@ export const GitGeneratorPage = () => <ToolPage title="Git Command Generator" su
 export const DockerGeneratorPage = () => <ToolPage title="Docker Command Generator" subtitle="Build Docker commands with a visual builder."><DockerGenerator /></ToolPage>;
 export const CertDecoderPage = () => <ToolPage title="Certificate Decoder" subtitle="Decode and validate PEM-encoded X.509 certificates."><CertDecoder /></ToolPage>;
 export const JwtDecoderPage = () => <ToolPage title="JWT Encoder/Decoder" subtitle="Decode and encode JSON Web Tokens."><JwtDecoder /></ToolPage>;
+export const UuidGeneratorPage = () => <ToolPage title="UUID Generator" subtitle="Generate UUIDs v1, v4, v7 with configurable formatting."><UuidGenerator /></ToolPage>;
 
 // ─── Main DevTools page ──────────────────────────────────────────────────────
 export const DevToolsPage = () => {

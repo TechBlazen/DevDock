@@ -58,6 +58,7 @@ export const defaultNavigation: NavigationConfig = {
         { id: 'dt-docker-gen', type: 'link', label: 'Docker Generator',  icon: 'Container',    route: '/devtools/docker-gen', visible: true },
         { id: 'dt-cert',      type: 'link', label: 'Cert Decoder',      icon: 'ShieldCheck',  route: '/devtools/cert-decoder', visible: true },
         { id: 'dt-jwt',       type: 'link', label: 'JWT Decoder',       icon: 'Key',          route: '/devtools/jwt',          visible: true },
+        { id: 'dt-uuid',      type: 'link', label: 'UUID Generator',    icon: 'Fingerprint',  route: '/devtools/uuid',         visible: true },
         { id: 'dt-sql',        type: 'link', label: 'SQL Tool',           icon: 'Database',     route: '/devtools/sql',        visible: true },
         { id: 'dt-playground', type: 'link', label: 'Code Playground',   icon: 'Play',         route: '/devtools/playground', visible: true },
         { id: 'dt-builder',    type: 'link', label: 'Agent Builder',     icon: 'Bot',          route: '/devtools/agent-builder', visible: true },
