@@ -78,22 +78,28 @@ async function callAnthropic(
   }
 }
 
-async function callOpenAI(
+async function callOpenAICompatible(
   messages: ChatMessage[],
   config: AIConfig,
   callbacks: StreamCallback,
-  systemPrompt?: string
+  systemPrompt?: string,
+  overrides?: { baseUrl: string; apiKey: string; model: string; providerName: string }
 ): Promise<void> {
-  const tracer = traceAICall('openai', MODELS.openai);
+  const providerName = overrides?.providerName ?? 'openai';
+  const model = overrides?.model ?? MODELS.openai;
+  const apiKey = overrides?.apiKey ?? config.apiKeys.openai;
+  const baseUrl = overrides?.baseUrl ?? 'https://api.openai.com/v1';
+
+  const tracer = traceAICall(providerName, model);
   try {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    const res = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.apiKeys.openai}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: MODELS.openai,
+        model,
         max_tokens: config.maxTokens,
         messages: [
           { role: 'system', content: systemPrompt ?? SYSTEM_PROMPT },
@@ -104,7 +110,10 @@ async function callOpenAI(
       }),
     });
 
-    if (!res.ok) throw new Error(`OpenAI HTTP ${res.status}`);
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => '');
+      throw new Error(`${providerName} HTTP ${res.status}${errBody ? `: ${errBody.slice(0, 200)}` : ''}`);
+    }
     const data = await res.json();
     const text = data.choices?.[0]?.message?.content ?? '';
     const traceId = tracer.end('ok');
@@ -160,15 +169,14 @@ export async function sendChatMessage(
     case 'anthropic':
       return callAnthropic(messages, config, callbacks, systemPrompt);
     case 'openai':
-      return callOpenAI(messages, config, callbacks, systemPrompt);
+      return callOpenAICompatible(messages, config, callbacks, systemPrompt);
     case 'gemini':
-      // Gemini uses OpenAI-compatible API
-      return callOpenAI(
-        messages,
-        { ...config, apiKeys: { ...config.apiKeys, openai: config.apiKeys.gemini } },
-        callbacks,
-        systemPrompt
-      );
+      return callOpenAICompatible(messages, config, callbacks, systemPrompt, {
+        baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
+        apiKey: config.apiKeys.gemini,
+        model: MODELS.gemini,
+        providerName: 'gemini',
+      });
     case 'local':
       return callLocal(messages, config, callbacks, systemPrompt);
     default:

@@ -104,26 +104,34 @@ export const ChatPanel = () => {
         </div>
       </div>
 
-      {/* Provider tabs */}
-      <div className="flex gap-1.5 px-3 py-2 border-b border-[#0d1526] flex-wrap">
-        {providers.map((p) => (
-          <button
-            key={p.id}
-            onClick={() => updateAIProvider(p.id)}
-            style={
-              settings.ai.provider === p.id
-                ? { background: p.color + '20', color: p.color, borderColor: p.color + '66' }
-                : {}
-            }
-            className={`px-2.5 py-1 rounded-md border text-[11px] font-mono font-semibold transition-all ${
-              settings.ai.provider === p.id
-                ? ''
-                : 'border-[#1c2840] text-[#3a4a6a] hover:border-[#2a3a5a] hover:text-[#6a7a9a]'
-            }`}
-          >
-            {p.label}
-          </button>
-        ))}
+      {/* Provider selector */}
+      <div className="flex gap-2 px-3 py-2.5 border-b border-[#0d1526] flex-wrap">
+        {providers.map((p) => {
+          const active = settings.ai.provider === p.id;
+          const hasKey = p.id === 'local' || settings.ai.apiKeys[p.id]?.trim();
+          return (
+            <button
+              key={p.id}
+              onClick={() => updateAIProvider(p.id)}
+              className="rounded-lg transition-all"
+              style={{
+                padding: '6px 12px',
+                fontSize: 12,
+                fontWeight: 700,
+                fontFamily: 'Verdana, Geneva, sans-serif',
+                background: active ? p.color + '25' : 'transparent',
+                color: active ? p.color : hasKey ? '#6a7a9a' : '#2a3550',
+                border: active ? `2px solid ${p.color}` : '2px solid #1c2840',
+                cursor: 'pointer',
+                opacity: hasKey ? 1 : 0.5,
+              }}
+              title={hasKey ? `${p.label} — ${p.model}` : `${p.label} — no API key configured`}
+            >
+              {p.label}
+              {active && <span style={{ fontSize: 9, marginLeft: 4, opacity: 0.7 }}>{p.model}</span>}
+            </button>
+          );
+        })}
       </div>
 
       {/* Messages */}
