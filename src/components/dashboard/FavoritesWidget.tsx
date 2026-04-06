@@ -1,5 +1,7 @@
-import { Star, GitFork, GitBranch, Cloud, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Star, GitFork, GitBranch, Cloud, ExternalLink, Wrench } from 'lucide-react';
 import { useAuthStore, useUserAccountsStore, useRepoStore } from '../../store';
+import { TOOLS } from '../../pages/DevToolsPage';
 import type { RepoEnvironment } from '../../types';
 
 const ENV_COLORS: Record<RepoEnvironment, string> = {
@@ -12,28 +14,34 @@ const langColors: Record<string, string> = {
 };
 
 export const FavoritesWidget = () => {
+  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const accounts = useUserAccountsStore((s) => s.accounts);
   const { githubRepos, adoRepos } = useRepoStore();
 
   const userAccount = accounts.find((a) => a.id === user?.id);
-  const favIds = userAccount?.favoriteRepos ?? [];
+  const favRepoIds = userAccount?.favoriteRepos ?? [];
+  const favToolIds = userAccount?.favoriteTools ?? [];
   const isAdmin = user?.role === 'admin';
   const allRepos = [...githubRepos, ...adoRepos];
-  const favorites = allRepos.filter((r) => favIds.includes(r.id) && (isAdmin || r.visible !== false));
+  const favoriteRepos = allRepos.filter((r) => favRepoIds.includes(r.id) && (isAdmin || r.visible !== false));
+  const favoriteTools = TOOLS.filter((t) => favToolIds.includes(t.id));
 
-  if (favorites.length === 0) {
+  const hasAny = favoriteRepos.length > 0 || favoriteTools.length > 0;
+
+  if (!hasAny) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 py-6" style={{ color: 'var(--text-faint)' }}>
         <Star size={24} />
-        <span className="text-xs">Star repos to see them here</span>
+        <span className="text-xs">Star repos or dev tools to see them here</span>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-2">
-      {favorites.map((repo) => (
+      {/* Favorite repos */}
+      {favoriteRepos.map((repo) => (
         <div
           key={repo.id}
           className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer"
@@ -42,12 +50,9 @@ export const FavoritesWidget = () => {
           onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
           onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
         >
-          {/* Source icon */}
           <div style={{ color: 'var(--text-faint)', flexShrink: 0 }}>
             {repo.source === 'github' ? <GitFork size={14} /> : <GitBranch size={14} />}
           </div>
-
-          {/* Repo info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-[12px] font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{repo.name}</span>
@@ -64,11 +69,37 @@ export const FavoritesWidget = () => {
               ))}
             </div>
           </div>
-
-          {/* Open link */}
           <ExternalLink size={12} style={{ color: 'var(--text-faint)', flexShrink: 0 }} />
         </div>
       ))}
+
+      {/* Favorite tools */}
+      {favoriteTools.length > 0 && favoriteRepos.length > 0 && (
+        <div className="text-[9px] font-bold uppercase tracking-wider px-1 pt-1" style={{ color: 'var(--text-faint)' }}>
+          <Wrench size={9} className="inline mr-0.5" /> Tools
+        </div>
+      )}
+      {favoriteTools.map((tool) => {
+        const Icon = tool.icon;
+        return (
+          <div
+            key={tool.id}
+            className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer"
+            style={{ border: '1px solid var(--border-subtle)' }}
+            onClick={() => navigate(tool.path)}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${tool.color}12`, border: `1px solid ${tool.color}25` }}>
+              <Icon size={13} style={{ color: tool.color }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="text-[12px] font-semibold truncate block" style={{ color: 'var(--text-primary)' }}>{tool.name}</span>
+              <span className="text-[9px]" style={{ color: 'var(--text-faint)' }}>{tool.category}</span>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };

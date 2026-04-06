@@ -5,7 +5,8 @@ import {
   Regex, Table, GitMerge, Container, Database, Play, Bot, Key, Fingerprint,
   type LucideIcon,
 } from 'lucide-react';
-import { useSettingsStore, useAuthStore } from '../store';
+import { Star } from 'lucide-react';
+import { useSettingsStore, useAuthStore, useUserAccountsStore } from '../store';
 import { JsonValidator } from '../components/devtools/JsonValidator';
 import { ApiTester } from '../components/devtools/ApiTester';
 import { DnsLookup } from '../components/devtools/DnsLookup';
@@ -117,7 +118,10 @@ export const UuidGeneratorPage = () => <ToolPage title="UUID Generator" subtitle
 export const DevToolsPage = () => {
   const navigate = useNavigate();
   const disabledTools = useSettingsStore((s) => s.settings.disabledTools ?? []);
-  const isAdmin = useAuthStore((s) => s.user?.role) === 'admin';
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === 'admin';
+  const toggleFavoriteTool = useUserAccountsStore((s) => s.toggleFavoriteTool);
+  const isFavoriteTool = useUserAccountsStore((s) => s.isFavoriteTool);
 
   // Admins see all tools (disabled ones marked); non-admins see only enabled tools
   const visibleTools = isAdmin ? TOOLS : TOOLS.filter((t) => !disabledTools.includes(t.id));
@@ -149,15 +153,26 @@ export const DevToolsPage = () => {
               {catTools.map((tool) => {
                 const Icon = tool.icon;
                 const isDisabled = disabledTools.includes(tool.id);
+                const isFav = user ? isFavoriteTool(user.id, tool.id) : false;
                 return (
                   <Card key={tool.id} onClick={() => !isDisabled && navigate(tool.path)}>
                     <div className="p-5 flex flex-col gap-3 cursor-pointer group h-full" style={{ opacity: isDisabled ? 0.45 : 1 }}>
-                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110" style={{
-                        background: `${tool.color}12`,
-                        border: `1px solid ${tool.color}25`,
-                        boxShadow: `0 4px 16px ${tool.color}15`,
-                      }}>
-                        <Icon size={22} style={{ color: tool.color }} />
+                      <div className="flex items-start justify-between">
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110" style={{
+                          background: `${tool.color}12`,
+                          border: `1px solid ${tool.color}25`,
+                          boxShadow: `0 4px 16px ${tool.color}15`,
+                        }}>
+                          <Icon size={22} style={{ color: tool.color }} />
+                        </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); if (user) toggleFavoriteTool(user.id, tool.id); }}
+                          className="p-1 rounded transition-colors cursor-pointer"
+                          style={{ background: 'none', border: 'none', color: isFav ? '#f59e0b' : 'var(--text-faint)' }}
+                          title={isFav ? 'Remove from favorites' : 'Add to favorites'}
+                        >
+                          <Star size={16} fill={isFav ? '#f59e0b' : 'none'} />
+                        </button>
                       </div>
                       <div>
                         <h3 className="text-[14px] font-bold" style={{ color: 'var(--text-primary)' }}>{tool.name}</h3>
