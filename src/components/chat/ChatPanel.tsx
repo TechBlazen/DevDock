@@ -180,7 +180,7 @@ export const ChatPanel = () => {
             onKeyDown={handleKeyDown}
             placeholder="Ask DevDock AI anything… (⏎ send, ⇧⏎ newline)"
             rows={2}
-            className="flex-1 bg-transparent border-none outline-none text-[#c8d8ff] text-[14px] resize-none placeholder:text-[#3a4a6a] max-h-[160px] leading-relaxed"
+            className="flex-1 bg-transparent border-none outline-none text-[#c8d8ff] text-[14px] resize-none placeholder:text-[#3a4a6a] max-h-[160px] leading-relaxed chat-block-cursor"
             style={{ minHeight: 44, caretColor: '#2a6fff', fontFamily: 'Verdana, Geneva, sans-serif' }}
             onInput={(e) => {
               const el = e.currentTarget;

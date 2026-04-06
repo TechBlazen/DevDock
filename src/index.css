@@ -97,6 +97,22 @@ body {
 
 main > * { animation: fadeIn 0.2s ease both; }
 
+/* ─── Chat input block cursor ───────────────────────────────────────────── */
+.chat-block-cursor {
+  caret-color: #2a6fff;
+  caret-shape: block;
+}
+@supports not (caret-shape: block) {
+  .chat-block-cursor {
+    caret-color: #2a6fff;
+    animation: caret-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes caret-pulse {
+    0%, 100% { border-right: 3px solid #2a6fff; }
+    50% { border-right: 3px solid transparent; }
+  }
+}
+
 /* ─── Forum Markdown HTML elements ──────────────────────────────────────── */
 .forum-markdown kbd {
   display: inline-block;
