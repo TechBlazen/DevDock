@@ -268,7 +268,7 @@ export const JwtDecoder = () => {
                         <Shield size={13} style={{ color: '#f59e0b' }} />
                         <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Header</span>
                         <Pill color="#f59e0b">{String(analysis.parts.header.alg ?? 'none')}</Pill>
-                        {analysis.parts.header.typ && <Pill color="#6b7280">{String(analysis.parts.header.typ)}</Pill>}
+                        {analysis.parts.header.typ != null && <Pill color="#6b7280">{String(analysis.parts.header.typ)}</Pill>}
                       </div>
                       <button onClick={() => handleCopy('header', JSON.stringify(analysis.parts!.header, null, 2))} className="p-1 cursor-pointer" style={{ color: copied === 'header' ? '#22c55e' : 'var(--text-faint)', background: 'none', border: 'none' }}>
                         {copied === 'header' ? <Check size={12} /> : <Copy size={12} />}
