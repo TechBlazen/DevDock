@@ -89,7 +89,7 @@ function ToolPage({ title, subtitle, toolId, children }: { title: string; subtit
 
   return (
     <div className="h-full flex flex-col">
-      <div className="px-6 pt-5 pb-3 flex items-start justify-between">
+      <div className="px-6 pt-8 pb-4 flex items-start justify-between">
         <div>
           <h1 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{title}</h1>
           <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{subtitle}</p>
