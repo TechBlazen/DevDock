@@ -159,12 +159,61 @@ async function callLocal(
   }
 }
 
+// ─── Server-side proxy (avoids CORS) ────────────────────────────────────────
+async function callViaProxy(
+  messages: ChatMessage[],
+  config: AIConfig,
+  callbacks: StreamCallback,
+  systemPrompt?: string
+): Promise<boolean> {
+  const tracer = traceAICall(config.provider, config.model || MODELS[config.provider]);
+  try {
+    const res = await fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        provider: config.provider,
+        apiKey: config.provider === 'local' ? (config.localEndpoint || 'http://localhost:11434/v1') : config.apiKeys[config.provider],
+        model: config.model || MODELS[config.provider],
+        maxTokens: config.maxTokens,
+        systemPrompt: systemPrompt ?? SYSTEM_PROMPT,
+        messages: messages.filter((m) => m.role !== 'system').map((m) => ({ role: m.role, content: m.content })),
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+      throw new Error(data.error ?? `Proxy HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const traceId = tracer.end('ok');
+    callbacks.onDone(data.content ?? '', traceId);
+    return true;
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    // If proxy is unreachable (server not running), signal to fall back
+    if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('ECONNREFUSED')) {
+      tracer.end('error', 'proxy unavailable');
+      return false; // signal: try direct
+    }
+    tracer.end('error', msg);
+    callbacks.onError(msg);
+    return true; // error was handled
+  }
+}
+
 export async function sendChatMessage(
   messages: ChatMessage[],
   config: AIConfig,
   callbacks: StreamCallback,
   systemPrompt?: string
 ): Promise<void> {
+  // Try server-side proxy first (avoids CORS issues)
+  const handled = await callViaProxy(messages, config, callbacks, systemPrompt);
+  if (handled) return;
+
+  // Fallback to direct browser calls (works for local/Ollama, may fail with CORS for cloud providers)
   switch (config.provider) {
     case 'anthropic':
       return callAnthropic(messages, config, callbacks, systemPrompt);

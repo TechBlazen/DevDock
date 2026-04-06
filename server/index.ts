@@ -15,6 +15,7 @@ import { registerFederatedSourceRoutes } from './routes/federated-sources.js';
 import { registerDirectoryRoutes } from './routes/directory.js';
 import { registerSqlToolRoutes } from './routes/sql-tool.js';
 import { registerCodeRunnerRoutes } from './routes/code-runner.js';
+import { registerAiProxyRoutes } from './routes/ai-proxy.js';
 
 async function main() {
   const config = loadConfig();
@@ -52,6 +53,7 @@ async function main() {
   registerDirectoryRoutes(app, db, config.jwtSecret);
   registerSqlToolRoutes(app, db, config.jwtSecret);
   registerCodeRunnerRoutes(app, db, config.jwtSecret);
+  registerAiProxyRoutes(app, db, config.jwtSecret);
 
   // Graceful shutdown
   const shutdown = async () => {
