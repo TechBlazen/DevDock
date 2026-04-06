@@ -413,6 +413,7 @@ export interface UserAccount {
   permissions: Permission;
   dashboardWidgets?: string[];  // per-user dashboard layout
   favoriteRepos?: string[];     // repo IDs
+  favoriteTools?: string[];     // dev tool IDs
   preferences?: UserPreferences;
   createdAt: string;
   lastLogin?: string;

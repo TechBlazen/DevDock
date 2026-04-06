@@ -5,7 +5,8 @@ import {
   Regex, Table, GitMerge, Container, Database, Play, Bot, Key, Fingerprint,
   type LucideIcon,
 } from 'lucide-react';
-import { useSettingsStore, useAuthStore } from '../store';
+import { Star } from 'lucide-react';
+import { useSettingsStore, useAuthStore, useUserAccountsStore } from '../store';
 import { JsonValidator } from '../components/devtools/JsonValidator';
 import { ApiTester } from '../components/devtools/ApiTester';
 import { DnsLookup } from '../components/devtools/DnsLookup';
@@ -80,12 +81,33 @@ const glassStyle = {
   },
 };
 
-function ToolPage({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
+function ToolPage({ title, subtitle, toolId, children }: { title: string; subtitle: string; toolId?: string; children: React.ReactNode }) {
+  const toolUser = useAuthStore((s) => s.user);
+  const toolToggleFav = useUserAccountsStore((s) => s.toggleFavoriteTool);
+  const toolIsFav = useUserAccountsStore((s) => s.isFavoriteTool);
+  const isFav = toolId && toolUser ? toolIsFav(toolUser.id, toolId) : false;
+
   return (
     <div className="h-full flex flex-col">
-      <div className="px-6 pt-5 pb-3">
-        <h1 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{title}</h1>
-        <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{subtitle}</p>
+      <div style={{ padding: '36px 28px 16px' }} className="flex items-start justify-between">
+        <div>
+          <h1 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{title}</h1>
+          <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{subtitle}</p>
+        </div>
+        {toolId && toolUser && (
+          <button
+            onClick={() => toolToggleFav(toolUser.id, toolId)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors cursor-pointer"
+            style={{
+              color: isFav ? '#f59e0b' : 'var(--text-muted)',
+              background: isFav ? 'rgba(245,158,11,0.08)' : 'transparent',
+              border: `1px solid ${isFav ? 'rgba(245,158,11,0.3)' : 'var(--border-subtle)'}`,
+            }}
+          >
+            <Star size={14} fill={isFav ? '#f59e0b' : 'none'} />
+            {isFav ? 'Favorited' : 'Add to favorites'}
+          </button>
+        )}
       </div>
       <div className="flex-1 overflow-hidden mx-4 mb-4 rounded-[20px]" {...glassStyle}>
         {children}
@@ -94,30 +116,33 @@ function ToolPage({ title, subtitle, children }: { title: string; subtitle: stri
   );
 }
 
-export const JsonValidatorPage = () => <ToolPage title="JSON Validator" subtitle="Validate, format, and minify JSON."><JsonValidator /></ToolPage>;
-export const ApiTesterPage = () => <ToolPage title="API Tester" subtitle="Send HTTP requests and inspect responses."><ApiTester /></ToolPage>;
-export const DnsLookupPage = () => <ToolPage title="DNS Lookup" subtitle="Query DNS records for any domain via Google DNS."><DnsLookup /></ToolPage>;
-export const PingToolPage = () => <ToolPage title="Ping Tool" subtitle="Measure network latency with fetch-based timing."><PingTool /></ToolPage>;
-export const WhoisLookupPage = () => <ToolPage title="WHOIS Lookup" subtitle="Retrieve domain registration details via RDAP."><WhoisLookup /></ToolPage>;
-export const SslCheckerPage = () => <ToolPage title="SSL Checker" subtitle="Check SSL/TLS connectivity for any domain."><SslChecker /></ToolPage>;
-export const HttpHeadersPage = () => <ToolPage title="HTTP Headers Analyzer" subtitle="Analyze response headers and security posture."><HttpHeaders /></ToolPage>;
-export const WebSocketDebuggerPage = () => <ToolPage title="WebSocket Debugger" subtitle="Connect, send, and monitor WebSocket messages."><WebSocketDebugger /></ToolPage>;
-export const GraphqlExplorerPage = () => <ToolPage title="GraphQL Explorer" subtitle="Build and test GraphQL queries with schema introspection."><GraphqlExplorer /></ToolPage>;
-export const TextDiffPage = () => <ToolPage title="Text Diff Checker" subtitle="Compare two texts and visualize the differences."><TextDiff /></ToolPage>;
-export const Base64ToolPage = () => <ToolPage title="Base64 Encoder/Decoder" subtitle="Encode and decode Base64 strings and files."><Base64Tool /></ToolPage>;
-export const RegexTesterPage = () => <ToolPage title="Regex Tester" subtitle="Test regular expressions with real-time matching."><RegexTester /></ToolPage>;
-export const CsvViewerPage = () => <ToolPage title="CSV/TSV Viewer" subtitle="Parse and view CSV/TSV data in a sortable table."><CsvViewer /></ToolPage>;
-export const GitGeneratorPage = () => <ToolPage title="Git Command Generator" subtitle="Build git commands visually."><GitGenerator /></ToolPage>;
-export const DockerGeneratorPage = () => <ToolPage title="Docker Command Generator" subtitle="Build Docker commands with a visual builder."><DockerGenerator /></ToolPage>;
-export const CertDecoderPage = () => <ToolPage title="Certificate Decoder" subtitle="Decode and validate PEM-encoded X.509 certificates."><CertDecoder /></ToolPage>;
-export const JwtDecoderPage = () => <ToolPage title="JWT Encoder/Decoder" subtitle="Decode and encode JSON Web Tokens."><JwtDecoder /></ToolPage>;
-export const UuidGeneratorPage = () => <ToolPage title="UUID Generator" subtitle="Generate UUIDs v1, v4, v7 with configurable formatting."><UuidGenerator /></ToolPage>;
+export const JsonValidatorPage = () => <ToolPage title="JSON Validator" subtitle="Validate, format, and minify JSON." toolId="json"><JsonValidator /></ToolPage>;
+export const ApiTesterPage = () => <ToolPage title="API Tester" subtitle="Send HTTP requests and inspect responses." toolId="api"><ApiTester /></ToolPage>;
+export const DnsLookupPage = () => <ToolPage title="DNS Lookup" subtitle="Query DNS records for any domain via Google DNS." toolId="dns"><DnsLookup /></ToolPage>;
+export const PingToolPage = () => <ToolPage title="Ping Tool" subtitle="Measure network latency with fetch-based timing." toolId="ping"><PingTool /></ToolPage>;
+export const WhoisLookupPage = () => <ToolPage title="WHOIS Lookup" subtitle="Retrieve domain registration details via RDAP." toolId="whois"><WhoisLookup /></ToolPage>;
+export const SslCheckerPage = () => <ToolPage title="SSL Checker" subtitle="Check SSL/TLS connectivity for any domain." toolId="ssl"><SslChecker /></ToolPage>;
+export const HttpHeadersPage = () => <ToolPage title="HTTP Headers Analyzer" subtitle="Analyze response headers and security posture." toolId="headers"><HttpHeaders /></ToolPage>;
+export const WebSocketDebuggerPage = () => <ToolPage title="WebSocket Debugger" subtitle="Connect, send, and monitor WebSocket messages." toolId="websocket"><WebSocketDebugger /></ToolPage>;
+export const GraphqlExplorerPage = () => <ToolPage title="GraphQL Explorer" subtitle="Build and test GraphQL queries with schema introspection." toolId="graphql"><GraphqlExplorer /></ToolPage>;
+export const TextDiffPage = () => <ToolPage title="Text Diff Checker" subtitle="Compare two texts and visualize the differences." toolId="diff"><TextDiff /></ToolPage>;
+export const Base64ToolPage = () => <ToolPage title="Base64 Encoder/Decoder" subtitle="Encode and decode Base64 strings and files." toolId="base64"><Base64Tool /></ToolPage>;
+export const RegexTesterPage = () => <ToolPage title="Regex Tester" subtitle="Test regular expressions with real-time matching." toolId="regex"><RegexTester /></ToolPage>;
+export const CsvViewerPage = () => <ToolPage title="CSV/TSV Viewer" subtitle="Parse and view CSV/TSV data in a sortable table." toolId="csv"><CsvViewer /></ToolPage>;
+export const GitGeneratorPage = () => <ToolPage title="Git Command Generator" subtitle="Build git commands visually." toolId="git-gen"><GitGenerator /></ToolPage>;
+export const DockerGeneratorPage = () => <ToolPage title="Docker Command Generator" subtitle="Build Docker commands with a visual builder." toolId="docker-gen"><DockerGenerator /></ToolPage>;
+export const CertDecoderPage = () => <ToolPage title="Certificate Decoder" subtitle="Decode and validate PEM-encoded X.509 certificates." toolId="cert-decoder"><CertDecoder /></ToolPage>;
+export const JwtDecoderPage = () => <ToolPage title="JWT Encoder/Decoder" subtitle="Decode and encode JSON Web Tokens." toolId="jwt"><JwtDecoder /></ToolPage>;
+export const UuidGeneratorPage = () => <ToolPage title="UUID Generator" subtitle="Generate UUIDs v1, v4, v7 with configurable formatting." toolId="uuid"><UuidGenerator /></ToolPage>;
 
 // ─── Main DevTools page ──────────────────────────────────────────────────────
 export const DevToolsPage = () => {
   const navigate = useNavigate();
   const disabledTools = useSettingsStore((s) => s.settings.disabledTools ?? []);
-  const isAdmin = useAuthStore((s) => s.user?.role) === 'admin';
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === 'admin';
+  const toggleFavoriteTool = useUserAccountsStore((s) => s.toggleFavoriteTool);
+  const isFavoriteTool = useUserAccountsStore((s) => s.isFavoriteTool);
 
   // Admins see all tools (disabled ones marked); non-admins see only enabled tools
   const visibleTools = isAdmin ? TOOLS : TOOLS.filter((t) => !disabledTools.includes(t.id));
@@ -149,15 +174,26 @@ export const DevToolsPage = () => {
               {catTools.map((tool) => {
                 const Icon = tool.icon;
                 const isDisabled = disabledTools.includes(tool.id);
+                const isFav = user ? isFavoriteTool(user.id, tool.id) : false;
                 return (
                   <Card key={tool.id} onClick={() => !isDisabled && navigate(tool.path)}>
                     <div className="p-5 flex flex-col gap-3 cursor-pointer group h-full" style={{ opacity: isDisabled ? 0.45 : 1 }}>
-                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110" style={{
-                        background: `${tool.color}12`,
-                        border: `1px solid ${tool.color}25`,
-                        boxShadow: `0 4px 16px ${tool.color}15`,
-                      }}>
-                        <Icon size={22} style={{ color: tool.color }} />
+                      <div className="flex items-start justify-between">
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110" style={{
+                          background: `${tool.color}12`,
+                          border: `1px solid ${tool.color}25`,
+                          boxShadow: `0 4px 16px ${tool.color}15`,
+                        }}>
+                          <Icon size={22} style={{ color: tool.color }} />
+                        </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); if (user) toggleFavoriteTool(user.id, tool.id); }}
+                          className="p-1 rounded transition-colors cursor-pointer"
+                          style={{ background: 'none', border: 'none', color: isFav ? '#f59e0b' : 'var(--text-faint)' }}
+                          title={isFav ? 'Remove from favorites' : 'Add to favorites'}
+                        >
+                          <Star size={16} fill={isFav ? '#f59e0b' : 'none'} />
+                        </button>
                       </div>
                       <div>
                         <h3 className="text-[14px] font-bold" style={{ color: 'var(--text-primary)' }}>{tool.name}</h3>

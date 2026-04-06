@@ -3,15 +3,28 @@ import Editor from '@monaco-editor/react';
 import {
   Bot, Zap, Plus, Trash2, Copy, Download, Upload, Save,
   FileText, User, ChevronRight, Send, Eye, Code2,
-  GitFork, GitBranch, X, Loader2, PlayCircle, Clock, AlertCircle,
+  GitFork, GitBranch, X, Loader2, PlayCircle, Clock, AlertCircle, Star,
 } from 'lucide-react';
-import { useAuthStore, useDocsStore, useSettingsStore } from '../store';
+import { useAuthStore, useDocsStore, useSettingsStore, useUserAccountsStore } from '../store';
 import { useBuilderStore } from '../store/builder-store';
 import { BUILDER_TEMPLATES } from '../lib/builder-templates';
 import { sendChatMessage } from '../lib/ai';
 import { ForumMarkdownBody } from '../components/forum/ForumMarkdownBody';
 import { SectionTitle, Card, CardHeader, Button, Pill } from '../components/ui';
 import type { BuilderItemType, MockMessage, ChatMessage } from '../types';
+
+const FavButton = ({ toolId }: { toolId: string }) => {
+  const favUser = useAuthStore((s) => s.user);
+  const toggle = useUserAccountsStore((s) => s.toggleFavoriteTool);
+  const isFav = useUserAccountsStore((s) => s.isFavoriteTool);
+  const fav = favUser ? isFav(favUser.id, toolId) : false;
+  if (!favUser) return null;
+  return (
+    <button onClick={() => toggle(favUser.id, toolId)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors cursor-pointer flex-shrink-0" style={{ color: fav ? '#f59e0b' : 'var(--text-muted)', background: fav ? 'rgba(245,158,11,0.08)' : 'transparent', border: `1px solid ${fav ? 'rgba(245,158,11,0.3)' : 'var(--border-subtle)'}` }}>
+      <Star size={14} fill={fav ? '#f59e0b' : 'none'} />{fav ? 'Favorited' : 'Add to favorites'}
+    </button>
+  );
+};
 
 export const AgentBuilderPage = () => {
   const user = useAuthStore((s) => s.user);
@@ -197,9 +210,12 @@ export const AgentBuilderPage = () => {
 
   return (
     <div className="p-8">
-      <SectionTitle sub="Create, test, and export AI agents and skill definitions">
-        Agent & Skill Builder
-      </SectionTitle>
+      <div className="flex items-start justify-between">
+        <SectionTitle sub="Create, test, and export AI agents and skill definitions">
+          Agent & Skill Builder
+        </SectionTitle>
+        <FavButton toolId="agent-builder" />
+      </div>
 
       <div className="flex gap-6 items-start" style={{ marginTop: 24 }}>
         {/* Left sidebar: item list */}

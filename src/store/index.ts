@@ -950,6 +950,9 @@ interface UserAccountsStore {
   getPreferences: (userId: string) => UserPreferences;
   toggleFavoriteRepo: (userId: string, repoId: string) => void;
   isFavoriteRepo: (userId: string, repoId: string) => boolean;
+  toggleFavoriteTool: (userId: string, toolId: string) => void;
+  isFavoriteTool: (userId: string, toolId: string) => boolean;
+  getFavoriteTools: (userId: string) => string[];
 }
 
 export const useUserAccountsStore = create<UserAccountsStore>()(
@@ -1072,6 +1075,26 @@ export const useUserAccountsStore = create<UserAccountsStore>()(
       isFavoriteRepo: (userId, repoId) => {
         const account = get().accounts.find((a) => a.id === userId);
         return account?.favoriteRepos?.includes(repoId) ?? false;
+      },
+
+      toggleFavoriteTool: (userId, toolId) =>
+        set((s) => ({
+          accounts: s.accounts.map((a) => {
+            if (a.id !== userId) return a;
+            const favs = a.favoriteTools ?? [];
+            const next = favs.includes(toolId) ? favs.filter((id) => id !== toolId) : [...favs, toolId];
+            return { ...a, favoriteTools: next };
+          }),
+        })),
+
+      isFavoriteTool: (userId, toolId) => {
+        const account = get().accounts.find((a) => a.id === userId);
+        return account?.favoriteTools?.includes(toolId) ?? false;
+      },
+
+      getFavoriteTools: (userId) => {
+        const account = get().accounts.find((a) => a.id === userId);
+        return account?.favoriteTools ?? [];
       },
     }),
     {
