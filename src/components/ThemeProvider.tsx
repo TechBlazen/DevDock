@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSettingsStore } from '../store';
+import { useUserPreferences } from '../hooks/useUserPreferences';
 import { getTheme } from '../lib/themes';
 import type { ThemeColors } from '../types';
 
@@ -8,20 +9,50 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
-  const { activeTheme, theme: mode } = useSettingsStore((s) => ({
-    activeTheme: s.settings.activeTheme,
-    theme: s.settings.theme,
-  }));
+  // Admin-level theme (which theme pack to use)
+  const activeTheme = useSettingsStore((s) => s.settings.activeTheme);
+  // User-level preference (dark / light / system)
+  const { prefs } = useUserPreferences();
+  const mode = prefs.theme;
+
+  const [systemDark, setSystemDark] = useState(
+    () => window.matchMedia('(prefers-color-scheme: dark)').matches
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => setSystemDark(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  const resolvedMode: 'dark' | 'light' =
+    mode === 'system' ? (systemDark ? 'dark' : 'light') : mode;
 
   useEffect(() => {
     const currentTheme = getTheme(activeTheme);
-    const variant = mode === 'light' ? currentTheme.light : currentTheme.dark;
-    
+    const variant = resolvedMode === 'light' ? currentTheme.light : currentTheme.dark;
+
     applyThemeColors(variant.colors);
-    
+
+    // Apply theme font if specified
+    const root = document.documentElement;
+    if (currentTheme.fontFamily) {
+      root.style.setProperty('--font-family', currentTheme.fontFamily);
+      root.style.fontFamily = currentTheme.fontFamily;
+    } else {
+      root.style.removeProperty('--font-family');
+      root.style.fontFamily = '';
+    }
+    if (currentTheme.fontSize) {
+      root.style.fontSize = currentTheme.fontSize;
+    } else {
+      root.style.fontSize = '';
+    }
+
     // Update data-theme attribute for CSS
-    document.documentElement.setAttribute('data-theme', mode);
-  }, [activeTheme, mode]);
+    document.documentElement.setAttribute('data-theme', resolvedMode);
+  }, [activeTheme, resolvedMode]);
 
   return <>{children}</>;
 };

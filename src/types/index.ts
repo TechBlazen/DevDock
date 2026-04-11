@@ -296,7 +296,7 @@ export interface BrandingConfig {
 }
 
 // ─── Theme Types ──────────────────────────────────────────────────────────────
-export type ThemeId = 'default' | 'engineer-workbench';
+export type ThemeId = 'default' | 'engineer-workbench' | 'matrix';
 export type ThemeMode = 'light' | 'dark';
 
 export interface ThemeColors {
@@ -349,6 +349,8 @@ export interface Theme {
   author: string;
   light: ThemeVariant;
   dark: ThemeVariant;
+  fontFamily?: string;
+  fontSize?: string;
 }
 
 export interface AppSettings {
@@ -360,7 +362,7 @@ export interface AppSettings {
   activeDirectory: ActiveDirectoryConfig;
   branding: BrandingConfig;
   defaultLanguage: AppLanguage;
-  theme: 'dark' | 'light';
+  theme: 'dark' | 'light' | 'system';
   activeTheme: ThemeId;         // admin-controlled theme for the entire site
   dashboardWidgets: WidgetId[];
   navigation: NavigationConfig;

@@ -358,7 +358,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
                 onClick={signOut}
                 className="p-1.5 rounded-md transition-all duration-200"
                 style={{ color: 'var(--text-faint)' }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = '#d32f2f'; e.currentTarget.style.background = '#fef2f2'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#C00000'; e.currentTarget.style.background = 'var(--bg-hover)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-faint)'; e.currentTarget.style.background = 'transparent'; }}
                 title="Sign out"
               >

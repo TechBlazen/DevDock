@@ -77,80 +77,80 @@ const defaultDarkColors: ThemeColors = {
   codeText: '#7cb8ff',
 };
 
-// Engineer Workbench Theme (Costco style)
+// Engineer Workbench Theme (Costco Backstage style)
 const engineerWorkbenchLightColors: ThemeColors = {
-  // Background colors - Clean white with Costco blue accents
-  bgPrimary: '#f5f7fa',
+  // Background colors - Clean white, matching Costco Backstage
+  bgPrimary: '#ffffff',
   bgSurface: '#ffffff',
   bgElevated: '#ffffff',
-  bgHover: '#f0f4f8',
-  bgInput: '#ffffff',
-  bgInset: '#f8fafc',
-  
-  // Text colors - Professional dark grays
-  textPrimary: '#1e293b',
-  textSecondary: '#475569',
-  textMuted: '#94a3b8',
-  textFaint: '#cbd5e1',
-  
-  // Border colors - Subtle borders
-  borderColor: '#e2e8f0',
-  borderInput: '#cbd5e1',
-  borderSubtle: '#f1f5f9',
-  
-  // Shadows - Softer shadows
+  bgHover: '#FAFAFA',
+  bgInput: '#F4F5F5',
+  bgInset: '#F4F5F5',
+
+  // Text colors - Costco dark navy
+  textPrimary: '#172B48',
+  textSecondary: '#002242',
+  textMuted: '#64686C',
+  textFaint: '#AFAFAF',
+
+  // Border colors - Light greys from Costco palette
+  borderColor: '#EEEEEE',
+  borderInput: '#CCCCCC',
+  borderSubtle: '#F4F5F5',
+
+  // Shadows - Subtle corporate shadows
   shadowSm: '0 1px 2px rgba(0,0,0,0.05)',
-  shadowMd: '0 4px 12px rgba(0,0,0,0.08)',
-  shadowLg: '0 20px 50px rgba(0,0,0,0.12)',
-  
-  // Accent - Costco blue
-  accent: '#0071CE',
-  accentBg: '#e6f2ff',
-  accentText: '#0071CE',
-  
+  shadowMd: '0 2px 4px rgba(0,0,0,0.1)',
+  shadowLg: '0 4px 12px rgba(0,0,0,0.15)',
+
+  // Accent - Costco primary blue #005DAB
+  accent: '#005DAB',
+  accentBg: '#F4F9FF',
+  accentText: '#005DAB',
+
   // UI elements
-  overlay: 'rgba(0,0,0,0.35)',
+  overlay: 'rgba(0,34,66,0.60)',
   scrollbar: 'rgba(0,0,0,0.1)',
   scrollbarHover: 'rgba(0,0,0,0.18)',
-  codeBg: 'rgba(0,113,206,0.08)',
-  codeText: 'rgba(0,113,206,0.85)',
+  codeBg: '#F4F5F5',
+  codeText: '#002242',
 };
 
 const engineerWorkbenchDarkColors: ThemeColors = {
-  // Background colors - Deep blues with Costco heritage
-  bgPrimary: '#0a1628',
-  bgSurface: '#162338',
-  bgElevated: '#1e2d45',
-  bgHover: '#243549',
-  bgInput: '#162338',
+  // Background colors - Deep Costco navy
+  bgPrimary: '#0a1525',
+  bgSurface: '#112035',
+  bgElevated: '#1a2d45',
+  bgHover: '#1e3450',
+  bgInput: '#112035',
   bgInset: '#0d1a2d',
-  
-  // Text colors - Cool whites and blues
-  textPrimary: '#f1f5f9',
+
+  // Text colors - Light counterparts of the Costco navy
+  textPrimary: '#e8ecf1',
   textSecondary: '#94a3b8',
-  textMuted: '#64748b',
+  textMuted: '#64686C',
   textFaint: '#475569',
-  
+
   // Border colors
   borderColor: '#1e3a5f',
   borderInput: '#2a4766',
-  borderSubtle: '#1a2e47',
-  
+  borderSubtle: '#162a42',
+
   // Shadows
   shadowSm: '0 1px 3px rgba(0,0,0,0.4)',
-  shadowMd: '0 4px 16px rgba(0,0,0,0.5)',
-  shadowLg: '0 20px 60px rgba(0,0,0,0.6)',
-  
+  shadowMd: '0 4px 12px rgba(0,0,0,0.5)',
+  shadowLg: '0 8px 24px rgba(0,0,0,0.6)',
+
   // Accent - Brighter Costco blue for dark mode
-  accent: '#3b9aff',
-  accentBg: 'rgba(59,154,255,0.15)',
-  accentText: '#60a5fa',
-  
+  accent: '#4da6ff',
+  accentBg: 'rgba(0,93,171,0.2)',
+  accentText: '#6db8ff',
+
   // UI elements
-  overlay: 'rgba(0,0,0,0.7)',
+  overlay: 'rgba(0,22,44,0.75)',
   scrollbar: 'rgba(255,255,255,0.08)',
   scrollbarHover: 'rgba(255,255,255,0.15)',
-  codeBg: 'rgba(59,154,255,0.15)',
+  codeBg: 'rgba(0,93,171,0.15)',
   codeText: '#93c5fd',
 };
 
@@ -185,10 +185,93 @@ export const ENGINEER_WORKBENCH_THEME: Theme = {
   },
 };
 
+// Matrix Theme
+const matrixDarkColors: ThemeColors = {
+  bgPrimary: '#000000',
+  bgSurface: '#0a0a0a',
+  bgElevated: '#111111',
+  bgHover: '#1a1a1a',
+  bgInput: '#0a0a0a',
+  bgInset: '#050505',
+
+  textPrimary: '#00ff41',
+  textSecondary: '#00cc33',
+  textMuted: '#009926',
+  textFaint: '#006619',
+
+  borderColor: '#003300',
+  borderInput: '#004d00',
+  borderSubtle: '#001a00',
+
+  shadowSm: '0 1px 3px rgba(0,255,65,0.06)',
+  shadowMd: '0 4px 16px rgba(0,255,65,0.1)',
+  shadowLg: '0 20px 60px rgba(0,255,65,0.15)',
+
+  accent: '#00ff41',
+  accentBg: 'rgba(0,255,65,0.08)',
+  accentText: '#00ff41',
+
+  overlay: 'rgba(0,0,0,0.85)',
+  scrollbar: 'rgba(0,255,65,0.15)',
+  scrollbarHover: 'rgba(0,255,65,0.3)',
+  codeBg: 'rgba(0,255,65,0.06)',
+  codeText: '#00ff41',
+};
+
+const matrixLightColors: ThemeColors = {
+  bgPrimary: '#0d1a0d',
+  bgSurface: '#0a140a',
+  bgElevated: '#112211',
+  bgHover: '#1a2e1a',
+  bgInput: '#0a140a',
+  bgInset: '#061006',
+
+  textPrimary: '#00ff41',
+  textSecondary: '#00dd38',
+  textMuted: '#00aa2a',
+  textFaint: '#007a1e',
+
+  borderColor: '#004400',
+  borderInput: '#005500',
+  borderSubtle: '#002200',
+
+  shadowSm: '0 1px 3px rgba(0,255,65,0.08)',
+  shadowMd: '0 4px 16px rgba(0,255,65,0.12)',
+  shadowLg: '0 20px 60px rgba(0,255,65,0.18)',
+
+  accent: '#00ff41',
+  accentBg: 'rgba(0,255,65,0.1)',
+  accentText: '#00ff41',
+
+  overlay: 'rgba(0,0,0,0.85)',
+  scrollbar: 'rgba(0,255,65,0.15)',
+  scrollbarHover: 'rgba(0,255,65,0.3)',
+  codeBg: 'rgba(0,255,65,0.08)',
+  codeText: '#33ff66',
+};
+
+export const MATRIX_THEME: Theme = {
+  id: 'matrix',
+  name: 'Matrix',
+  description: 'Wake up, Neo... Green phosphor on black, hacker aesthetic',
+  author: 'The Architect',
+  fontFamily: "'JetBrains Mono', monospace",
+  fontSize: '16px',
+  light: {
+    mode: 'light',
+    colors: matrixLightColors,
+  },
+  dark: {
+    mode: 'dark',
+    colors: matrixDarkColors,
+  },
+};
+
 // Registry of all available themes
 export const THEMES: Record<string, Theme> = {
   'default': DEFAULT_THEME,
   'engineer-workbench': ENGINEER_WORKBENCH_THEME,
+  'matrix': MATRIX_THEME,
 };
 
 // Helper function to get theme by ID

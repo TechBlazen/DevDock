@@ -85,7 +85,7 @@ export const Footer = ({ editMode, onToggleEdit }: FooterProps) => {
               onClick={onToggleEdit}
               className="flex items-center gap-1 px-2 py-0.5 rounded transition-colors"
               style={{
-                color: editMode ? '#2e7d32' : 'var(--accent)',
+                color: editMode ? 'var(--accent-text)' : 'var(--accent)',
                 background: 'transparent',
                 border: 'none',
                 cursor: 'pointer',

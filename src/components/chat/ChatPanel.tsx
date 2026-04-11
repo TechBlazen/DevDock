@@ -71,18 +71,24 @@ export const ChatPanel = () => {
   const currentProvider = providers.find((p) => p.id === settings.ai.provider) ?? providers[0];
 
   return (
-    <div className="w-[420px] h-full bg-[#080f1e] border-l border-[#1c2840] flex flex-col">
+    <div
+      className="w-[420px] h-full flex flex-col"
+      style={{ background: 'var(--bg-primary)', borderLeft: '1px solid var(--border-color)' }}
+    >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[#1c2840]">
+      <div
+        className="flex items-center gap-3 px-4 py-3.5"
+        style={{ borderBottom: '1px solid var(--border-color)' }}
+      >
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg,#2a6fff,#00e5a0)' }}
+          style={{ background: 'var(--accent)' }}
         >
           <Bot size={16} color="#fff" />
         </div>
         <div>
-          <div className="text-sm font-bold text-[#e0e8ff] font-mono">DevDock AI</div>
-          <div className="flex items-center gap-1.5 text-[10px] text-[#3a4a6a] font-mono">
+          <div className="text-sm font-bold font-mono" style={{ color: 'var(--text-primary)' }}>DevDock AI</div>
+          <div className="flex items-center gap-1.5 text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>
             <StatusDot color="green" pulse />
             MCP: {runningMCP} active
           </div>
@@ -90,14 +96,16 @@ export const ChatPanel = () => {
         <div className="flex items-center gap-2 ml-auto">
           <button
             onClick={clearMessages}
-            className="p-1.5 text-[#3a4a6a] hover:text-[#ff4757] transition-colors"
+            className="p-1.5 transition-colors hover:opacity-80"
+            style={{ color: 'var(--text-muted)' }}
             title="Clear chat"
           >
             <Trash2 size={14} />
           </button>
           <button
             onClick={() => setOpen(false)}
-            className="p-1.5 text-[#3a4a6a] hover:text-[#8090b0] transition-colors"
+            className="p-1.5 transition-colors hover:opacity-80"
+            style={{ color: 'var(--text-muted)' }}
           >
             <X size={15} />
           </button>
@@ -105,7 +113,10 @@ export const ChatPanel = () => {
       </div>
 
       {/* Provider selector */}
-      <div className="flex gap-2 px-3 py-2.5 border-b border-[#0d1526] flex-wrap">
+      <div
+        className="flex gap-2 px-3 py-2.5 flex-wrap"
+        style={{ borderBottom: '1px solid var(--border-color)' }}
+      >
         {providers.map((p) => {
           const active = settings.ai.provider === p.id;
           const hasKey = p.id === 'local' || settings.ai.apiKeys[p.id]?.trim();
@@ -120,8 +131,8 @@ export const ChatPanel = () => {
                 fontWeight: 700,
                 fontFamily: 'Verdana, Geneva, sans-serif',
                 background: active ? p.color + '25' : 'transparent',
-                color: active ? p.color : hasKey ? '#6a7a9a' : '#2a3550',
-                border: active ? `2px solid ${p.color}` : '2px solid #1c2840',
+                color: active ? p.color : hasKey ? 'var(--text-muted)' : 'var(--text-faint)',
+                border: active ? `2px solid ${p.color}` : '2px solid var(--border-color)',
                 cursor: 'pointer',
                 opacity: hasKey ? 1 : 0.5,
               }}
@@ -155,7 +166,12 @@ export const ChatPanel = () => {
             <button
               key={q}
               onClick={() => { setInput(q); textareaRef.current?.focus(); }}
-              className="text-[10px] bg-[#0d1526] border border-[#1c2840] text-[#4a5a7a] px-2 py-1 rounded-lg hover:text-[#8090b0] hover:border-[#2a3a5a] transition-all font-mono"
+              className="text-[10px] px-2 py-1 rounded-lg transition-all font-mono hover:opacity-80"
+              style={{
+                background: 'var(--bg-inset)',
+                border: '1px solid var(--border-color)',
+                color: 'var(--text-muted)',
+              }}
             >
               {q}
             </button>
@@ -166,12 +182,12 @@ export const ChatPanel = () => {
       {/* Input area */}
       <div className="px-3 pb-3 pt-2">
         <div className="flex gap-2 rounded-xl p-3 items-end transition-all" style={{
-          background: '#0a0f1a',
-          border: '2px solid #2a3a5a',
-          boxShadow: '0 0 0 1px rgba(42,111,255,0.05)',
+          background: 'var(--bg-inset)',
+          border: '2px solid var(--border-input)',
+          boxShadow: 'var(--shadow-sm)',
         }}
-          onFocus={(e) => { e.currentTarget.style.borderColor = '#2a6fff'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(42,111,255,0.15)'; }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = '#2a3a5a'; e.currentTarget.style.boxShadow = '0 0 0 1px rgba(42,111,255,0.05)'; }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)'; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border-input)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
         >
           <textarea
             ref={textareaRef}
@@ -180,8 +196,13 @@ export const ChatPanel = () => {
             onKeyDown={handleKeyDown}
             placeholder="Ask DevDock AI anything… (⏎ send, ⇧⏎ newline)"
             rows={2}
-            className="flex-1 bg-transparent border-none outline-none text-[#c8d8ff] text-[14px] resize-none placeholder:text-[#3a4a6a] max-h-[160px] leading-relaxed chat-block-cursor"
-            style={{ minHeight: 44, caretColor: '#2a6fff', fontFamily: 'Verdana, Geneva, sans-serif' }}
+            className="flex-1 bg-transparent border-none outline-none text-[14px] resize-none max-h-[160px] leading-relaxed chat-block-cursor"
+            style={{
+              minHeight: 44,
+              caretColor: 'var(--accent)',
+              fontFamily: 'Verdana, Geneva, sans-serif',
+              color: 'var(--text-primary)',
+            }}
             onInput={(e) => {
               const el = e.currentTarget;
               el.style.height = 'auto';
@@ -192,12 +213,12 @@ export const ChatPanel = () => {
             onClick={send}
             disabled={isLoading || !input.trim()}
             className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ background: input.trim() && !isLoading ? '#2a6fff' : '#1c2840' }}
+            style={{ background: input.trim() && !isLoading ? 'var(--accent)' : 'var(--border-color)' }}
           >
             {isLoading ? <Spinner size={14} /> : <Send size={13} color="#fff" />}
           </button>
         </div>
-        <div className="text-[10px] text-[#1c2840] text-center mt-1.5 font-mono">
+        <div className="text-[10px] text-center mt-1.5 font-mono" style={{ color: 'var(--text-faint)' }}>
           {currentProvider.label} · {currentProvider.model}
         </div>
       </div>
