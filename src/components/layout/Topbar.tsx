@@ -30,6 +30,7 @@ export const Topbar = () => {
   const user = useAuthStore((s) => s.user);
   const accounts = useUserAccountsStore((s) => s.accounts);
   const branding = useSettingsStore((s) => s.settings.branding);
+  const aiEnabled = useSettingsStore((s) => s.settings.aiEnabled);
   const { prefs } = useUserPreferences();
 
   const userAccount = accounts.find((a) => a.id === user?.id);
@@ -77,14 +78,16 @@ export const Topbar = () => {
         </button>
 
         {/* AI Chat */}
-        <Button
-          variant={isOpen ? 'primary' : 'outline'}
-          size="sm"
-          onClick={() => setOpen(!isOpen)}
-        >
-          <Bot size={13} />
-          {branding?.appName || 'DevDock'} AI
-        </Button>
+        {aiEnabled && (
+          <Button
+            variant={isOpen ? 'primary' : 'outline'}
+            size="sm"
+            onClick={() => setOpen(!isOpen)}
+          >
+            <Bot size={13} />
+            {branding?.appName || 'DevDock'} AI
+          </Button>
+        )}
 
         {/* Separator */}
         <div className="w-px h-5 mx-1" style={{ background: 'var(--border-color)' }} />

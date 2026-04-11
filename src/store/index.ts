@@ -119,6 +119,7 @@ interface SettingsStore {
   updateBranding: (partial: Partial<AppSettings['branding']>) => void;
   updateNavigation: (navigation: NavigationConfig) => void;
   resetNavigation: () => void;
+  updateAIEnabled: (enabled: boolean) => void;
 }
 
 const defaultSettings: AppSettings = {
@@ -182,6 +183,7 @@ const defaultSettings: AppSettings = {
   dashboardWidgets: ['repos_github', 'repos_ado', 'mcp_status', 'telemetry', 'quick_actions', 'activity_feed', 'favorite_repos'],
   navigation: defaultNavigation,
   disabledTools: [],
+  aiEnabled: true,
 };
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -215,6 +217,8 @@ export const useSettingsStore = create<SettingsStore>()(
         set((s) => ({ settings: { ...s.settings, navigation } })),
       resetNavigation: () =>
         set((s) => ({ settings: { ...s.settings, navigation: defaultNavigation } })),
+      updateAIEnabled: (enabled) =>
+        set((s) => ({ settings: { ...s.settings, aiEnabled: enabled } })),
     }),
     {
       name: 'devdock-settings',
@@ -282,6 +286,9 @@ export const useSettingsStore = create<SettingsStore>()(
         // Ensure new settings fields have defaults
         if (!merged.settings.googleDrive) {
           merged.settings.googleDrive = defaultSettings.googleDrive;
+        }
+        if (merged.settings.aiEnabled === undefined) {
+          merged.settings.aiEnabled = defaultSettings.aiEnabled;
         }
 
         return merged;
