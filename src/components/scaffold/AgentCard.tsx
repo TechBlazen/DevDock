@@ -1,9 +1,9 @@
-import { Globe, Server, Cloud, Cpu, Boxes, type LucideIcon } from 'lucide-react';
+import { Globe, Server, Cloud, Cpu, Boxes, GitBranch, type LucideIcon } from 'lucide-react';
 import { Card, Pill } from '../ui';
 import type { ScaffoldAgent, ScaffoldAgentId } from '../../types';
 
 const ICON_MAP: Record<string, LucideIcon> = {
-  Globe, Server, Cloud, Cpu, Boxes,
+  Globe, Server, Cloud, Cpu, Boxes, GitBranch,
 };
 
 const AGENT_COLORS: Record<string, string> = {
@@ -12,6 +12,7 @@ const AGENT_COLORS: Record<string, string> = {
   'cloud-infra': '#f5a623',
   'mcp-server': '#b388ff',
   'full-stack': '#ff6b8a',
+  'devops-github': '#24292e',
 };
 
 interface AgentCardProps {

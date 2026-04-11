@@ -317,7 +317,8 @@ export type ScaffoldAgentId =
   | 'api-service'
   | 'cloud-infra'
   | 'mcp-server'
-  | 'full-stack';
+  | 'full-stack'
+  | 'devops-github';
 
 export interface ScaffoldAgent {
   id: ScaffoldAgentId;
