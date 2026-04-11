@@ -308,6 +308,7 @@ export interface AppSettings {
   dashboardWidgets: WidgetId[];
   navigation: NavigationConfig;
   disabledTools: string[];      // tool IDs hidden from non-admin users
+  aiEnabled: boolean;           // controls visibility of AI features (DevDock AI button)
 }
 
 // ─── Scaffold Types ──────────���─────────────────────────────────────���─────────

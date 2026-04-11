@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import {
   Key, Activity, GitFork, GitBranch, Code2, Save, Check, Lock, AlertTriangle, Globe,
   ChevronDown, ChevronRight, LayoutDashboard, Shield, Plus, Trash2, Users, Palette,
-  Languages as LanguagesIcon, Wrench,
+  Languages as LanguagesIcon, Wrench, Bot,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { useSettingsStore } from '../store';
@@ -424,6 +424,7 @@ export const SettingsPage = () => {
     updateADOConfig,
     updateActiveDirectoryConfig,
     updateBranding,
+    updateAIEnabled,
   } = useSettingsStore();
 
   const [saved, setSaved] = useState(false);
@@ -623,6 +624,43 @@ export const SettingsPage = () => {
                   );
                 })}
               </div>
+            </div>
+          </div>
+        </Card>
+      </CollapsibleSection>
+
+      <div style={{ marginTop: 12 }} />
+
+      {/* ═══════════════════════════════════════════════════════════════════
+           SECTION 1.7 — AI Features
+           ═══════════════════════════════════════════════════════════════════ */}
+      <CollapsibleSection
+        icon={<Bot size={16} className="text-[#2a6fff]" />}
+        title="AI Features"
+        description="Control the visibility of AI features in the application. When disabled, the DevDock AI chat button will be hidden from the top bar."
+      >
+        <Card>
+          <CardHeader>
+            <Bot size={14} className="text-[#2a6fff]" />
+            <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">DevDock AI</span>
+            <div className="flex-1" />
+            <Toggle
+              checked={settings.aiEnabled}
+              onChange={updateAIEnabled}
+              label={settings.aiEnabled ? 'Enabled' : 'Disabled'}
+              color="#2a6fff"
+            />
+          </CardHeader>
+          <div className="p-5 space-y-3">
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+              When enabled, the <strong className="text-[var(--text-primary)]">{settings.branding?.appName || 'DevDock'} AI</strong> button
+              appears in the top navigation bar, giving users access to the AI chat assistant.
+            </p>
+            <div className="flex items-start gap-2 rounded-xl p-3" style={{ background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}>
+              <Bot size={12} className="text-[#2a6fff] mt-0.5 flex-shrink-0" />
+              <p className="text-[11px] text-[var(--text-muted)] leading-snug">
+                Disabling this feature will hide the AI chat panel from all users. API keys configured below will remain saved.
+              </p>
             </div>
           </div>
         </Card>
