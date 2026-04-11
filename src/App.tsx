@@ -50,6 +50,7 @@ import {
   SettingsPage,
 } from './pages'
 import { useTheme } from './hooks/useTheme'
+import { ThemeProvider } from './components/ThemeProvider'
 
 export default function App() {
   const [editMode, setEditMode] = useState(false)
@@ -113,11 +114,13 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Shell editMode={editMode} onToggleEdit={() => setEditMode((v) => !v)}>
-        <PluginRoutes editMode={editMode} />
-      </Shell>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Shell editMode={editMode} onToggleEdit={() => setEditMode((v) => !v)}>
+          <PluginRoutes editMode={editMode} />
+        </Shell>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 
