@@ -28,8 +28,8 @@ html, body, #root { height: 100%; width: 100%; overflow: hidden; }
   --accent-text: #005DAA;
   --scrollbar: rgba(0,0,0,0.12);
   --scrollbar-hover: rgba(0,0,0,0.2);
-  --code-bg: rgba(42,111,255,0.08);
-  --code-text: rgba(42,111,255,0.9);
+  --code-bg: rgba(0,93,170,0.08);
+  --code-text: rgba(0,93,170,0.9);
 }
 
 [data-theme="dark"] {
@@ -99,16 +99,16 @@ main > * { animation: fadeIn 0.2s ease both; }
 
 /* ─── Chat input block cursor ───────────────────────────────────────────── */
 .chat-block-cursor {
-  caret-color: #2a6fff;
+  caret-color: var(--accent);
   caret-shape: block;
 }
 @supports not (caret-shape: block) {
   .chat-block-cursor {
-    caret-color: #2a6fff;
+    caret-color: var(--accent);
     animation: caret-pulse 1.2s ease-in-out infinite;
   }
   @keyframes caret-pulse {
-    0%, 100% { border-right: 3px solid #2a6fff; }
+    0%, 100% { border-right: 3px solid var(--accent); }
     50% { border-right: 3px solid transparent; }
   }
 }

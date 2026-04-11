@@ -23,6 +23,7 @@ import type {
   Bookmark,
   BookmarkCollection,
   BookmarkFilter,
+  ThemeId,
 } from '../types';
 import { defaultNavigation } from '../lib/default-navigation';
 import { nanoid } from 'nanoid';
@@ -120,6 +121,7 @@ interface SettingsStore {
   updateNavigation: (navigation: NavigationConfig) => void;
   resetNavigation: () => void;
   updateAIEnabled: (enabled: boolean) => void;
+  updateActiveTheme: (themeId: ThemeId) => void;
 }
 
 const defaultSettings: AppSettings = {
@@ -180,6 +182,7 @@ const defaultSettings: AppSettings = {
   },
   defaultLanguage: 'en',
   theme: 'dark',
+  activeTheme: 'default',
   dashboardWidgets: ['repos_github', 'repos_ado', 'mcp_status', 'telemetry', 'quick_actions', 'activity_feed', 'favorite_repos'],
   navigation: defaultNavigation,
   disabledTools: [],
@@ -219,6 +222,8 @@ export const useSettingsStore = create<SettingsStore>()(
         set((s) => ({ settings: { ...s.settings, navigation: defaultNavigation } })),
       updateAIEnabled: (enabled) =>
         set((s) => ({ settings: { ...s.settings, aiEnabled: enabled } })),
+      updateActiveTheme: (themeId) =>
+        set((s) => ({ settings: { ...s.settings, activeTheme: themeId } })),
     }),
     {
       name: 'devdock-settings',
@@ -289,6 +294,9 @@ export const useSettingsStore = create<SettingsStore>()(
         }
         if (merged.settings.aiEnabled === undefined) {
           merged.settings.aiEnabled = defaultSettings.aiEnabled;
+        }
+        if (!merged.settings.activeTheme) {
+          merged.settings.activeTheme = defaultSettings.activeTheme;
         }
 
         return merged;

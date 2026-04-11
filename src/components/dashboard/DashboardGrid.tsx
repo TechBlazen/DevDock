@@ -119,7 +119,8 @@ const WidgetWrapper = ({ id, editMode, isDragging, isDragOver, onRemove, catalog
         {editMode && isAdmin && (
           <button
             onClick={(e) => { e.stopPropagation(); onRemove(); }}
-            className="w-5 h-5 flex items-center justify-center rounded bg-[#ff475715] text-[#ff4757] hover:bg-[#ff475730] transition-colors flex-shrink-0"
+            className="w-5 h-5 flex items-center justify-center rounded transition-colors flex-shrink-0"
+            style={{ background: 'rgba(192,0,0,0.08)', color: '#C00000' }}
           >
             <X size={10} />
           </button>

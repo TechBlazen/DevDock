@@ -2,7 +2,6 @@ import { type ReactNode, type ButtonHTMLAttributes } from 'react';
 import clsx from 'clsx';
 
 // ─── Colors ──────────────────────────────────────────────────────────────────
-const BLUE = '#005DAA';
 
 // ─── StatusDot ────────────────────────────────────────────────────────────────
 type StatusColor = 'green' | 'yellow' | 'red' | 'blue' | 'gray';
@@ -11,7 +10,7 @@ const statusColors: Record<StatusColor, string> = {
   green: '#2e7d32',
   yellow: '#ed6c02',
   red: '#d32f2f',
-  blue: BLUE,
+  blue: '#005DAA',
   gray: '#9e9e9e',
 };
 
@@ -39,7 +38,7 @@ const badgeMap: Record<BadgeVariant, { color: string; label: string }> = {
   error:   { color: '#d32f2f', label: 'error' },
   ok:      { color: '#2e7d32', label: 'ok' },
   private: { color: '#ed6c02', label: 'private' },
-  public:  { color: BLUE, label: 'public' },
+  public:  { color: '#005DAA', label: 'public' },
 };
 
 export const Badge = ({ variant }: { variant: BadgeVariant }) => {
@@ -53,7 +52,7 @@ export const Badge = ({ variant }: { variant: BadgeVariant }) => {
 };
 
 // ─── Pill ─────────────────────────────────────────────────────────────────────
-export const Pill = ({ children, color = BLUE }: { children: ReactNode; color?: string }) => (
+export const Pill = ({ children, color = '#005DAA' }: { children: ReactNode; color?: string }) => (
   <span
     style={{
       background: `${color}14`,
@@ -95,14 +94,14 @@ const getVariantStyle = (variant: NonNullable<ButtonProps['variant']>) => {
     case 'danger':
       return {
         background: 'var(--bg-surface)',
-        color: '#d32f2f',
-        border: '1px solid #ffcdd2',
+        color: '#C00000',
+        border: '1px solid var(--border-color)',
       };
     case 'success':
       return {
         background: 'var(--bg-surface)',
         color: '#2e7d32',
-        border: '1px solid #c8e6c9',
+        border: '1px solid var(--border-color)',
       };
     case 'outline':
       return {
@@ -215,7 +214,7 @@ export const Toggle = ({
   checked,
   onChange,
   label,
-  color = BLUE,
+  color = '#005DAA',
   disabled = false,
 }: {
   checked: boolean;

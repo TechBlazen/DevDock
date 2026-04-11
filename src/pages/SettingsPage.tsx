@@ -412,6 +412,7 @@ const ActiveDirectorySettings = ({
 import type { AppSettings, AppLanguage } from '../types';
 import { SUPPORTED_LANGUAGES } from '../i18n';
 import { TOOLS as DEV_TOOLS_LIST } from './DevToolsPage';
+import { getAllThemes } from '../lib/themes';
 
 const DEV_TOOLS_CATEGORIES = [...new Set(DEV_TOOLS_LIST.map((t) => t.category))];
 
@@ -425,6 +426,7 @@ export const SettingsPage = () => {
     updateActiveDirectoryConfig,
     updateBranding,
     updateAIEnabled,
+    updateActiveTheme,
   } = useSettingsStore();
 
   const [saved, setSaved] = useState(false);
@@ -560,6 +562,65 @@ export const SettingsPage = () => {
               onChange={(e) => updateBranding({ tagline: e.target.value })}
               placeholder="AI Developer Portal"
             />
+          </div>
+        </Card>
+
+        {/* Theme Selection */}
+        <Card>
+          <CardHeader>
+            <Palette size={14} className="text-[#a855f7]" />
+            <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Theme</span>
+          </CardHeader>
+          <div className="p-5 space-y-5">
+            <div>
+              <label className="text-[12px] font-medium mb-3 block" style={{ color: 'var(--text-secondary)' }}>
+                Active Theme (Site-Wide)
+              </label>
+              <div className="space-y-3">
+                {getAllThemes().map((theme) => {
+                  const isActive = settings.activeTheme === theme.id;
+                  return (
+                    <button
+                      key={theme.id}
+                      onClick={() => updateActiveTheme(theme.id)}
+                      className="w-full text-left p-4 rounded-lg transition-all cursor-pointer"
+                      style={{
+                        background: isActive ? 'var(--accent-bg)' : 'var(--bg-inset)',
+                        border: isActive ? '2px solid var(--accent)' : '2px solid var(--border-color)',
+                      }}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div
+                            className="text-sm font-bold mb-1"
+                            style={{ color: isActive ? 'var(--accent)' : 'var(--text-primary)' }}
+                          >
+                            {theme.name}
+                          </div>
+                          <div className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+                            {theme.description}
+                          </div>
+                          <div className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
+                            by {theme.author}
+                          </div>
+                        </div>
+                        {isActive && (
+                          <div
+                            className="px-2 py-1 rounded text-[10px] font-bold uppercase"
+                            style={{ background: 'var(--accent)', color: '#fff' }}
+                          >
+                            Active
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] mt-3" style={{ color: 'var(--text-faint)' }}>
+                Theme changes apply site-wide to all users. Users can still toggle between light/dark mode in their profile.
+              </p>
+            </div>
           </div>
         </Card>
       </CollapsibleSection>

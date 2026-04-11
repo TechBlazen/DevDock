@@ -16,8 +16,8 @@ function getGreeting(name: string, mode: 'time-based' | 'simple'): string {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  admin: '#d32f2f',
-  editor: '#ed6c02',
+  admin: '#C00000',
+  editor: '#E58A00',
   viewer: '#2e7d32',
 };
 
@@ -66,7 +66,7 @@ export const Topbar = () => {
           onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
           onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
           OTel
-          <span className="ml-1 text-[11px]" style={{ color: errorRate > 1 ? '#d32f2f' : '#2e7d32' }}>{reqPerSec}/s</span>
+          <span className="ml-1 text-[11px]" style={{ color: errorRate > 1 ? '#C00000' : '#2e7d32' }}>{reqPerSec}/s</span>
         </Link>
 
         {/* Notifications */}
@@ -74,7 +74,7 @@ export const Topbar = () => {
           onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
           onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
           <Bell size={16} />
-          <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{ background: '#d32f2f' }} />
+          <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{ background: '#C00000' }} />
         </button>
 
         {/* AI Chat */}

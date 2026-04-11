@@ -295,6 +295,64 @@ export interface BrandingConfig {
   faviconUrl: string;             // URL or data URL for the favicon
 }
 
+// ─── Theme Types ──────────────────────────────────────────────────────────────
+export type ThemeId = 'default' | 'engineer-workbench' | 'matrix';
+export type ThemeMode = 'light' | 'dark';
+
+export interface ThemeColors {
+  // Background colors
+  bgPrimary: string;
+  bgSurface: string;
+  bgElevated: string;
+  bgHover: string;
+  bgInput: string;
+  bgInset: string;
+  
+  // Text colors
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
+  textFaint: string;
+  
+  // Border colors
+  borderColor: string;
+  borderInput: string;
+  borderSubtle: string;
+  
+  // Shadows
+  shadowSm: string;
+  shadowMd: string;
+  shadowLg: string;
+  
+  // Accent
+  accent: string;
+  accentBg: string;
+  accentText: string;
+  
+  // UI elements
+  overlay: string;
+  scrollbar: string;
+  scrollbarHover: string;
+  codeBg: string;
+  codeText: string;
+}
+
+export interface ThemeVariant {
+  mode: ThemeMode;
+  colors: ThemeColors;
+}
+
+export interface Theme {
+  id: ThemeId;
+  name: string;
+  description: string;
+  author: string;
+  light: ThemeVariant;
+  dark: ThemeVariant;
+  fontFamily?: string;
+  fontSize?: string;
+}
+
 export interface AppSettings {
   ai: AIConfig;
   otel: OTelConfig;
@@ -304,7 +362,8 @@ export interface AppSettings {
   activeDirectory: ActiveDirectoryConfig;
   branding: BrandingConfig;
   defaultLanguage: AppLanguage;
-  theme: 'dark' | 'light';
+  theme: 'dark' | 'light' | 'system';
+  activeTheme: ThemeId;         // admin-controlled theme for the entire site
   dashboardWidgets: WidgetId[];
   navigation: NavigationConfig;
   disabledTools: string[];      // tool IDs hidden from non-admin users
@@ -317,7 +376,8 @@ export type ScaffoldAgentId =
   | 'api-service'
   | 'cloud-infra'
   | 'mcp-server'
-  | 'full-stack';
+  | 'full-stack'
+  | 'devops-github';
 
 export interface ScaffoldAgent {
   id: ScaffoldAgentId;

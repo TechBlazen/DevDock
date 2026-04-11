@@ -25,18 +25,30 @@ export const MarkdownText = ({ text }: { text: string }) => {
   const parts = text.split(/(```[\s\S]*?```)/g);
 
   return (
-    <div className="text-[13px] leading-relaxed text-[#b0bcd8] space-y-2">
+    <div className="text-[13px] leading-relaxed space-y-2" style={{ color: 'var(--text-secondary)' }}>
       {parts.map((part, i) => {
         if (part.startsWith('```')) {
           const lines = part.replace(/^```\w*\n?/, '').replace(/```$/, '');
           return (
             <div key={i} className="relative group">
-              <pre className="bg-[#060c18] border border-[#1c2840] rounded-lg p-3 overflow-x-auto text-[11px] text-[#00e5a0] font-mono leading-relaxed">
+              <pre
+                className="rounded-lg p-3 overflow-x-auto text-[11px] font-mono leading-relaxed"
+                style={{
+                  background: 'var(--code-bg)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--code-text)',
+                }}
+              >
                 {lines}
               </pre>
               <button
                 onClick={() => handleCopy(lines, i)}
-                className="absolute top-2 right-2 p-1 bg-[#0d1526] border border-[#1c2840] rounded text-[#4a5a7a] hover:text-[#8090b0] opacity-0 group-hover:opacity-100 transition-all"
+                className="absolute top-2 right-2 p-1 rounded opacity-0 group-hover:opacity-100 transition-all"
+                style={{
+                  background: 'var(--bg-elevated)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-muted)',
+                }}
               >
                 {copied === i ? <Check size={11} /> : <Copy size={11} />}
               </button>
@@ -46,11 +58,11 @@ export const MarkdownText = ({ text }: { text: string }) => {
 
         // Inline formatting
         const html = part
-          .replace(/\*\*(.+?)\*\*/g, '<strong class="text-[#e0e8ff] font-semibold">$1</strong>')
-          .replace(/`(.+?)`/g, '<code class="bg-[#0d1526] text-[#00e5a0] px-1 py-0.5 rounded text-[11px] font-mono">$1</code>')
-          .replace(/^### (.+)$/gm, '<div class="text-[#e0e8ff] font-bold text-sm font-mono mt-1">$1</div>')
-          .replace(/^## (.+)$/gm, '<div class="text-[#e0e8ff] font-black text-sm font-mono mt-2">$1</div>')
-          .replace(/^- (.+)$/gm, '<div class="flex gap-1.5 items-start"><span class="text-[#2a6fff] mt-0.5 flex-shrink-0">›</span><span>$1</span></div>')
+          .replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--text-primary);font-weight:600">$1</strong>')
+          .replace(/`(.+?)`/g, '<code style="background:var(--code-bg);color:var(--code-text);padding:1px 4px;border-radius:4px;font-size:11px;font-family:monospace">$1</code>')
+          .replace(/^### (.+)$/gm, '<div style="color:var(--text-primary);font-weight:700;font-size:14px;font-family:monospace;margin-top:4px">$1</div>')
+          .replace(/^## (.+)$/gm, '<div style="color:var(--text-primary);font-weight:900;font-size:14px;font-family:monospace;margin-top:8px">$1</div>')
+          .replace(/^- (.+)$/gm, '<div class="flex gap-1.5 items-start"><span style="color:var(--accent);margin-top:2px;flex-shrink:0">›</span><span>$1</span></div>')
           .replace(/\n\n/g, '<br/><br/>')
           .replace(/\n/g, '<br/>');
 
@@ -68,34 +80,40 @@ export const MessageBubble = ({ msg }: { msg: ChatMessage }) => {
     <div className={`flex gap-2.5 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
       {/* Avatar */}
       <div
-        className={`w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center text-xs font-bold ${
-          isUser ? 'bg-[#2a6fff33] text-[#2a6fff]' : 'bg-[#00e5a022] text-[#00e5a0]'
-        }`}
+        className="w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center text-xs font-bold"
+        style={{
+          background: isUser ? 'var(--accent-bg)' : 'var(--bg-inset)',
+          color: isUser ? 'var(--accent)' : 'var(--text-muted)',
+        }}
       >
         {isUser ? 'J' : <Bot size={14} />}
       </div>
 
       {/* Bubble */}
       <div
-        className={`max-w-[85%] rounded-xl px-3.5 py-2.5 border ${
-          isUser
-            ? 'bg-[#1a2a44] border-[#2a6fff33] rounded-tr-sm'
-            : 'bg-[#0d1526] border-[#1c2840] rounded-tl-sm'
+        className={`max-w-[85%] rounded-xl px-3.5 py-2.5 ${
+          isUser ? 'rounded-tr-sm' : 'rounded-tl-sm'
         }`}
+        style={{
+          background: isUser ? 'var(--accent-bg)' : 'var(--bg-surface)',
+          border: `1px solid ${isUser ? 'var(--accent)' : 'var(--border-color)'}`,
+          borderColor: isUser ? 'color-mix(in srgb, var(--accent) 30%, transparent)' : 'var(--border-color)',
+        }}
       >
         <MarkdownText text={msg.content} />
 
         {/* Footer meta */}
         <div className="flex items-center gap-2 mt-1.5">
-          <span className="text-[10px] text-[#2a3a5a] font-mono">
+          <span className="text-[10px] font-mono" style={{ color: 'var(--text-faint)' }}>
             {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
           {msg.provider && (
-            <span className="text-[10px] text-[#2a3a5a] font-mono">{msg.provider}</span>
+            <span className="text-[10px] font-mono" style={{ color: 'var(--text-faint)' }}>{msg.provider}</span>
           )}
           {msg.traceId && (
             <span
-              className="text-[10px] text-[#2a3a5a] font-mono cursor-pointer hover:text-[#4a5a7a] transition-colors"
+              className="text-[10px] font-mono cursor-pointer transition-colors hover:opacity-70"
+              style={{ color: 'var(--text-faint)' }}
               title={`OTel trace: ${msg.traceId}`}
               onClick={() => navigator.clipboard.writeText(msg.traceId!)}
             >
@@ -111,15 +129,21 @@ export const MessageBubble = ({ msg }: { msg: ChatMessage }) => {
 // ─── Typing indicator ─────────────────────────────────────────────────────────
 export const TypingIndicator = () => (
   <div className="flex gap-2.5">
-    <div className="w-7 h-7 rounded-lg bg-[#00e5a022] flex items-center justify-center">
-      <Bot size={14} className="text-[#00e5a0]" />
+    <div
+      className="w-7 h-7 rounded-lg flex items-center justify-center"
+      style={{ background: 'var(--bg-inset)', color: 'var(--text-muted)' }}
+    >
+      <Bot size={14} />
     </div>
-    <div className="bg-[#0d1526] border border-[#1c2840] rounded-xl rounded-tl-sm px-3.5 py-3 flex gap-1.5 items-center">
+    <div
+      className="rounded-xl rounded-tl-sm px-3.5 py-3 flex gap-1.5 items-center"
+      style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)' }}
+    >
       {[0, 1, 2].map((i) => (
         <div
           key={i}
-          className="w-1.5 h-1.5 rounded-full bg-[#2a6fff]"
-          style={{ animation: `forge-pulse 1.2s ${i * 0.2}s infinite` }}
+          className="w-1.5 h-1.5 rounded-full"
+          style={{ background: 'var(--accent)', animation: `forge-pulse 1.2s ${i * 0.2}s infinite` }}
         />
       ))}
     </div>
