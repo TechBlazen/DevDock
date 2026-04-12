@@ -1,11 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Plus, FileText, Trash2, X, Download, FolderOpen, FolderPlus,
   ChevronDown, ChevronRight, Folder, GitBranch, Cloud,
+  Pencil, Sparkles,
 } from 'lucide-react';
-import { useDocsStore } from '../../store';
-import { Button } from '../ui';
+import { useDocsStore, useSettingsStore } from '../../store';
+import { sendChatMessage } from '../../lib/ai';
+import { Button, Spinner } from '../ui';
 import { formatDistanceToNow } from 'date-fns';
+import { nanoid } from 'nanoid';
+import type { ChatMessage } from '../../types';
 
 interface DocListProps {
   onImport?: () => void;
@@ -23,7 +27,7 @@ interface TreeNode {
 }
 
 export const DocList = ({ onImport }: DocListProps) => {
-  const { docs, folders, activeDocId, setActiveDoc, addDoc, removeDoc, addFolder, removeFolder, moveDocToFolder } = useDocsStore();
+  const { docs, folders, activeDocId, setActiveDoc, addDoc, removeDoc, updateDoc, addFolder, removeFolder, moveDocToFolder } = useDocsStore();
   const [showAdd, setShowAdd] = useState(false);
   const [showAddFolder, setShowAddFolder] = useState<string | null>(null); // parent path or '' for root
   const [newTitle, setNewTitle] = useState('');
@@ -41,6 +45,85 @@ export const DocList = ({ onImport }: DocListProps) => {
     return collapsed;
   });
   const [dragOverPath, setDragOverPath] = useState<string | null>(null);
+
+  // Rename state
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; docId: string } | null>(null);
+  const [renamingDocId, setRenamingDocId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const [aiRenaming, setAiRenaming] = useState<string | null>(null);
+  const renameInputRef = useRef<HTMLInputElement>(null);
+
+  // Dismiss context menu on outside click
+  useEffect(() => {
+    if (!contextMenu) return;
+    const dismiss = () => setContextMenu(null);
+    document.addEventListener('click', dismiss);
+    return () => document.removeEventListener('click', dismiss);
+  }, [contextMenu]);
+
+  // Auto-focus rename input
+  useEffect(() => {
+    if (renamingDocId && renameInputRef.current) {
+      renameInputRef.current.focus();
+      renameInputRef.current.select();
+    }
+  }, [renamingDocId]);
+
+  const startRename = useCallback((docId: string) => {
+    const doc = docs.find((d) => d.id === docId);
+    if (!doc) return;
+    setRenamingDocId(docId);
+    setRenameValue(doc.title);
+    setContextMenu(null);
+  }, [docs]);
+
+  const commitRename = useCallback(() => {
+    if (renamingDocId && renameValue.trim()) {
+      updateDoc(renamingDocId, { title: renameValue.trim() });
+    }
+    setRenamingDocId(null);
+    setRenameValue('');
+  }, [renamingDocId, renameValue, updateDoc]);
+
+  const cancelRename = useCallback(() => {
+    setRenamingDocId(null);
+    setRenameValue('');
+  }, []);
+
+  const handleAiRename = useCallback((docId: string) => {
+    const doc = docs.find((d) => d.id === docId);
+    if (!doc) return;
+    setContextMenu(null);
+    setAiRenaming(docId);
+
+    const settings = useSettingsStore.getState().settings;
+    const contentPreview = doc.content.slice(0, 2000);
+    const messages: ChatMessage[] = [
+      {
+        id: nanoid(),
+        role: 'user',
+        content: `Generate a short, descriptive title for this document:\n\n${contentPreview}`,
+        timestamp: new Date(),
+      },
+    ];
+
+    sendChatMessage(
+      messages,
+      settings.ai,
+      {
+        onToken: () => {},
+        onDone: (fullText) => {
+          const title = fullText.replace(/^["']|["']$/g, '').trim();
+          if (title) updateDoc(docId, { title });
+          setAiRenaming(null);
+        },
+        onError: () => {
+          setAiRenaming(null);
+        },
+      },
+      'You are a document title generator. Given markdown content, return ONLY a short, descriptive title (3-8 words). No quotes, no explanation, no punctuation at the end, just the title text.'
+    );
+  }, [docs, updateDoc]);
 
   // Build folder tree
   const buildTree = (): TreeNode[] => {
@@ -274,12 +357,19 @@ export const DocList = ({ onImport }: DocListProps) => {
 
     // Doc node
     const isActive = node.docId === activeDocId;
+    const isRenaming = renamingDocId === node.docId;
+    const isAiRenaming = aiRenaming === node.docId;
     return (
       <div
         key={`doc-${node.docId}`}
-        draggable
+        draggable={!isRenaming}
         onDragStart={(e) => handleDragStart(e, node.docId!)}
-        onClick={() => setActiveDoc(node.docId!)}
+        onClick={() => { if (!isRenaming) setActiveDoc(node.docId!); }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setContextMenu({ x: e.clientX, y: e.clientY, docId: node.docId! });
+        }}
         className="flex items-center gap-2 py-1.5 cursor-pointer transition-all rounded-md mx-1"
         style={{
           paddingLeft: depth * 16 + 8,
@@ -298,15 +388,45 @@ export const DocList = ({ onImport }: DocListProps) => {
           if (btn) btn.style.opacity = '0';
         }}
       >
-        <FileText size={14} className="flex-shrink-0" style={{ color: isActive ? 'var(--accent)' : 'var(--text-faint)' }} />
+        {isAiRenaming ? (
+          <Spinner size={14} />
+        ) : (
+          <FileText size={14} className="flex-shrink-0" style={{ color: isActive ? 'var(--accent)' : 'var(--text-faint)' }} />
+        )}
         <div className="flex-1 min-w-0">
-          <div className="text-[12px] font-medium truncate" style={{ color: isActive ? 'var(--accent)' : 'var(--text-primary)' }}>
-            {node.name}
-          </div>
-          {node.updatedAt && (
-            <div className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
-              {formatDistanceToNow(new Date(node.updatedAt), { addSuffix: true })}
-            </div>
+          {isRenaming ? (
+            <input
+              ref={renameInputRef}
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') commitRename();
+                if (e.key === 'Escape') cancelRename();
+              }}
+              onBlur={commitRename}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full rounded px-1.5 py-0.5 text-[12px] font-medium outline-none"
+              style={{
+                background: 'var(--bg-input)',
+                border: '1px solid var(--accent)',
+                color: 'var(--text-primary)',
+              }}
+            />
+          ) : (
+            <>
+              <div
+                className="text-[12px] font-medium truncate"
+                style={{ color: isAiRenaming ? 'var(--text-muted)' : isActive ? 'var(--accent)' : 'var(--text-primary)' }}
+                onDoubleClick={(e) => { e.stopPropagation(); startRename(node.docId!); }}
+              >
+                {isAiRenaming ? 'Generating title...' : node.name}
+              </div>
+              {node.updatedAt && (
+                <div className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
+                  {formatDistanceToNow(new Date(node.updatedAt), { addSuffix: true })}
+                </div>
+              )}
+            </>
           )}
         </div>
         <button
@@ -429,6 +549,54 @@ export const DocList = ({ onImport }: DocListProps) => {
       >
         {tree.map((node) => renderNode(node, 0))}
       </div>
+
+      {/* Right-click context menu */}
+      {contextMenu && (
+        <div
+          className="fixed z-50 rounded-lg py-1 shadow-lg animate-[fadeIn_0.1s_ease]"
+          style={{
+            left: contextMenu.x,
+            top: contextMenu.y,
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-color)',
+            boxShadow: 'var(--shadow-md)',
+            minWidth: 160,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] text-left transition-colors"
+            style={{ color: 'var(--text-primary)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            onClick={() => startRename(contextMenu.docId)}
+          >
+            <Pencil size={12} style={{ color: 'var(--text-muted)' }} />
+            Rename
+          </button>
+          <button
+            className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] text-left transition-colors"
+            style={{ color: 'var(--text-primary)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            onClick={() => handleAiRename(contextMenu.docId)}
+          >
+            <Sparkles size={12} style={{ color: 'var(--accent)' }} />
+            AI Rename
+          </button>
+          <div style={{ height: 1, background: 'var(--border-subtle)', margin: '2px 0' }} />
+          <button
+            className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] text-left transition-colors"
+            style={{ color: '#C00000' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            onClick={() => { removeDoc(contextMenu.docId); setContextMenu(null); }}
+          >
+            <Trash2 size={12} />
+            Delete
+          </button>
+        </div>
+      )}
     </div>
   );
 };
