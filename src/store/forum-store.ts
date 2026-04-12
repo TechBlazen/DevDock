@@ -135,6 +135,7 @@ interface ForumStore {
   incrementViewCount: (id: string) => void;
 
   addAnswer: (threadId: string, answer: Omit<ForumAnswer, 'id' | 'threadId' | 'votes' | 'isAccepted' | 'createdAt' | 'updatedAt'>) => string;
+  addReplyToAnswer: (threadId: string, parentAnswerId: string, reply: Pick<ForumAnswer, 'authorId' | 'authorName' | 'authorAvatarUrl' | 'body'>) => string;
   updateAnswer: (threadId: string, answerId: string, body: string) => void;
   removeAnswer: (threadId: string, answerId: string) => void;
   acceptAnswer: (threadId: string, answerId: string) => void;
@@ -203,6 +204,16 @@ export const useForumStore = create<ForumStore>()(
         const id = nanoid();
         const now = new Date().toISOString();
         const full: ForumAnswer = { ...answer, id, threadId, votes: [], isAccepted: false, createdAt: now, updatedAt: now };
+        set((s) => ({
+          threads: s.threads.map((t) => t.id === threadId ? { ...t, answers: [...t.answers, full], updatedAt: now } : t),
+        }));
+        return id;
+      },
+
+      addReplyToAnswer: (threadId, parentAnswerId, reply) => {
+        const id = nanoid();
+        const now = new Date().toISOString();
+        const full: ForumAnswer = { ...reply, id, threadId, parentAnswerId, votes: [], isAccepted: false, createdAt: now, updatedAt: now };
         set((s) => ({
           threads: s.threads.map((t) => t.id === threadId ? { ...t, answers: [...t.answers, full], updatedAt: now } : t),
         }));
