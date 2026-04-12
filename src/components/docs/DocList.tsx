@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   Plus, FileText, Trash2, X, Download, FolderOpen, FolderPlus,
-  ChevronDown, ChevronRight, Folder,
+  ChevronDown, ChevronRight, Folder, GitBranch, Cloud,
 } from 'lucide-react';
 import { useDocsStore } from '../../store';
 import { Button } from '../ui';
@@ -18,6 +18,8 @@ interface TreeNode {
   children?: TreeNode[];
   docId?: string;
   updatedAt?: string;
+  source?: 'github' | 'ado';  // for auto-imported repo folders
+  isAutoFolder?: boolean;      // virtual folder from auto-import (not deletable)
 }
 
 export const DocList = ({ onImport }: DocListProps) => {
@@ -27,7 +29,17 @@ export const DocList = ({ onImport }: DocListProps) => {
   const [newTitle, setNewTitle] = useState('');
   const [newFolderName, setNewFolderName] = useState('');
   const [newDocFolder, setNewDocFolder] = useState('');
-  const [collapsedPaths, setCollapsedPaths] = useState<Set<string>>(new Set());
+  // Auto-collapse imported repo folders by default
+  const [collapsedPaths, setCollapsedPaths] = useState<Set<string>>(() => {
+    const collapsed = new Set<string>();
+    for (const doc of docs) {
+      if (doc.tags?.includes('auto-imported')) {
+        const repoTag = doc.tags.find((t) => t !== 'github' && t !== 'ado' && t !== 'auto-imported' && !t.includes('/'));
+        if (repoTag) collapsed.add(`__repo__/${repoTag}`);
+      }
+    }
+    return collapsed;
+  });
   const [dragOverPath, setDragOverPath] = useState<string | null>(null);
 
   // Build folder tree
@@ -53,8 +65,31 @@ export const DocList = ({ onImport }: DocListProps) => {
       }
     }
 
-    // Place docs into folders or root
+    // Auto-create virtual folders for auto-imported docs grouped by repo
+    const repoFolders = new Map<string, TreeNode>();
     for (const doc of docs) {
+      if (doc.tags?.includes('auto-imported')) {
+        const source = doc.tags.includes('github') ? 'github' : doc.tags.includes('ado') ? 'ado' : undefined;
+        const repoTag = doc.tags.find((t) => t !== 'github' && t !== 'ado' && t !== 'auto-imported' && !t.includes('/'));
+        if (repoTag) {
+          const repoPath = `__repo__/${repoTag}`;
+          if (!repoFolders.has(repoPath)) {
+            const node: TreeNode = {
+              type: 'folder', name: repoTag, path: repoPath,
+              children: [], source: source as 'github' | 'ado', isAutoFolder: true,
+            };
+            repoFolders.set(repoPath, node);
+            tree.push(node);
+          }
+          repoFolders.get(repoPath)!.children!.push({
+            type: 'doc', name: doc.title, path: doc.id,
+            docId: doc.id, updatedAt: doc.updatedAt,
+          });
+          continue;
+        }
+      }
+
+      // Non-imported docs: place into user folders or root
       const docNode: TreeNode = {
         type: 'doc',
         name: doc.title,
@@ -161,38 +196,55 @@ export const DocList = ({ onImport }: DocListProps) => {
               ? <ChevronRight size={12} style={{ color: 'var(--text-faint)', flexShrink: 0 }} />
               : <ChevronDown size={12} style={{ color: 'var(--text-faint)', flexShrink: 0 }} />
             }
-            {isCollapsed
-              ? <Folder size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-              : <FolderOpen size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-            }
+            {node.source === 'github' ? (
+              <GitBranch size={14} style={{ color: '#8090b0', flexShrink: 0 }} />
+            ) : node.source === 'ado' ? (
+              <Cloud size={14} style={{ color: '#0078d4', flexShrink: 0 }} />
+            ) : isCollapsed ? (
+              <Folder size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+            ) : (
+              <FolderOpen size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+            )}
             <span className="text-[12px] font-semibold truncate flex-1" style={{ color: 'var(--text-primary)' }}>
               {node.name}
             </span>
+            {node.source && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded" style={{
+                background: 'var(--code-bg)',
+                color: 'var(--text-muted)',
+              }}>
+                {node.source === 'github' ? 'GitHub' : 'ADO'}
+              </span>
+            )}
             {docCount > 0 && (
               <span className="text-[9px] px-1 rounded" style={{ color: 'var(--text-faint)' }}>
                 {docCount}
               </span>
             )}
-            <button
-              onClick={(e) => { e.stopPropagation(); setShowAddFolder(node.path); setNewFolderName(''); }}
-              className="p-0.5 opacity-0 group-hover:opacity-100 hover:!opacity-100 transition-opacity"
-              style={{ color: 'var(--text-faint)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = 'var(--accent)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.opacity = '0'; e.currentTarget.style.color = 'var(--text-faint)'; }}
-              title="Add subfolder"
-            >
-              <FolderPlus size={11} />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); removeFolder(node.path); }}
-              className="p-0.5 opacity-0 hover:!opacity-100 transition-opacity"
-              style={{ color: 'var(--text-faint)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = '#C00000'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.opacity = '0'; e.currentTarget.style.color = 'var(--text-faint)'; }}
-              title="Delete folder"
-            >
-              <Trash2 size={11} />
-            </button>
+            {!node.isAutoFolder && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowAddFolder(node.path); setNewFolderName(''); }}
+                className="p-0.5 opacity-0 group-hover:opacity-100 hover:!opacity-100 transition-opacity"
+                style={{ color: 'var(--text-faint)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = 'var(--accent)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = '0'; e.currentTarget.style.color = 'var(--text-faint)'; }}
+                title="Add subfolder"
+              >
+                <FolderPlus size={11} />
+              </button>
+            )}
+            {!node.isAutoFolder && (
+              <button
+                onClick={(e) => { e.stopPropagation(); removeFolder(node.path); }}
+                className="p-0.5 opacity-0 hover:!opacity-100 transition-opacity"
+                style={{ color: 'var(--text-faint)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = '#C00000'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = '0'; e.currentTarget.style.color = 'var(--text-faint)'; }}
+                title="Delete folder"
+              >
+                <Trash2 size={11} />
+              </button>
+            )}
           </div>
 
           {/* Subfolder create input */}
