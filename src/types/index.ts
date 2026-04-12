@@ -86,6 +86,7 @@ export interface MCPServer {
 
 // ─── AI Provider Types ────────────────────────────────────────────────────────
 export type AIProvider = 'anthropic' | 'openai' | 'gemini' | 'local';
+export type ChatMode = 'devdock' | 'overwatch';
 
 export interface ChatMessage {
   id: string;
@@ -95,6 +96,7 @@ export interface ChatMessage {
   provider?: AIProvider;
   tokens?: number;
   traceId?: string;
+  chatMode?: ChatMode;
 }
 
 export interface AIConfig {
@@ -104,6 +106,21 @@ export interface AIConfig {
   model: string;
   temperature: number;
   maxTokens: number;
+}
+
+export interface OverwatchConfig {
+  enabled: boolean;
+  endpoint: string;             // Overwatch backend URL (e.g. http://localhost:8000)
+  apiKey: string;               // optional Bearer token for auth
+}
+
+// Overwatch agent event types for streaming tool call progress
+export type OverwatchToolStatus = 'started' | 'loading' | 'complete';
+
+export interface OverwatchToolCall {
+  toolCallId: string;
+  toolCallName: string;
+  status: OverwatchToolStatus;
 }
 
 // ─── OTel Types ───────────────────────────────────────────────────────────────
@@ -380,6 +397,7 @@ export interface AppSettings {
   googleDrive: GoogleDriveConfig;
   activeDirectory: ActiveDirectoryConfig;
   branding: BrandingConfig;
+  overwatch: OverwatchConfig;
   defaultLanguage: AppLanguage;
   theme: 'dark' | 'light' | 'system';
   activeTheme: ThemeId;         // admin-controlled theme for the entire site

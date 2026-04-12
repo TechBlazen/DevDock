@@ -4,6 +4,7 @@ import type {
   AppSettings,
   WidgetId,
   AIProvider,
+  ChatMode,
   NavigationConfig,
   MCPServer,
   ChatMessage,
@@ -25,6 +26,7 @@ import type {
   BookmarkCollection,
   BookmarkFilter,
   ThemeId,
+  OverwatchToolCall,
 } from '../types';
 import { defaultNavigation } from '../lib/default-navigation';
 import { nanoid } from 'nanoid';
@@ -123,6 +125,7 @@ interface SettingsStore {
   resetNavigation: () => void;
   updateAIEnabled: (enabled: boolean) => void;
   updateActiveTheme: (themeId: ThemeId) => void;
+  updateOverwatchConfig: (partial: Partial<AppSettings['overwatch']>) => void;
 }
 
 const defaultSettings: AppSettings = {
@@ -181,6 +184,11 @@ const defaultSettings: AppSettings = {
     logoType: 'default',
     faviconUrl: '/favicon.svg',
   },
+  overwatch: {
+    enabled: false,
+    endpoint: 'http://localhost:8000',
+    apiKey: '',
+  },
   defaultLanguage: 'en',
   theme: 'dark',
   activeTheme: 'default',
@@ -225,6 +233,8 @@ export const useSettingsStore = create<SettingsStore>()(
         set((s) => ({ settings: { ...s.settings, aiEnabled: enabled } })),
       updateActiveTheme: (themeId) =>
         set((s) => ({ settings: { ...s.settings, activeTheme: themeId } })),
+      updateOverwatchConfig: (partial) =>
+        set((s) => ({ settings: { ...s.settings, overwatch: { ...s.settings.overwatch, ...partial } } })),
     }),
     {
       name: 'devdock-settings',
@@ -299,6 +309,9 @@ export const useSettingsStore = create<SettingsStore>()(
         if (!merged.settings.activeTheme) {
           merged.settings.activeTheme = defaultSettings.activeTheme;
         }
+        if (!merged.settings.overwatch) {
+          merged.settings.overwatch = defaultSettings.overwatch;
+        }
 
         return merged;
       },
@@ -335,36 +348,64 @@ export const useMCPStore = create<MCPStore>()((set) => ({
     set((s) => ({ servers: s.servers.map((srv) => (srv.id === id ? { ...srv, status } : srv)) })),
 }));
 
-// ─── Chat Store ───────────────────────────────────────────────────────────────
+// ─── Chat Store ─────────────────────────────────────────────────────────────────
+const DEVDOCK_WELCOME: ChatMessage = {
+  id: 'welcome-devdock',
+  role: 'assistant',
+  content: "Hey Judge 👋 I'm **DevDock AI** — your MCP-powered developer assistant.\n\nI can help you:\n- 🔍 Explore GitHub & Azure DevOps repos\n- 🤖 Inspect and manage MCP servers\n- 📊 Analyze OpenTelemetry traces\n- 💻 Write, review, and explain code\n- 🏗️ Plan architecture and infrastructure\n\nWhat are we building today?",
+  timestamp: new Date(),
+  provider: 'anthropic',
+  chatMode: 'devdock',
+};
+
+const OVERWATCH_WELCOME: ChatMessage = {
+  id: 'welcome-overwatch',
+  role: 'assistant',
+  content: "Hey Judge 👋 I'm **Overwatch Ask AI** — your ITOps diagnostic assistant.\n\nI can query across your enterprise tools:\n- 🏥 **ServiceNow** — incidents, problems, changes, knowledge articles\n- 📊 **Dynatrace** — APM metrics, traces, entity health\n- 📝 **Splunk** — application & infrastructure logs\n\nWhat would you like to investigate?",
+  timestamp: new Date(),
+  chatMode: 'overwatch',
+};
+
 interface ChatStore {
   messages: ChatMessage[];
   isLoading: boolean;
   isOpen: boolean;
+  chatMode: ChatMode;
+  overwatchToolCalls: OverwatchToolCall[];
+  overwatchThinking: boolean;
   addMessage: (msg: ChatMessage) => void;
   clearMessages: () => void;
   setLoading: (val: boolean) => void;
   setOpen: (val: boolean) => void;
+  setChatMode: (mode: ChatMode) => void;
+  setOverwatchToolCalls: (calls: OverwatchToolCall[]) => void;
+  setOverwatchThinking: (val: boolean) => void;
 }
 
 export const useChatStore = create<ChatStore>()((set) => ({
-  messages: [
-    {
-      id: 'welcome',
-      role: 'assistant',
-      content: "Hey Judge 👋 I'm **DevDock AI** — your MCP-powered developer assistant.\n\nI can help you:\n- 🔍 Explore GitHub & Azure DevOps repos\n- 🤖 Inspect and manage MCP servers\n- 📊 Analyze OpenTelemetry traces\n- 💻 Write, review, and explain code\n- 🏗️ Plan architecture and infrastructure\n\nWhat are we building today?",
-      timestamp: new Date(),
-      provider: 'anthropic',
-    },
-  ],
+  messages: [DEVDOCK_WELCOME],
   isLoading: false,
   isOpen: false,
+  chatMode: 'devdock' as ChatMode,
+  overwatchToolCalls: [],
+  overwatchThinking: false,
   addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
   clearMessages: () =>
     set((s) => ({
-      messages: [s.messages[0]], // keep welcome
+      messages: [s.chatMode === 'overwatch' ? OVERWATCH_WELCOME : DEVDOCK_WELCOME],
     })),
   setLoading: (val) => set({ isLoading: val }),
   setOpen: (val) => set({ isOpen: val }),
+  setChatMode: (mode) =>
+    set(() => ({
+      chatMode: mode,
+      messages: [mode === 'overwatch' ? OVERWATCH_WELCOME : DEVDOCK_WELCOME],
+      isLoading: false,
+      overwatchToolCalls: [],
+      overwatchThinking: false,
+    })),
+  setOverwatchToolCalls: (calls) => set({ overwatchToolCalls: calls }),
+  setOverwatchThinking: (val) => set({ overwatchThinking: val }),
 }));
 
 // ─── Repo Store ───────────────────────────────────────────────────────────────
