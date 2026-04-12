@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useDocsStore } from '../../store';
 import { Button } from '../ui';
+import { DocContextMenu } from './DocContextMenu';
 import { formatDistanceToNow } from 'date-fns';
 
 interface DocListProps {
@@ -41,6 +42,7 @@ export const DocList = ({ onImport }: DocListProps) => {
     return collapsed;
   });
   const [dragOverPath, setDragOverPath] = useState<string | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ docId: string; x: number; y: number } | null>(null);
 
   // Build folder tree
   const buildTree = (): TreeNode[] => {
@@ -280,6 +282,7 @@ export const DocList = ({ onImport }: DocListProps) => {
         draggable
         onDragStart={(e) => handleDragStart(e, node.docId!)}
         onClick={() => setActiveDoc(node.docId!)}
+        onContextMenu={(e) => { e.preventDefault(); setContextMenu({ docId: node.docId!, x: e.clientX, y: e.clientY }); }}
         className="flex items-center gap-2 py-1.5 cursor-pointer transition-all rounded-md mx-1"
         style={{
           paddingLeft: depth * 16 + 8,
@@ -429,6 +432,16 @@ export const DocList = ({ onImport }: DocListProps) => {
       >
         {tree.map((node) => renderNode(node, 0))}
       </div>
+
+      {/* AI context menu */}
+      {contextMenu && (
+        <DocContextMenu
+          docId={contextMenu.docId}
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
     </div>
   );
 };
