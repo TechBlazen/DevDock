@@ -49,7 +49,7 @@ export const Topbar = () => {
   }, [showPrefs]);
 
   return (
-    <header className="h-[52px] flex items-center px-5 gap-4 flex-shrink-0 relative z-10" style={{
+    <header className="h-[52px] flex items-center px-6 gap-4 flex-shrink-0 relative z-10" style={{
       background: 'var(--bg-surface)',
       borderBottom: '1px solid var(--border-color)',
       boxShadow: 'var(--header-shadow)',

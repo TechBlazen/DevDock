@@ -88,7 +88,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
         to={to}
         end
         title={collapsed ? label : undefined}
-        className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : 'px-3 py-[10px]'} text-[13px] font-medium transition-all duration-200`}
+        className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : 'pl-7 pr-3 py-[10px]'} text-[13px] font-medium transition-all duration-200`}
         style={({ isActive }) => ({ ...navLinkStyle(isActive), ...(indent && !collapsed ? { marginLeft: 44 } : {}) })}
         {...hoverHandlers}
       >
@@ -121,7 +121,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
         <div className="flex items-center">
           <button
             onClick={() => toggleGroup(item.id)}
-            className="flex-1 flex items-center gap-2.5 px-3 py-[10px] text-[13px] font-medium transition-all duration-200 text-left"
+            className="flex-1 flex items-center gap-2.5 pl-7 pr-3 py-[10px] text-[13px] font-medium transition-all duration-200 text-left"
             style={{
               ...navLinkStyle(pathname.startsWith(item.route)),
               cursor: 'pointer',
@@ -169,7 +169,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
         <div className="flex items-center">
           <NavLink
             to="/plugins"
-            className="flex-1 flex items-center gap-2.5 px-3 py-[10px] text-[13px] font-medium transition-all duration-200"
+            className="flex-1 flex items-center gap-2.5 pl-7 pr-3 py-[10px] text-[13px] font-medium transition-all duration-200"
             style={() => navLinkStyle(isPluginsPageActive || isPluginRouteActive)}
             {...hoverHandlers}
           >
@@ -198,7 +198,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
                   key={p.to}
                   to={p.to}
                   title={collapsed ? p.label : undefined}
-                  className={`flex items-center gap-2.5 px-3 py-[10px] text-[13px] font-medium transition-all duration-200`}
+                  className={`flex items-center gap-2.5 pl-7 pr-3 py-[10px] text-[13px] font-medium transition-all duration-200`}
                   style={({ isActive }) => ({ ...navLinkStyle(isActive), marginLeft: 44 })}
                   {...hoverHandlers}
                 >
@@ -222,7 +222,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
         target="_blank"
         rel="noopener noreferrer"
         title={collapsed ? item.label : undefined}
-        className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : 'px-3 py-[10px]'} text-[13px] font-medium transition-all duration-200`}
+        className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : 'pl-7 pr-3 py-[10px]'} text-[13px] font-medium transition-all duration-200`}
         style={{ color: 'var(--text-secondary)', borderLeft: '3px solid transparent' }}
         onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--nav-hover-bg)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
@@ -307,10 +307,10 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
       </nav>
 
       {/* Collapse toggle */}
-      <div className="px-3 py-1">
+      <div style={{ paddingLeft: collapsed ? 8 : 28, paddingRight: collapsed ? 8 : 16, paddingTop: 4, paddingBottom: 4 }}>
         <button
           onClick={onToggle}
-          className={`w-full flex items-center ${collapsed ? 'justify-center' : ''} gap-2 px-2 py-2 rounded-xl transition-all duration-300`}
+          className={`w-full flex items-center ${collapsed ? 'justify-center' : ''} gap-2 py-2 rounded-xl transition-all duration-300`}
           style={{ color: 'var(--text-muted)' }}
           onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'var(--bg-hover)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'transparent'; }}
@@ -322,7 +322,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
       </div>
 
       {/* User */}
-      <div className={collapsed ? 'px-2 py-3' : 'px-4 py-3'}>
+      <div style={{ paddingLeft: collapsed ? 8 : 28, paddingRight: collapsed ? 8 : 16, paddingTop: 12, paddingBottom: 12 }}>
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-2.5'}`}>
           {user?.avatarUrl ? (
             <img
