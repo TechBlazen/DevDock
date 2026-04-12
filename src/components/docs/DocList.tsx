@@ -280,15 +280,23 @@ export const DocList = ({ onImport }: DocListProps) => {
         draggable
         onDragStart={(e) => handleDragStart(e, node.docId!)}
         onClick={() => setActiveDoc(node.docId!)}
-        className="group flex items-center gap-2 py-1.5 cursor-pointer transition-all rounded-md mx-1"
+        className="flex items-center gap-2 py-1.5 cursor-pointer transition-all rounded-md mx-1"
         style={{
           paddingLeft: depth * 16 + 8,
           paddingRight: 4,
           background: isActive ? 'var(--accent-bg)' : 'transparent',
           borderLeft: isActive ? '2px solid var(--accent)' : '2px solid transparent',
         }}
-        onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = 'var(--bg-hover)'; }}
-        onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = isActive ? 'var(--accent-bg)' : 'transparent'; }}
+        onMouseEnter={(e) => {
+          if (!isActive) e.currentTarget.style.background = 'var(--bg-hover)';
+          const btn = e.currentTarget.querySelector('[data-delete-btn]') as HTMLElement;
+          if (btn) btn.style.opacity = '1';
+        }}
+        onMouseLeave={(e) => {
+          if (!isActive) e.currentTarget.style.background = isActive ? 'var(--accent-bg)' : 'transparent';
+          const btn = e.currentTarget.querySelector('[data-delete-btn]') as HTMLElement;
+          if (btn) btn.style.opacity = '0';
+        }}
       >
         <FileText size={14} className="flex-shrink-0" style={{ color: isActive ? 'var(--accent)' : 'var(--text-faint)' }} />
         <div className="flex-1 min-w-0">
@@ -302,9 +310,10 @@ export const DocList = ({ onImport }: DocListProps) => {
           )}
         </div>
         <button
+          data-delete-btn
           onClick={(e) => { e.stopPropagation(); removeDoc(node.docId!); }}
-          className="p-1 rounded opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
-          style={{ color: 'var(--text-faint)' }}
+          className="p-1 rounded transition-all flex-shrink-0"
+          style={{ color: 'var(--text-faint)', opacity: 0 }}
           onMouseEnter={(e) => { e.currentTarget.style.color = '#C00000'; e.currentTarget.style.background = 'var(--bg-hover)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-faint)'; e.currentTarget.style.background = 'transparent'; }}
           title="Delete document"
