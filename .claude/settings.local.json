@@ -42,7 +42,15 @@
       "Bash(echo \"export { useForumStore } from ''./forum-store'';\")",
       "Bash(gh run:*)",
       "WebFetch(domain:kvmpods.com)",
-      "Bash(echo \"export { useAnalyticsStore } from ''./analytics-store'';\")"
+      "Bash(echo \"export { useAnalyticsStore } from ''./analytics-store'';\")",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(curl -s http://localhost:5173/src/main.tsx)",
+      "Bash(xargs kill:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
+      "Bash(xargs grep:*)",
+      "Bash(grep -n \"bg-\\\\|#[0-9a-fA-F]\\\\{3,6\\\\}\\\\|rgb\\\\|rgba\" /Users/terry/Public/Apps/Personal/forge-portal-clean/src/components/layout/Footer.tsx)",
+      "Bash(grep -rn \"#[0-9a-fA-F]\\\\{3,6\\\\}\\\\|rgb\\(.*\\)\\\\|rgba\\(.*\\)\" /Users/terry/Public/Apps/Personal/forge-portal-clean/src/components --include=\"*.tsx\")",
+      "Bash(grep:*)"
     ]
   }
 }
