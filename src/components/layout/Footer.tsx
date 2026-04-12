@@ -25,7 +25,7 @@ export const Footer = ({ editMode, onToggleEdit }: FooterProps) => {
       style={{
         height: 36,
         paddingLeft: 32,
-        paddingRight: 32,
+        paddingRight: 40,
         background: 'var(--footer-bg)',
         borderTop: '1px solid var(--border-color)',
         fontSize: 12,
