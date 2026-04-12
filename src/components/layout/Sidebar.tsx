@@ -307,7 +307,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
       </nav>
 
       {/* Collapse toggle */}
-      <div className="px-3 py-1">
+      <div className="px-5 py-1">
         <button
           onClick={onToggle}
           className={`w-full flex items-center ${collapsed ? 'justify-center' : ''} gap-2 px-2 py-2 rounded-xl transition-all duration-300`}
@@ -322,7 +322,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
       </div>
 
       {/* User */}
-      <div className={collapsed ? 'px-2 py-3' : 'px-4 py-3'}>
+      <div className={collapsed ? 'px-2 py-3' : 'px-6 py-3'}>
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-2.5'}`}>
           {user?.avatarUrl ? (
             <img

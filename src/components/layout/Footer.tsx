@@ -21,7 +21,7 @@ export const Footer = ({ editMode, onToggleEdit }: FooterProps) => {
 
   return (
     <footer
-      className="flex items-center px-5 flex-shrink-0"
+      className="flex items-center px-7 flex-shrink-0"
       style={{
         height: 36,
         background: 'var(--footer-bg)',
