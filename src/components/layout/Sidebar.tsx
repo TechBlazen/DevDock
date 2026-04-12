@@ -88,7 +88,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
         to={to}
         end
         title={collapsed ? label : undefined}
-        className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : 'px-3 py-[10px]'} text-[13px] font-medium transition-all duration-200`}
+        className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : 'pl-5 pr-3 py-[10px]'} text-[13px] font-medium transition-all duration-200`}
         style={({ isActive }) => ({ ...navLinkStyle(isActive), ...(indent && !collapsed ? { marginLeft: 44 } : {}) })}
         {...hoverHandlers}
       >
@@ -121,7 +121,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
         <div className="flex items-center">
           <button
             onClick={() => toggleGroup(item.id)}
-            className="flex-1 flex items-center gap-2.5 px-3 py-[10px] text-[13px] font-medium transition-all duration-200 text-left"
+            className="flex-1 flex items-center gap-2.5 pl-5 pr-3 py-[10px] text-[13px] font-medium transition-all duration-200 text-left"
             style={{
               ...navLinkStyle(pathname.startsWith(item.route)),
               cursor: 'pointer',
@@ -169,7 +169,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
         <div className="flex items-center">
           <NavLink
             to="/plugins"
-            className="flex-1 flex items-center gap-2.5 px-3 py-[10px] text-[13px] font-medium transition-all duration-200"
+            className="flex-1 flex items-center gap-2.5 pl-5 pr-3 py-[10px] text-[13px] font-medium transition-all duration-200"
             style={() => navLinkStyle(isPluginsPageActive || isPluginRouteActive)}
             {...hoverHandlers}
           >
@@ -198,7 +198,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
                   key={p.to}
                   to={p.to}
                   title={collapsed ? p.label : undefined}
-                  className={`flex items-center gap-2.5 px-3 py-[10px] text-[13px] font-medium transition-all duration-200`}
+                  className={`flex items-center gap-2.5 pl-5 pr-3 py-[10px] text-[13px] font-medium transition-all duration-200`}
                   style={({ isActive }) => ({ ...navLinkStyle(isActive), marginLeft: 44 })}
                   {...hoverHandlers}
                 >
@@ -222,7 +222,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
         target="_blank"
         rel="noopener noreferrer"
         title={collapsed ? item.label : undefined}
-        className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : 'px-3 py-[10px]'} text-[13px] font-medium transition-all duration-200`}
+        className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : 'pl-5 pr-3 py-[10px]'} text-[13px] font-medium transition-all duration-200`}
         style={{ color: 'var(--text-secondary)', borderLeft: '3px solid transparent' }}
         onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--nav-hover-bg)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
