@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import {
   Key, Activity, GitFork, GitBranch, Code2, Save, Check, Lock, AlertTriangle, Globe,
   ChevronDown, ChevronRight, LayoutDashboard, Shield, Plus, Trash2, Users, Palette,
-  Languages as LanguagesIcon, Wrench, Bot,
+  Languages as LanguagesIcon, Wrench, Bot, Wifi, WifiOff, Loader2,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { useSettingsStore } from '../store';
@@ -427,7 +427,10 @@ export const SettingsPage = () => {
     updateBranding,
     updateAIEnabled,
     updateActiveTheme,
+    updateOverwatchConfig,
   } = useSettingsStore();
+
+  const [owTestStatus, setOwTestStatus] = useState<'idle' | 'testing' | 'connected' | 'error'>('idle');
 
   const [saved, setSaved] = useState(false);
   const [otelApplied, setOtelApplied] = useState(false);
@@ -725,6 +728,126 @@ export const SettingsPage = () => {
             </div>
           </div>
         </Card>
+      </CollapsibleSection>
+
+      <div style={{ marginTop: 12 }} />
+
+      {/* ═══════════════════════════════════════════════════════════════════
+           SECTION 1.8 — Overwatch Ask AI
+           ═══════════════════════════════════════════════════════════════════ */}
+      <CollapsibleSection
+        icon={<Shield size={16} className="text-[#1a73e8]" />}
+        title="Overwatch Ask AI"
+        description="Connect to the Overwatch agentic backend for ITOps diagnostics. Overwatch provides access to ServiceNow, Dynatrace, and Splunk via MCP."
+      >
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <Shield size={14} className="text-[#1a73e8]" />
+              <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Overwatch Agent</span>
+              <div className="flex-1" />
+              <Toggle
+                checked={settings.overwatch?.enabled ?? false}
+                onChange={(v) => updateOverwatchConfig({ enabled: v })}
+                label={settings.overwatch?.enabled ? 'Enabled' : 'Disabled'}
+                color="#1a73e8"
+              />
+            </CardHeader>
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="text-[12px] font-medium mb-1.5 block" style={{ color: 'var(--text-secondary)' }}>Agent Endpoint URL</label>
+                <input
+                  type="url"
+                  value={settings.overwatch?.endpoint ?? 'http://localhost:8000'}
+                  onChange={(e) => updateOverwatchConfig({ endpoint: e.target.value })}
+                  placeholder="http://localhost:8000"
+                  className="w-full rounded-lg px-3 py-2 text-xs outline-none transition-colors font-mono"
+                  style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
+                />
+                <p className="text-[10px] mt-1" style={{ color: 'var(--text-faint)' }}>
+                  The URL of the Overwatch backend agent (FastAPI + Google ADK). Locally: http://localhost:8000
+                </p>
+              </div>
+
+              <div>
+                <label className="text-[12px] font-medium mb-1.5 block" style={{ color: 'var(--text-secondary)' }}>API Key / Bearer Token</label>
+                <div className="flex items-center gap-2">
+                  <Lock size={12} className="text-[var(--text-faint)] flex-shrink-0" />
+                  <input
+                    type="password"
+                    value={settings.overwatch?.apiKey ?? ''}
+                    onChange={(e) => updateOverwatchConfig({ apiKey: e.target.value })}
+                    placeholder="Optional — leave empty for local dev"
+                    className="flex-1 rounded-lg px-3 py-2 text-xs outline-none transition-colors"
+                    style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)', fontFamily: 'Verdana, Geneva, sans-serif' }}
+                  />
+                </div>
+              </div>
+
+              {/* Connection test */}
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    setOwTestStatus('testing');
+                    try {
+                      const { checkOverwatchHealth } = await import('../lib/overwatch');
+                      const result = await checkOverwatchHealth(settings.overwatch);
+                      setOwTestStatus(result.ok ? 'connected' : 'error');
+                    } catch {
+                      setOwTestStatus('error');
+                    }
+                    setTimeout(() => setOwTestStatus('idle'), 4000);
+                  }}
+                  disabled={owTestStatus === 'testing'}
+                >
+                  {owTestStatus === 'testing' ? (
+                    <><Loader2 size={12} className="animate-spin" /> Testing...</>
+                  ) : owTestStatus === 'connected' ? (
+                    <><Wifi size={12} className="text-green-500" /> Connected</>
+                  ) : owTestStatus === 'error' ? (
+                    <><WifiOff size={12} className="text-red-500" /> Failed</>
+                  ) : (
+                    <>Test Connection</>
+                  )}
+                </Button>
+                {owTestStatus === 'connected' && (
+                  <span className="text-[11px] font-mono" style={{ color: '#2e7d32' }}>Overwatch agent is healthy</span>
+                )}
+                {owTestStatus === 'error' && (
+                  <span className="text-[11px] font-mono" style={{ color: '#d32f2f' }}>Could not reach agent</span>
+                )}
+              </div>
+
+              {/* Data sources info */}
+              <div className="rounded-xl p-4 space-y-2" style={{ background: '#1a73e808', border: '1px solid #1a73e81a' }}>
+                <div className="text-[11px] font-bold uppercase tracking-wider" style={{ color: '#1a73e8' }}>Connected Data Sources</div>
+                <div className="space-y-1.5">
+                  {[
+                    { emoji: '🏥', name: 'ServiceNow', desc: 'Incidents, problems, changes, knowledge articles, CMDB' },
+                    { emoji: '📊', name: 'Dynatrace', desc: 'APM metrics, traces, entity health, DQL queries' },
+                    { emoji: '📝', name: 'Splunk', desc: 'Application & infrastructure logs, error patterns' },
+                  ].map((ds) => (
+                    <div key={ds.name} className="flex items-center gap-2 text-[11px]">
+                      <span>{ds.emoji}</span>
+                      <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{ds.name}</span>
+                      <span style={{ color: 'var(--text-muted)' }}>— {ds.desc}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2 rounded-xl p-3" style={{ background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}>
+                <Shield size={12} className="text-[#1a73e8] mt-0.5 flex-shrink-0" />
+                <p className="text-[11px] text-[var(--text-muted)] leading-snug">
+                  Overwatch Ask AI uses Google ADK with Gemini to orchestrate sub-agents for each data source.
+                  The agent is available as a second option in the AI chat panel dropdown.
+                </p>
+              </div>
+            </div>
+          </Card>
+        </div>
       </CollapsibleSection>
 
       <div style={{ marginTop: 12 }} />
