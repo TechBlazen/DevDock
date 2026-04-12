@@ -21,9 +21,11 @@ export const Footer = ({ editMode, onToggleEdit }: FooterProps) => {
 
   return (
     <footer
-      className="flex items-center px-7 flex-shrink-0"
+      className="flex items-center flex-shrink-0"
       style={{
         height: 36,
+        paddingLeft: 32,
+        paddingRight: 32,
         background: 'var(--footer-bg)',
         borderTop: '1px solid var(--border-color)',
         fontSize: 12,

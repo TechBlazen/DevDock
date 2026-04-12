@@ -307,10 +307,10 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
       </nav>
 
       {/* Collapse toggle */}
-      <div className="px-5 py-1">
+      <div style={{ paddingLeft: collapsed ? 8 : 28, paddingRight: collapsed ? 8 : 16, paddingTop: 4, paddingBottom: 4 }}>
         <button
           onClick={onToggle}
-          className={`w-full flex items-center ${collapsed ? 'justify-center' : ''} gap-2 px-2 py-2 rounded-xl transition-all duration-300`}
+          className={`w-full flex items-center ${collapsed ? 'justify-center' : ''} gap-2 py-2 rounded-xl transition-all duration-300`}
           style={{ color: 'var(--text-muted)' }}
           onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'var(--bg-hover)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'transparent'; }}
@@ -322,7 +322,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
       </div>
 
       {/* User */}
-      <div className={collapsed ? 'px-2 py-3' : 'px-6 py-3'}>
+      <div style={{ paddingLeft: collapsed ? 8 : 28, paddingRight: collapsed ? 8 : 16, paddingTop: 12, paddingBottom: 12 }}>
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-2.5'}`}>
           {user?.avatarUrl ? (
             <img
