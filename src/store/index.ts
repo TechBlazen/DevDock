@@ -17,6 +17,7 @@ import type {
   AuthState,
   ForgePlugin,
   DocEntry,
+  DocFolder,
   UserAccount,
   UserRole,
   UserPreferences,
@@ -642,11 +643,15 @@ export const usePluginStore = create<PluginStore>()(
 // ─── Docs Store ──────────────────────────────────────────────────────────────
 interface DocsStore {
   docs: DocEntry[];
+  folders: DocFolder[];
   activeDocId: string | null;
   addDoc: (doc: Omit<DocEntry, 'id' | 'createdAt' | 'updatedAt'>) => string;
-  updateDoc: (id: string, partial: Partial<Pick<DocEntry, 'title' | 'content' | 'tags' | 'sourceUrl'>>) => void;
+  updateDoc: (id: string, partial: Partial<Pick<DocEntry, 'title' | 'content' | 'tags' | 'sourceUrl' | 'folder'>>) => void;
   removeDoc: (id: string) => void;
   setActiveDoc: (id: string | null) => void;
+  addFolder: (name: string, parentPath?: string) => void;
+  removeFolder: (path: string) => void;
+  moveDocToFolder: (docId: string, folder: string | undefined) => void;
 }
 
 const sampleDocs: DocEntry[] = [
@@ -906,6 +911,7 @@ export const useDocsStore = create<DocsStore>()(
   persist(
     (set) => ({
       docs: sampleDocs,
+      folders: [],
       activeDocId: null,
 
       addDoc: (partial) => {
@@ -930,20 +936,44 @@ export const useDocsStore = create<DocsStore>()(
         })),
 
       setActiveDoc: (id) => set({ activeDocId: id }),
+
+      addFolder: (name, parentPath) => {
+        const id = nanoid();
+        const folder: DocFolder = { id, name, parentPath };
+        set((s) => ({ folders: [...s.folders, folder] }));
+      },
+
+      removeFolder: (path) =>
+        set((s) => ({
+          folders: s.folders.filter((f) => {
+            const fp = f.parentPath ? `${f.parentPath}/${f.name}` : f.name;
+            return fp !== path && !fp.startsWith(path + '/');
+          }),
+          docs: s.docs.map((d) =>
+            d.folder === path || d.folder?.startsWith(path + '/') ? { ...d, folder: undefined } : d
+          ),
+        })),
+
+      moveDocToFolder: (docId, folder) =>
+        set((s) => ({
+          docs: s.docs.map((d) =>
+            d.id === docId ? { ...d, folder, updatedAt: new Date().toISOString() } : d
+          ),
+        })),
     }),
     {
       name: 'devdock-docs',
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ docs: s.docs }),
+      partialize: (s) => ({ docs: s.docs, folders: s.folders }),
       merge: (persisted, current) => {
         const p = persisted as Partial<DocsStore> | undefined;
         const existingDocs = p?.docs ?? [];
-        // Ensure all sample docs exist (merge by id)
         const existingIds = new Set(existingDocs.map((d) => d.id));
         const missingDefaults = sampleDocs.filter((d) => !existingIds.has(d.id));
         return {
           ...current,
           docs: [...existingDocs, ...missingDefaults],
+          folders: p?.folders ?? [],
         };
       },
     }
