@@ -96,4 +96,23 @@ function applyThemeColors(colors: ThemeColors) {
   root.style.setProperty('--scrollbar-hover', colors.scrollbarHover);
   root.style.setProperty('--code-bg', colors.codeBg);
   root.style.setProperty('--code-text', colors.codeText);
+
+  // Navigation
+  root.style.setProperty('--nav-active-bg', colors.navActiveBg);
+  root.style.setProperty('--nav-active-indicator', colors.navActiveIndicator);
+  root.style.setProperty('--nav-hover-bg', colors.navHoverBg);
+
+  // Header & Footer
+  root.style.setProperty('--header-shadow', colors.headerShadow);
+  root.style.setProperty('--footer-bg', colors.footerBg);
+  root.style.setProperty('--footer-text', colors.footerText);
+
+  // Buttons
+  root.style.setProperty('--btn-hover-bg', colors.btnHoverBg);
+  root.style.setProperty('--btn-active-bg', colors.btnActiveBg);
+  root.style.setProperty('--btn-radius', colors.btnRadius);
+
+  // Tooltip
+  root.style.setProperty('--tooltip-bg', colors.tooltipBg);
+  root.style.setProperty('--tooltip-text', colors.tooltipText);
 }

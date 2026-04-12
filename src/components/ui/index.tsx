@@ -121,7 +121,7 @@ const sizePadding: Record<NonNullable<ButtonProps['size']>, { padding: string; f
 export const Button = ({ variant = 'ghost', size = 'md', className, children, ...props }: ButtonProps) => (
   <button
     className={clsx(
-      'inline-flex items-center justify-center gap-2 rounded-full font-semibold',
+      'inline-flex items-center justify-center gap-2 font-semibold',
       'transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed',
       'hover:opacity-90 active:scale-[0.97]',
       className
@@ -130,6 +130,7 @@ export const Button = ({ variant = 'ghost', size = 'md', className, children, ..
       ...getVariantStyle(variant),
       padding: sizePadding[size].padding,
       fontSize: sizePadding[size].fontSize,
+      borderRadius: 'var(--btn-radius, 9999px)',
     }}
     {...props}
   >
@@ -188,13 +189,14 @@ export const Input = ({ label, className, ...props }: InputProps) => (
     )}
     <input
       className={clsx(
-        'w-full rounded-md px-3 py-2 text-[13px] outline-none transition-all duration-200',
+        'w-full px-3 py-2 text-[13px] outline-none transition-all duration-200',
         className
       )}
       style={{
         background: 'var(--bg-input)',
         border: '1px solid var(--border-input)',
         color: 'var(--text-primary)',
+        borderRadius: 'var(--btn-radius, 6px)',
       }}
       onFocus={(e) => {
         e.currentTarget.style.border = '1px solid var(--accent)';
@@ -260,10 +262,13 @@ export const Toggle = ({
 export const Tooltip = ({ children, tip }: { children: ReactNode; tip: string }) => (
   <div className="relative group inline-flex">
     {children}
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50" style={{
-      background: 'var(--text-primary)',
-      color: 'var(--bg-surface)',
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 text-[11px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50" style={{
+      background: 'var(--tooltip-bg)',
+      color: 'var(--tooltip-text)',
       boxShadow: 'var(--shadow-md)',
+      borderRadius: 'var(--btn-radius, 6px)',
+      padding: '8px 16px',
+      fontSize: 14,
     }}>
       {tip}
     </div>

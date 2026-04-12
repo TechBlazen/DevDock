@@ -30,6 +30,17 @@ html, body, #root { height: 100%; width: 100%; overflow: hidden; }
   --scrollbar-hover: rgba(0,0,0,0.2);
   --code-bg: rgba(0,93,170,0.08);
   --code-text: rgba(0,93,170,0.9);
+  --nav-active-bg: #e8f0fe;
+  --nav-active-indicator: #005DAA;
+  --nav-hover-bg: #f0f0f0;
+  --header-shadow: none;
+  --footer-bg: var(--bg-surface);
+  --footer-text: var(--text-muted);
+  --btn-hover-bg: #f0f0f0;
+  --btn-active-bg: #e0e0e0;
+  --btn-radius: 9999px;
+  --tooltip-bg: #333;
+  --tooltip-text: #fff;
 }
 
 [data-theme="dark"] {
@@ -57,6 +68,17 @@ html, body, #root { height: 100%; width: 100%; overflow: hidden; }
   --scrollbar-hover: rgba(255,255,255,0.2);
   --code-bg: rgba(74,158,255,0.12);
   --code-text: #7cb8ff;
+  --nav-active-bg: rgba(74,158,255,0.12);
+  --nav-active-indicator: #4a9eff;
+  --nav-hover-bg: #2a2d3a;
+  --header-shadow: none;
+  --footer-bg: var(--bg-surface);
+  --footer-text: var(--text-muted);
+  --btn-hover-bg: #2a2d3a;
+  --btn-active-bg: #353845;
+  --btn-radius: 9999px;
+  --tooltip-bg: #e8eaed;
+  --tooltip-text: #1a1a2e;
 }
 
 body {
@@ -190,5 +212,5 @@ main > * { animation: fadeIn 0.2s ease both; }
 
 /* Table hover effects */
 .techdocs-content table tbody tr:hover {
-  background: rgba(42, 111, 255, 0.02);
+  background: var(--btn-hover-bg);
 }

@@ -335,6 +335,25 @@ export interface ThemeColors {
   scrollbarHover: string;
   codeBg: string;
   codeText: string;
+
+  // Navigation
+  navActiveBg: string;
+  navActiveIndicator: string;
+  navHoverBg: string;
+
+  // Header & Footer
+  headerShadow: string;
+  footerBg: string;
+  footerText: string;
+
+  // Buttons
+  btnHoverBg: string;
+  btnActiveBg: string;
+  btnRadius: string;
+
+  // Tooltip
+  tooltipBg: string;
+  tooltipText: string;
 }
 
 export interface ThemeVariant {
