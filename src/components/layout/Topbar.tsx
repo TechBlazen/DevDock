@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import { Bell, Bot, ChevronDown } from 'lucide-react';
-import { useChatStore, useTelemetryStore, useAuthStore, useUserAccountsStore, useSettingsStore } from '../../store';
+import { useChatStore, useAuthStore, useUserAccountsStore, useSettingsStore } from '../../store';
 import { Button, Pill } from '../ui';
 import { useUserPreferences } from '../../hooks/useUserPreferences';
 import { UserPreferencesPanel } from './UserPreferencesPanel';
@@ -26,7 +25,6 @@ export const Topbar = () => {
   const prefsRef = useRef<HTMLDivElement>(null);
   const setOpen = useChatStore((s) => s.setOpen);
   const isOpen = useChatStore((s) => s.isOpen);
-  const { reqPerSec, errorRate } = useTelemetryStore();
   const user = useAuthStore((s) => s.user);
   const accounts = useUserAccountsStore((s) => s.accounts);
   const branding = useSettingsStore((s) => s.settings.branding);
@@ -61,15 +59,7 @@ export const Topbar = () => {
       <div className="flex-1" />
 
       {/* Right nav links */}
-      <nav className="flex items-center gap-1">
-        {/* OTel status */}
-        <Link to="/telemetry" className="px-3 py-1.5 text-[13px] font-medium transition-colors" style={{ color: 'var(--accent)', borderRadius: 'var(--btn-radius)' }}
-          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--btn-hover-bg)'}
-          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
-          OTel
-          <span className="ml-1 text-[11px]" style={{ color: errorRate > 1 ? '#C00000' : '#2e7d32' }}>{reqPerSec}/s</span>
-        </Link>
-
+      <nav className="flex items-center gap-3">
         {/* Notifications */}
         <button className="relative px-2 py-1.5 transition-colors" style={{ color: 'var(--text-secondary)', borderRadius: 'var(--btn-radius)' }}
           onMouseEnter={(e) => e.currentTarget.style.background = 'var(--btn-hover-bg)'}
@@ -91,7 +81,7 @@ export const Topbar = () => {
         )}
 
         {/* Separator */}
-        <div className="w-px h-5 mx-1" style={{ background: 'var(--border-color)' }} />
+        <div className="w-px h-5 mx-3" style={{ background: 'var(--border-color)' }} />
 
         {/* User + Preferences */}
         <div ref={prefsRef} className="relative">
