@@ -280,7 +280,7 @@ export const DocList = ({ onImport }: DocListProps) => {
         draggable
         onDragStart={(e) => handleDragStart(e, node.docId!)}
         onClick={() => setActiveDoc(node.docId!)}
-        className="flex items-center gap-2 py-1.5 cursor-pointer transition-all rounded-md mx-1"
+        className="group flex items-center gap-2 py-1.5 cursor-pointer transition-all rounded-md mx-1"
         style={{
           paddingLeft: depth * 16 + 8,
           paddingRight: 4,
@@ -303,12 +303,13 @@ export const DocList = ({ onImport }: DocListProps) => {
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); removeDoc(node.docId!); }}
-          className="p-0.5 opacity-0 hover:!opacity-100 transition-opacity flex-shrink-0"
+          className="p-1 rounded opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
           style={{ color: 'var(--text-faint)' }}
-          onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = '#C00000'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.opacity = '0'; e.currentTarget.style.color = 'var(--text-faint)'; }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = '#C00000'; e.currentTarget.style.background = 'var(--bg-hover)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-faint)'; e.currentTarget.style.background = 'transparent'; }}
+          title="Delete document"
         >
-          <Trash2 size={11} />
+          <Trash2 size={12} />
         </button>
       </div>
     );
