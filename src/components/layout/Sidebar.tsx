@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  PanelLeftClose, PanelLeftOpen, ChevronDown, ChevronRight,
+  ChevronDown, ChevronRight,
   Search, LogOut, ExternalLink as ExternalLinkIcon,
 } from 'lucide-react';
+import { GridToggleIcon } from '../ui/GridToggleIcon';
 import { useMCPStore, useAuthStore, useSearchStore, useSettingsStore } from '../../store';
 import { usePluginExtensions } from '../../lib/plugins';
 import { getIcon } from '../../lib/icon-registry';
@@ -270,14 +271,30 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
 
   return (
     <aside
-      className="flex-shrink-0 flex flex-col transition-all duration-300 ease-in-out"
+      className="flex-shrink-0 flex flex-col relative"
       style={{
         width: collapsed ? 64 : 280,
         minWidth: collapsed ? 64 : 280,
         background: 'var(--bg-surface)',
         borderRight: '1px solid var(--border-color)',
+        transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
+      {/* Grid toggle — top-right edge */}
+      <button
+        onClick={onToggle}
+        className="grid-toggle-btn"
+        style={{
+          position: 'absolute',
+          top: 16,
+          right: -16,
+          zIndex: 20,
+        }}
+        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      >
+        <GridToggleIcon collapsed={collapsed} />
+      </button>
       {/* Search trigger */}
       {!collapsed ? (
         <div style={{ marginLeft: 24, marginRight: 24, marginTop: 16, marginBottom: 8 }}>
@@ -306,20 +323,6 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
         {navConfig.items.map((item) => renderItem(item))}
       </nav>
 
-      {/* Collapse toggle */}
-      <div style={{ paddingLeft: collapsed ? 8 : 28, paddingRight: collapsed ? 8 : 16, paddingTop: 4, paddingBottom: 4 }}>
-        <button
-          onClick={onToggle}
-          className={`w-full flex items-center ${collapsed ? 'justify-center' : ''} gap-2 py-2 rounded-xl transition-all duration-300`}
-          style={{ color: 'var(--text-muted)' }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'var(--bg-hover)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'transparent'; }}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
-          {!collapsed && <span className="text-[11px] font-medium">Collapse</span>}
-        </button>
-      </div>
 
       {/* User */}
       <div style={{ paddingLeft: collapsed ? 8 : 28, paddingRight: collapsed ? 8 : 16, paddingTop: 12, paddingBottom: 12 }}>
