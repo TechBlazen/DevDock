@@ -805,4 +805,11 @@ export interface DocEntry {
   createdAt: string;
   updatedAt: string;
   tags?: string[];
+  folder?: string;  // slash-separated path, e.g. "guides/onboarding"
+}
+
+export interface DocFolder {
+  id: string;
+  name: string;
+  parentPath?: string;  // parent folder path, undefined = root
 }
