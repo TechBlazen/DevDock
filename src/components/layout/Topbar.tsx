@@ -49,9 +49,10 @@ export const Topbar = () => {
   }, [showPrefs]);
 
   return (
-    <header className="h-[52px] flex items-center px-5 gap-4 flex-shrink-0" style={{
+    <header className="h-[52px] flex items-center px-5 gap-4 flex-shrink-0 relative z-10" style={{
       background: 'var(--bg-surface)',
       borderBottom: '1px solid var(--border-color)',
+      boxShadow: 'var(--header-shadow)',
     }}>
       {/* Logo */}
       <img src={branding?.logoUrl || '/devdock-logo.svg'} alt={branding?.appName || 'DevDock'} style={{ height: 32, maxWidth: 180, objectFit: 'contain' }} />
@@ -62,16 +63,16 @@ export const Topbar = () => {
       {/* Right nav links */}
       <nav className="flex items-center gap-1">
         {/* OTel status */}
-        <Link to="/telemetry" className="px-3 py-1.5 text-[13px] font-medium rounded-md transition-colors" style={{ color: 'var(--accent)' }}
-          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
+        <Link to="/telemetry" className="px-3 py-1.5 text-[13px] font-medium transition-colors" style={{ color: 'var(--accent)', borderRadius: 'var(--btn-radius)' }}
+          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--btn-hover-bg)'}
           onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
           OTel
           <span className="ml-1 text-[11px]" style={{ color: errorRate > 1 ? '#C00000' : '#2e7d32' }}>{reqPerSec}/s</span>
         </Link>
 
         {/* Notifications */}
-        <button className="relative px-2 py-1.5 rounded-md transition-colors" style={{ color: 'var(--text-secondary)' }}
-          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
+        <button className="relative px-2 py-1.5 transition-colors" style={{ color: 'var(--text-secondary)', borderRadius: 'var(--btn-radius)' }}
+          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--btn-hover-bg)'}
           onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
           <Bell size={16} />
           <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{ background: '#C00000' }} />
@@ -96,9 +97,9 @@ export const Topbar = () => {
         <div ref={prefsRef} className="relative">
           <button
             onClick={() => setShowPrefs((v) => !v)}
-            className="flex items-center gap-2 px-2 py-1 rounded-md transition-colors"
-            style={{ background: showPrefs ? 'var(--bg-hover)' : 'transparent', border: 'none', cursor: 'pointer' }}
-            onMouseEnter={(e) => { if (!showPrefs) e.currentTarget.style.background = 'var(--bg-hover)'; }}
+            className="flex items-center gap-2 px-2 py-1 transition-colors"
+            style={{ background: showPrefs ? 'var(--btn-hover-bg)' : 'transparent', border: 'none', cursor: 'pointer', borderRadius: 'var(--btn-radius)' }}
+            onMouseEnter={(e) => { if (!showPrefs) e.currentTarget.style.background = 'var(--btn-hover-bg)'; }}
             onMouseLeave={(e) => { if (!showPrefs) e.currentTarget.style.background = 'transparent'; }}
           >
             <div className="text-left">

@@ -19,17 +19,18 @@ const PROVIDER_LABELS: Record<string, string> = {
 
 // Shared nav link style function
 const navLinkStyle = (isActive: boolean) => ({
-  background: isActive ? 'var(--accent-bg)' : 'transparent',
+  background: isActive ? 'var(--nav-active-bg)' : 'transparent',
   color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
-  border: '1px solid transparent',
+  borderLeft: isActive ? '3px solid var(--nav-active-indicator)' : '3px solid transparent',
   fontWeight: isActive ? 600 : 400,
+  borderRadius: 0,
 });
 
 const hoverHandlers = {
   onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
     const el = e.currentTarget;
     if (el.getAttribute('aria-current') !== 'page') {
-      el.style.background = 'var(--bg-hover)';
+      el.style.background = 'var(--nav-hover-bg)';
       el.style.color = 'var(--text-primary)';
     }
   },
@@ -87,7 +88,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
         to={to}
         end
         title={collapsed ? label : undefined}
-        className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : 'px-3 py-[10px]'} rounded-md text-[13px] font-medium transition-all duration-200`}
+        className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : 'px-3 py-[10px]'} text-[13px] font-medium transition-all duration-200`}
         style={({ isActive }) => ({ ...navLinkStyle(isActive), ...(indent && !collapsed ? { marginLeft: 44 } : {}) })}
         {...hoverHandlers}
       >
@@ -120,11 +121,9 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
         <div className="flex items-center">
           <button
             onClick={() => toggleGroup(item.id)}
-            className="flex-1 flex items-center gap-2.5 px-3 py-[10px] rounded-md text-[13px] font-medium transition-all duration-200 text-left"
+            className="flex-1 flex items-center gap-2.5 px-3 py-[10px] text-[13px] font-medium transition-all duration-200 text-left"
             style={{
               ...navLinkStyle(pathname.startsWith(item.route)),
-              background: pathname.startsWith(item.route) ? 'var(--accent-bg)' : 'transparent',
-              border: 'none',
               cursor: 'pointer',
             }}
             {...hoverHandlers}
@@ -170,7 +169,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
         <div className="flex items-center">
           <NavLink
             to="/plugins"
-            className="flex-1 flex items-center gap-2.5 px-3 py-[10px] rounded-md text-[13px] font-medium transition-all duration-200"
+            className="flex-1 flex items-center gap-2.5 px-3 py-[10px] text-[13px] font-medium transition-all duration-200"
             style={() => navLinkStyle(isPluginsPageActive || isPluginRouteActive)}
             {...hoverHandlers}
           >
@@ -199,7 +198,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
                   key={p.to}
                   to={p.to}
                   title={collapsed ? p.label : undefined}
-                  className={`flex items-center gap-2.5 px-3 py-[10px] rounded-md text-[13px] font-medium transition-all duration-200`}
+                  className={`flex items-center gap-2.5 px-3 py-[10px] text-[13px] font-medium transition-all duration-200`}
                   style={({ isActive }) => ({ ...navLinkStyle(isActive), marginLeft: 44 })}
                   {...hoverHandlers}
                 >
@@ -223,9 +222,9 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
         target="_blank"
         rel="noopener noreferrer"
         title={collapsed ? item.label : undefined}
-        className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : 'px-3 py-[10px]'} rounded-md text-[13px] font-medium transition-all duration-200`}
-        style={{ color: 'var(--text-secondary)', border: '1px solid transparent' }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+        className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : 'px-3 py-[10px]'} text-[13px] font-medium transition-all duration-200`}
+        style={{ color: 'var(--text-secondary)', borderLeft: '3px solid transparent' }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--nav-hover-bg)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
       >
         <Icon size={16} className="flex-shrink-0" />

@@ -37,6 +37,18 @@ const defaultLightColors: ThemeColors = {
   scrollbarHover: 'rgba(0,0,0,0.2)',
   codeBg: 'rgba(42,111,255,0.08)',
   codeText: 'rgba(42,111,255,0.9)',
+
+  navActiveBg: '#e8f0fe',
+  navActiveIndicator: '#005DAA',
+  navHoverBg: '#f0f0f0',
+  headerShadow: 'none',
+  footerBg: 'var(--bg-surface)',
+  footerText: 'var(--text-muted)',
+  btnHoverBg: '#f0f0f0',
+  btnActiveBg: '#e0e0e0',
+  btnRadius: '9999px',
+  tooltipBg: '#333',
+  tooltipText: '#fff',
 };
 
 const defaultDarkColors: ThemeColors = {
@@ -75,6 +87,18 @@ const defaultDarkColors: ThemeColors = {
   scrollbarHover: 'rgba(255,255,255,0.2)',
   codeBg: 'rgba(74,158,255,0.12)',
   codeText: '#7cb8ff',
+
+  navActiveBg: 'rgba(74,158,255,0.12)',
+  navActiveIndicator: '#4a9eff',
+  navHoverBg: '#2a2d3a',
+  headerShadow: 'none',
+  footerBg: 'var(--bg-surface)',
+  footerText: 'var(--text-muted)',
+  btnHoverBg: '#2a2d3a',
+  btnActiveBg: '#353845',
+  btnRadius: '9999px',
+  tooltipBg: '#e8eaed',
+  tooltipText: '#1a1a2e',
 };
 
 // Engineer Workbench Theme (Costco Backstage style)
@@ -114,6 +138,25 @@ const engineerWorkbenchLightColors: ThemeColors = {
   scrollbarHover: 'rgba(0,0,0,0.18)',
   codeBg: '#F4F5F5',
   codeText: '#002242',
+
+  // Costco Backstage navigation
+  navActiveBg: '#FAFAFA',
+  navActiveIndicator: '#005DAB',
+  navHoverBg: '#EAEAEA',
+
+  // Costco header & footer
+  headerShadow: '0px 2px 4px 0px rgba(0, 0, 0, 0.25)',
+  footerBg: '#0074CC',
+  footerText: '#ffffff',
+
+  // Costco buttons - border-radius 3px, light blue hover
+  btnHoverBg: '#F4F9FF',
+  btnActiveBg: '#E9F1FB',
+  btnRadius: '3px',
+
+  // Costco tooltip
+  tooltipBg: '#313335',
+  tooltipText: '#ffffff',
 };
 
 const engineerWorkbenchDarkColors: ThemeColors = {
@@ -152,6 +195,18 @@ const engineerWorkbenchDarkColors: ThemeColors = {
   scrollbarHover: 'rgba(255,255,255,0.15)',
   codeBg: 'rgba(0,93,171,0.15)',
   codeText: '#93c5fd',
+
+  navActiveBg: 'rgba(0,93,171,0.2)',
+  navActiveIndicator: '#4da6ff',
+  navHoverBg: '#1e3450',
+  headerShadow: '0px 2px 4px 0px rgba(0, 0, 0, 0.4)',
+  footerBg: '#0a1525',
+  footerText: '#94a3b8',
+  btnHoverBg: '#1e3450',
+  btnActiveBg: '#243d5c',
+  btnRadius: '3px',
+  tooltipBg: '#e8ecf1',
+  tooltipText: '#0a1525',
 };
 
 // Theme definitions
@@ -175,6 +230,8 @@ export const ENGINEER_WORKBENCH_THEME: Theme = {
   name: 'Engineer Workbench',
   description: 'Professional theme inspired by Costco Engineer Workbench',
   author: 'Costco Technology',
+  fontFamily: "'Roboto', sans-serif",
+  fontSize: '14px',
   light: {
     mode: 'light',
     colors: engineerWorkbenchLightColors,
@@ -216,6 +273,18 @@ const matrixDarkColors: ThemeColors = {
   scrollbarHover: 'rgba(0,255,65,0.3)',
   codeBg: 'rgba(0,255,65,0.06)',
   codeText: '#00ff41',
+
+  navActiveBg: 'rgba(0,255,65,0.08)',
+  navActiveIndicator: '#00ff41',
+  navHoverBg: '#1a1a1a',
+  headerShadow: '0 1px 3px rgba(0,255,65,0.1)',
+  footerBg: '#050505',
+  footerText: '#009926',
+  btnHoverBg: '#1a1a1a',
+  btnActiveBg: '#222222',
+  btnRadius: '2px',
+  tooltipBg: '#00ff41',
+  tooltipText: '#000000',
 };
 
 const matrixLightColors: ThemeColors = {
@@ -248,6 +317,18 @@ const matrixLightColors: ThemeColors = {
   scrollbarHover: 'rgba(0,255,65,0.3)',
   codeBg: 'rgba(0,255,65,0.08)',
   codeText: '#33ff66',
+
+  navActiveBg: 'rgba(0,255,65,0.1)',
+  navActiveIndicator: '#00ff41',
+  navHoverBg: '#1a2e1a',
+  headerShadow: '0 1px 3px rgba(0,255,65,0.12)',
+  footerBg: '#061006',
+  footerText: '#00aa2a',
+  btnHoverBg: '#1a2e1a',
+  btnActiveBg: '#224422',
+  btnRadius: '2px',
+  tooltipBg: '#00ff41',
+  tooltipText: '#000000',
 };
 
 export const MATRIX_THEME: Theme = {
