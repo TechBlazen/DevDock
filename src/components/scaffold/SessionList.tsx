@@ -1,4 +1,4 @@
-import { Globe, Server, Cloud, Cpu, Boxes, Trash2, type LucideIcon } from 'lucide-react';
+import { Globe, Server, Cloud, Cpu, Boxes, FlaskConical, Trash2, type LucideIcon } from 'lucide-react';
 import { Badge } from '../ui';
 import { useScaffoldStore } from '../../store';
 import { SCAFFOLD_AGENTS } from '../../lib/scaffold-agents';
@@ -6,7 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import type { ScaffoldSession } from '../../types';
 
 const ICON_MAP: Record<string, LucideIcon> = {
-  Globe, Server, Cloud, Cpu, Boxes,
+  Globe, Server, Cloud, Cpu, Boxes, FlaskConical,
 };
 
 const AGENT_COLORS: Record<string, string> = {
@@ -15,6 +15,7 @@ const AGENT_COLORS: Record<string, string> = {
   'cloud-infra': '#f5a623',
   'mcp-server': '#b388ff',
   'full-stack': '#ff6b8a',
+  'playwright-testing': '#2ecc40',
 };
 
 interface SessionListProps {
