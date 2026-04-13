@@ -606,6 +606,7 @@ export interface ForumVote {
 export interface ForumAnswer {
   id: string;
   threadId: string;
+  parentAnswerId?: string;   // if set, this is a reply to another answer (tree threading)
   authorId: string;
   authorName: string;
   authorAvatarUrl?: string;
