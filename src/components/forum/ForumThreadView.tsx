@@ -1,12 +1,13 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Eye, Check, ThumbsUp, Award, GitFork, GitBranch } from 'lucide-react';
+import { ArrowLeft, Eye, Check, ThumbsUp, Award, GitFork, GitBranch, Lock, Pencil } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button, Card } from '../ui';
 import { ForumVoteControl } from './ForumVoteControl';
 import { ForumTagPill } from './ForumTagPill';
 import { ForumReputationBadge } from './ForumReputationBadge';
 import { ForumMarkdownBody } from './ForumMarkdownBody';
+import { ForumMarkdownEditor } from './ForumMarkdownEditor';
 import { ForumAnswerForm } from './ForumAnswerForm';
 import { useForumStore } from '../../store';
 import { useAuthStore } from '../../store';
@@ -21,15 +22,25 @@ export const ForumThreadView = ({ threadId }: ForumThreadViewProps) => {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const userId = user?.id ?? '';
+  const isAdmin = user?.role === 'admin';
 
   const threads = useForumStore((s) => s.threads);
   const voteThread = useForumStore((s) => s.voteThread);
   const voteAnswer = useForumStore((s) => s.voteAnswer);
   const acceptAnswer = useForumStore((s) => s.acceptAnswer);
+  const updateThread = useForumStore((s) => s.updateThread);
+  const updateAnswer = useForumStore((s) => s.updateAnswer);
   const incrementViewCount = useForumStore((s) => s.incrementViewCount);
   const getReputation = useForumStore((s) => s.getReputation);
 
   const thread = threads.find((t) => t.id === threadId);
+  const isLocked = !!thread?.acceptedAnswerId;
+
+  // Inline editing state
+  const [editingThreadBody, setEditingThreadBody] = useState(false);
+  const [editThreadBodyDraft, setEditThreadBodyDraft] = useState('');
+  const [editingAnswerId, setEditingAnswerId] = useState<string | null>(null);
+  const [editAnswerDraft, setEditAnswerDraft] = useState('');
 
   useEffect(() => {
     incrementViewCount(threadId);
@@ -65,6 +76,19 @@ export const ForumThreadView = ({ threadId }: ForumThreadViewProps) => {
 
   const authorRep = getReputation(thread.authorId);
   const isThreadAuthor = userId === thread.authorId;
+  const canEditThread = (isThreadAuthor && (!isLocked || isAdmin)) || isAdmin;
+
+  const handleSaveThreadBody = () => {
+    if (!editThreadBodyDraft.trim()) return;
+    updateThread(thread.id, { body: editThreadBodyDraft.trim() });
+    setEditingThreadBody(false);
+  };
+
+  const handleSaveAnswer = (answerId: string) => {
+    if (!editAnswerDraft.trim()) return;
+    updateAnswer(thread.id, answerId, editAnswerDraft.trim());
+    setEditingAnswerId(null);
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -78,6 +102,18 @@ export const ForumThreadView = ({ threadId }: ForumThreadViewProps) => {
         Back to Forum
       </button>
 
+      {/* Locked banner */}
+      {isLocked && (
+        <div
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[12px] font-semibold"
+          style={{ background: '#f59e0b15', color: '#b45309', border: '1px solid #f59e0b40' }}
+        >
+          <Lock size={14} />
+          This topic has an accepted answer and is locked.{' '}
+          {isAdmin && <span style={{ fontWeight: 400 }}>As an admin, you can unaccept the answer to unlock it.</span>}
+        </div>
+      )}
+
       {/* Thread */}
       <Card className="p-5">
         <div className="flex gap-4">
@@ -85,6 +121,7 @@ export const ForumThreadView = ({ threadId }: ForumThreadViewProps) => {
           <ForumVoteControl
             votes={thread.votes}
             onVote={(value) => voteThread(thread.id, userId, value)}
+            disabled={isLocked && !isAdmin}
           />
 
           {/* Content */}
@@ -142,15 +179,42 @@ export const ForumThreadView = ({ threadId }: ForumThreadViewProps) => {
               <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>
                 {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}
               </span>
+              {thread.updatedAt !== thread.createdAt && (
+                <span className="text-[10px] italic" style={{ color: 'var(--text-faint)' }}>(edited)</span>
+              )}
               <span className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--text-faint)' }}>
                 <Eye size={12} />
                 {thread.viewCount}
               </span>
+              {canEditThread && !editingThreadBody && (
+                <button
+                  onClick={() => { setEditingThreadBody(true); setEditThreadBodyDraft(thread.body); }}
+                  className="ml-auto flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-colors hover:opacity-80 cursor-pointer"
+                  style={{ color: 'var(--text-muted)', background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}
+                >
+                  <Pencil size={11} /> Edit
+                </button>
+              )}
             </div>
 
             {/* Body */}
             <div className="mt-4">
-              <ForumMarkdownBody content={thread.body} />
+              {editingThreadBody ? (
+                <div className="flex flex-col gap-2">
+                  <ForumMarkdownEditor
+                    value={editThreadBodyDraft}
+                    onChange={setEditThreadBodyDraft}
+                    placeholder="Edit your post..."
+                    minHeight={120}
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <Button variant="ghost" size="sm" onClick={() => setEditingThreadBody(false)}>Cancel</Button>
+                    <Button variant="primary" size="sm" onClick={handleSaveThreadBody} disabled={!editThreadBodyDraft.trim()}>Save</Button>
+                  </div>
+                </div>
+              ) : (
+                <ForumMarkdownBody content={thread.body} />
+              )}
             </div>
           </div>
         </div>
@@ -176,6 +240,9 @@ export const ForumThreadView = ({ threadId }: ForumThreadViewProps) => {
       {/* Answers */}
       {sortedAnswers.map((answer) => {
         const answerRep = getReputation(answer.authorId);
+        const isAnswerAuthor = userId === answer.authorId;
+        const canEditAnswer = (isAnswerAuthor && (!isLocked || isAdmin)) || isAdmin;
+        const isEditingThis = editingAnswerId === answer.id;
 
         return (
           <Card
@@ -195,6 +262,7 @@ export const ForumThreadView = ({ threadId }: ForumThreadViewProps) => {
                   votes={answer.votes}
                   onVote={(value) => voteAnswer(thread.id, answer.id, userId, value)}
                   label="Rate"
+                  disabled={isLocked && !isAdmin}
                 />
 
                 {/* Content */}
@@ -223,9 +291,23 @@ export const ForumThreadView = ({ threadId }: ForumThreadViewProps) => {
                     <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>
                       {formatDistanceToNow(new Date(answer.createdAt), { addSuffix: true })}
                     </span>
+                    {answer.updatedAt !== answer.createdAt && (
+                      <span className="text-[10px] italic" style={{ color: 'var(--text-faint)' }}>(edited)</span>
+                    )}
 
-                    {/* Accept button - visible to thread author */}
-                    {isThreadAuthor && (
+                    {/* Edit button for answer author */}
+                    {canEditAnswer && !isEditingThis && (
+                      <button
+                        onClick={() => { setEditingAnswerId(answer.id); setEditAnswerDraft(answer.body); }}
+                        className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-colors hover:opacity-80 cursor-pointer"
+                        style={{ color: 'var(--text-muted)', background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}
+                      >
+                        <Pencil size={11} /> Edit
+                      </button>
+                    )}
+
+                    {/* Accept button - visible to thread author OR admin */}
+                    {(isThreadAuthor || isAdmin) && (
                       <button
                         onClick={() => acceptAnswer(thread.id, answer.id)}
                         className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer"
@@ -236,15 +318,15 @@ export const ForumThreadView = ({ threadId }: ForumThreadViewProps) => {
                           fontSize: '11px',
                           fontWeight: 600,
                         }}
-                        title={answer.isAccepted ? 'Click to unaccept' : 'Accept this answer (+15 rep to author)'}
+                        title={answer.isAccepted ? 'Click to unaccept (unlocks the topic)' : 'Accept this answer (+15 rep to author)'}
                       >
                         <Check size={14} />
                         {answer.isAccepted ? 'Accepted' : 'Accept'}
                       </button>
                     )}
 
-                    {/* Accepted badge - visible to everyone when accepted and not the author */}
-                    {!isThreadAuthor && answer.isAccepted && (
+                    {/* Accepted badge - visible to everyone when accepted and not the author/admin */}
+                    {!isThreadAuthor && !isAdmin && answer.isAccepted && (
                       <span
                         className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold"
                         style={{ color: '#2e7d32', background: '#2e7d3215', border: '1px solid #2e7d3230' }}
@@ -256,7 +338,22 @@ export const ForumThreadView = ({ threadId }: ForumThreadViewProps) => {
                   </div>
 
                   {/* Answer body */}
-                  <ForumMarkdownBody content={answer.body} />
+                  {isEditingThis ? (
+                    <div className="flex flex-col gap-2">
+                      <ForumMarkdownEditor
+                        value={editAnswerDraft}
+                        onChange={setEditAnswerDraft}
+                        placeholder="Edit your answer..."
+                        minHeight={120}
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <Button variant="ghost" size="sm" onClick={() => setEditingAnswerId(null)}>Cancel</Button>
+                        <Button variant="primary" size="sm" onClick={() => handleSaveAnswer(answer.id)} disabled={!editAnswerDraft.trim()}>Save</Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <ForumMarkdownBody content={answer.body} />
+                  )}
 
                   {/* Reputation hint */}
                   <div className="mt-3 flex items-center gap-1.5 text-[10px]" style={{ color: 'var(--text-faint)' }}>
@@ -272,15 +369,24 @@ export const ForumThreadView = ({ threadId }: ForumThreadViewProps) => {
       })}
 
       {/* Answer form */}
-      <Card className="p-5">
-        <h3
-          className="text-sm font-semibold mb-3"
-          style={{ color: 'var(--text-primary)' }}
-        >
-          Your Answer
-        </h3>
-        <ForumAnswerForm threadId={threadId} />
-      </Card>
+      {isLocked && !isAdmin ? (
+        <Card className="p-5">
+          <div className="flex items-center gap-2 text-[13px] font-medium" style={{ color: 'var(--text-muted)' }}>
+            <Lock size={15} />
+            This topic has been answered and is now locked. No further answers can be added.
+          </div>
+        </Card>
+      ) : (
+        <Card className="p-5">
+          <h3
+            className="text-sm font-semibold mb-3"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            Your Answer
+          </h3>
+          <ForumAnswerForm threadId={threadId} />
+        </Card>
+      )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { MessageSquare, Send, Reply, GitFork, GitBranch } from 'lucide-react';
+import { MessageSquare, Send, Reply, GitFork, GitBranch, Lock, Pencil } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuthStore, useRepoStore } from '../../store';
 import { useForumStore } from '../../store/forum-store';
@@ -31,17 +31,26 @@ interface CommentNodeProps {
   childMap: Map<string | undefined, ForumAnswer[]>;
   depth: number;
   isLast: boolean;
+  isLocked: boolean;
+  isAdmin: boolean;
   onReply: (answerId: string) => void;
   replyTarget: string | null;
   replyText: string;
   setReplyText: (v: string) => void;
   onSubmitReply: () => void;
   onCancelReply: () => void;
+  editingAnswerId: string | null;
+  editAnswerDraft: string;
+  setEditAnswerDraft: (v: string) => void;
+  onStartEdit: (answerId: string, body: string) => void;
+  onSubmitEdit: () => void;
+  onCancelEdit: () => void;
 }
 
 const CommentNode = ({
-  answer, threadId, childMap, depth, isLast,
+  answer, threadId, childMap, depth, isLast, isLocked, isAdmin,
   onReply, replyTarget, replyText, setReplyText, onSubmitReply, onCancelReply,
+  editingAnswerId, editAnswerDraft, setEditAnswerDraft, onStartEdit, onSubmitEdit, onCancelEdit,
 }: CommentNodeProps) => {
   const user = useAuthStore((s) => s.user);
   const { voteAnswer } = useForumStore();
@@ -49,6 +58,11 @@ const CommentNode = ({
 
   const score = answer.votes.reduce((sum, v) => sum + v.value, 0);
   const isReplying = replyTarget === answer.id;
+  const isEditingThis = editingAnswerId === answer.id;
+  const isAnswerAuthor = user?.id === answer.authorId;
+  const canEdit = (isAnswerAuthor && (!isLocked || isAdmin)) || isAdmin;
+  const canReply = !isLocked || isAdmin;
+  const canVote = !isLocked || isAdmin;
 
   return (
     <div className="relative" style={{ paddingLeft: depth > 0 ? 24 : 0 }}>
@@ -91,14 +105,15 @@ const CommentNode = ({
           {/* Compact inline vote */}
           <div className="flex items-center gap-1 flex-shrink-0 mt-0.5">
             <button
-              onClick={(e) => { e.stopPropagation(); voteAnswer(threadId, answer.id, user?.id ?? '', 1); }}
-              className="w-5 h-5 flex items-center justify-center rounded transition-colors cursor-pointer"
+              onClick={(e) => { e.stopPropagation(); if (canVote) voteAnswer(threadId, answer.id, user?.id ?? '', 1); }}
+              disabled={!canVote}
+              className="w-5 h-5 flex items-center justify-center rounded transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
               style={{
                 color: answer.votes.find(v => v.userId === user?.id)?.value === 1 ? 'var(--accent)' : 'var(--text-faint)',
                 background: 'transparent',
                 border: 'none',
               }}
-              title="Upvote"
+              title={canVote ? 'Upvote' : 'Topic locked'}
             >
               ▲
             </button>
@@ -113,14 +128,15 @@ const CommentNode = ({
               {score}
             </span>
             <button
-              onClick={(e) => { e.stopPropagation(); voteAnswer(threadId, answer.id, user?.id ?? '', -1); }}
-              className="w-5 h-5 flex items-center justify-center rounded transition-colors cursor-pointer"
+              onClick={(e) => { e.stopPropagation(); if (canVote) voteAnswer(threadId, answer.id, user?.id ?? '', -1); }}
+              disabled={!canVote}
+              className="w-5 h-5 flex items-center justify-center rounded transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
               style={{
                 color: answer.votes.find(v => v.userId === user?.id)?.value === -1 ? '#ef4444' : 'var(--text-faint)',
                 background: 'transparent',
                 border: 'none',
               }}
-              title="Downvote"
+              title={canVote ? 'Downvote' : 'Topic locked'}
             >
               ▼
             </button>
@@ -143,19 +159,48 @@ const CommentNode = ({
               <span className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
                 {formatDistanceToNow(new Date(answer.createdAt), { addSuffix: true })}
               </span>
+              {answer.updatedAt !== answer.createdAt && (
+                <span className="text-[9px] italic" style={{ color: 'var(--text-faint)' }}>(edited)</span>
+              )}
+              {canEdit && !isEditingThis && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onStartEdit(answer.id, answer.body); }}
+                  className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors hover:opacity-80 cursor-pointer"
+                  style={{ color: 'var(--text-muted)', background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}
+                >
+                  <Pencil size={9} /> Edit
+                </button>
+              )}
             </div>
-            <div className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>
-              <ForumMarkdownBody content={answer.body} />
-            </div>
+            {isEditingThis ? (
+              <div className="flex flex-col gap-2">
+                <ForumMarkdownEditor
+                  value={editAnswerDraft}
+                  onChange={setEditAnswerDraft}
+                  placeholder="Edit your reply..."
+                  minHeight={80}
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button variant="ghost" size="sm" onClick={onCancelEdit}>Cancel</Button>
+                  <Button variant="primary" size="sm" onClick={onSubmitEdit} disabled={!editAnswerDraft.trim()}>Save</Button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                <ForumMarkdownBody content={answer.body} />
+              </div>
+            )}
 
             {/* Reply button */}
-            <button
-              className="flex items-center gap-1 mt-1 text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-              style={{ color: '#7c3aed', background: 'none', border: 'none', padding: 0 }}
-              onClick={(e) => { e.stopPropagation(); onReply(answer.id); }}
-            >
-              <Reply size={10} /> Reply
-            </button>
+            {canReply && !isEditingThis && (
+              <button
+                className="flex items-center gap-1 mt-1 text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                style={{ color: '#7c3aed', background: 'none', border: 'none', padding: 0 }}
+                onClick={(e) => { e.stopPropagation(); onReply(answer.id); }}
+              >
+                <Reply size={10} /> Reply
+              </button>
+            )}
           </div>
         </div>
 
@@ -191,12 +236,20 @@ const CommentNode = ({
               childMap={childMap}
               depth={depth + 1}
               isLast={idx === children.length - 1}
+              isLocked={isLocked}
+              isAdmin={isAdmin}
               onReply={onReply}
               replyTarget={replyTarget}
               replyText={replyText}
               setReplyText={setReplyText}
               onSubmitReply={onSubmitReply}
               onCancelReply={onCancelReply}
+              editingAnswerId={editingAnswerId}
+              editAnswerDraft={editAnswerDraft}
+              setEditAnswerDraft={setEditAnswerDraft}
+              onStartEdit={onStartEdit}
+              onSubmitEdit={onSubmitEdit}
+              onCancelEdit={onCancelEdit}
             />
           ))}
         </div>
@@ -208,13 +261,20 @@ const CommentNode = ({
 // ─── Main component ─────────────────────────────────────────────────────────
 export const RepoCommentSection = ({ repo }: RepoCommentSectionProps) => {
   const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === 'admin';
   const updateRepoMeta = useRepoStore((s) => s.updateRepo);
-  const { threads, addThread, addAnswer, addReplyToAnswer, voteThread } = useForumStore();
+  const { threads, addThread, addAnswer, addReplyToAnswer, voteThread, updateThread, updateAnswer } = useForumStore();
 
   const [comment, setComment] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [replyTarget, setReplyTarget] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
+
+  // Inline editing state
+  const [editingThreadBody, setEditingThreadBody] = useState(false);
+  const [editThreadBodyDraft, setEditThreadBodyDraft] = useState('');
+  const [editingAnswerId, setEditingAnswerId] = useState<string | null>(null);
+  const [editAnswerDraft, setEditAnswerDraft] = useState('');
 
   // Find or create the linked forum thread for this repo
   const thread = useMemo(() => {
@@ -236,6 +296,8 @@ export const RepoCommentSection = ({ repo }: RepoCommentSectionProps) => {
   }, [childMap]);
 
   const commentCount = thread ? thread.answers.length + 1 : 0;
+  const isLocked = !!thread?.acceptedAnswerId;
+  const canVoteThread = !isLocked || isAdmin;
 
   const handlePostComment = useCallback(() => {
     if (!comment.trim() || !user) return;
@@ -289,6 +351,26 @@ export const RepoCommentSection = ({ repo }: RepoCommentSectionProps) => {
     setReplyText('');
   }, []);
 
+  const handleStartEditAnswer = useCallback((answerId: string, body: string) => {
+    setEditingAnswerId(answerId);
+    setEditAnswerDraft(body);
+  }, []);
+
+  const handleSubmitEditAnswer = useCallback(() => {
+    if (!editAnswerDraft.trim() || !thread || !editingAnswerId) return;
+    updateAnswer(thread.id, editingAnswerId, editAnswerDraft.trim());
+    setEditingAnswerId(null);
+    setEditAnswerDraft('');
+  }, [editAnswerDraft, thread, editingAnswerId, updateAnswer]);
+
+  const handleCancelEditAnswer = useCallback(() => {
+    setEditingAnswerId(null);
+    setEditAnswerDraft('');
+  }, []);
+
+  const threadScore = thread ? thread.votes.reduce((sum, v) => sum + v.value, 0) : 0;
+  const canEditThreadBody = !!thread && user?.id === thread.authorId && (!isLocked || isAdmin);
+
   return (
     <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--border-subtle)' }} onClick={(e) => e.stopPropagation()}>
       {/* Header */}
@@ -303,8 +385,13 @@ export const RepoCommentSection = ({ repo }: RepoCommentSectionProps) => {
               {commentCount}
             </span>
           )}
+          {isLocked && (
+            <span className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: '#f59e0b15', color: '#b45309', border: '1px solid #f59e0b30' }}>
+              <Lock size={10} /> Locked
+            </span>
+          )}
         </div>
-        {!showForm && (
+        {!showForm && (!isLocked || isAdmin) && (
           <Button variant="ghost" size="sm" onClick={() => setShowForm(true)}>
             <MessageSquare size={11} /> Add Comment
           </Button>
@@ -320,36 +407,38 @@ export const RepoCommentSection = ({ repo }: RepoCommentSectionProps) => {
               {/* Compact inline vote for thread */}
               <div className="flex items-center gap-1 flex-shrink-0 mt-0.5">
                 <button
-                  onClick={(e) => { e.stopPropagation(); voteThread(thread.id, user?.id ?? '', 1); }}
-                  className="w-5 h-5 flex items-center justify-center rounded transition-colors cursor-pointer"
+                  onClick={(e) => { e.stopPropagation(); if (canVoteThread) voteThread(thread.id, user?.id ?? '', 1); }}
+                  disabled={!canVoteThread}
+                  className="w-5 h-5 flex items-center justify-center rounded transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
                   style={{
                     color: thread.votes.find(v => v.userId === user?.id)?.value === 1 ? 'var(--accent)' : 'var(--text-faint)',
                     background: 'transparent',
                     border: 'none',
                   }}
-                  title="Upvote"
+                  title={canVoteThread ? 'Upvote' : 'Topic locked'}
                 >
                   ▲
                 </button>
                 <span
                   className="text-[10px] font-bold tabular-nums"
                   style={{
-                    color: (() => { const s = thread.votes.reduce((sum, v) => sum + v.value, 0); return s > 0 ? '#22c55e' : s < 0 ? '#ef4444' : 'var(--text-faint)'; })(),
+                    color: threadScore > 0 ? '#22c55e' : threadScore < 0 ? '#ef4444' : 'var(--text-faint)',
                     minWidth: 14,
                     textAlign: 'center',
                   }}
                 >
-                  {thread.votes.reduce((sum, v) => sum + v.value, 0)}
+                  {threadScore}
                 </span>
                 <button
-                  onClick={(e) => { e.stopPropagation(); voteThread(thread.id, user?.id ?? '', -1); }}
-                  className="w-5 h-5 flex items-center justify-center rounded transition-colors cursor-pointer"
+                  onClick={(e) => { e.stopPropagation(); if (canVoteThread) voteThread(thread.id, user?.id ?? '', -1); }}
+                  disabled={!canVoteThread}
+                  className="w-5 h-5 flex items-center justify-center rounded transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
                   style={{
                     color: thread.votes.find(v => v.userId === user?.id)?.value === -1 ? '#ef4444' : 'var(--text-faint)',
                     background: 'transparent',
                     border: 'none',
                   }}
-                  title="Downvote"
+                  title={canVoteThread ? 'Downvote' : 'Topic locked'}
                 >
                   ▼
                 </button>
@@ -372,10 +461,49 @@ export const RepoCommentSection = ({ repo }: RepoCommentSectionProps) => {
                   <span className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
                     {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}
                   </span>
+                  {thread.updatedAt !== thread.createdAt && (
+                    <span className="text-[9px] italic" style={{ color: 'var(--text-faint)' }}>(edited)</span>
+                  )}
+                  {canEditThreadBody && !editingThreadBody && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setEditingThreadBody(true); setEditThreadBodyDraft(thread.body); }}
+                      className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors hover:opacity-80 cursor-pointer"
+                      style={{ color: 'var(--text-muted)', background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}
+                    >
+                      <Pencil size={9} /> Edit
+                    </button>
+                  )}
                 </div>
-                <div className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>
-                  <ForumMarkdownBody content={thread.body} />
-                </div>
+                {editingThreadBody ? (
+                  <div className="flex flex-col gap-2">
+                    <ForumMarkdownEditor
+                      value={editThreadBodyDraft}
+                      onChange={setEditThreadBodyDraft}
+                      placeholder="Edit your comment..."
+                      minHeight={80}
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <Button variant="ghost" size="sm" onClick={() => setEditingThreadBody(false)}>Cancel</Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => {
+                          if (editThreadBodyDraft.trim()) {
+                            updateThread(thread.id, { body: editThreadBodyDraft.trim() });
+                            setEditingThreadBody(false);
+                          }
+                        }}
+                        disabled={!editThreadBodyDraft.trim()}
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                    <ForumMarkdownBody content={thread.body} />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -402,12 +530,20 @@ export const RepoCommentSection = ({ repo }: RepoCommentSectionProps) => {
                   childMap={childMap}
                   depth={1}
                   isLast={idx === topLevelAnswers.length - 1}
+                  isLocked={isLocked}
+                  isAdmin={isAdmin}
                   onReply={handleReply}
                   replyTarget={replyTarget}
                   replyText={replyText}
                   setReplyText={setReplyText}
                   onSubmitReply={handleSubmitReply}
                   onCancelReply={handleCancelReply}
+                  editingAnswerId={editingAnswerId}
+                  editAnswerDraft={editAnswerDraft}
+                  setEditAnswerDraft={setEditAnswerDraft}
+                  onStartEdit={handleStartEditAnswer}
+                  onSubmitEdit={handleSubmitEditAnswer}
+                  onCancelEdit={handleCancelEditAnswer}
                 />
               ))}
             </div>

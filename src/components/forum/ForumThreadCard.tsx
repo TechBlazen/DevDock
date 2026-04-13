@@ -1,4 +1,4 @@
-import { MessageSquare, Eye, CheckCircle, GitFork, GitBranch } from 'lucide-react';
+import { MessageSquare, Eye, CheckCircle, GitFork, GitBranch, Lock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Card } from '../ui';
 import { ForumVoteControl } from './ForumVoteControl';
@@ -49,10 +49,10 @@ export const ForumThreadCard = ({ thread, onClick }: ForumThreadCardProps) => {
               </span>
             )}
             {thread.acceptedAnswerId && (
-              <CheckCircle
-                size={16}
-                style={{ color: '#2e7d32', flexShrink: 0, marginTop: 2 }}
-              />
+              <span className="flex items-center gap-1 flex-shrink-0" style={{ marginTop: 2 }}>
+                <CheckCircle size={16} style={{ color: '#2e7d32' }} />
+                <Lock size={12} style={{ color: '#b45309' }} />
+              </span>
             )}
           </div>
 
