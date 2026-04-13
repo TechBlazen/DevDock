@@ -15,11 +15,17 @@ export default defineConfig({
     ['html', { open: 'never', outputFolder: 'playwright-report' }],
     ['junit', { outputFile: 'results/playwright-junit.xml' }],
   ],
+  timeout: 60_000,
+  expect: {
+    timeout: 15_000,
+  },
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
+    actionTimeout: 15_000,
+    navigationTimeout: 30_000,
   },
   projects: [
     {
@@ -38,11 +44,14 @@ export default defineConfig({
     // },
   ],
   webServer: {
-    // Use the client-only dev server so tests don't depend on the Fastify backend.
-    command: 'npm run dev:client',
+    // In CI, serve the production build (much faster + no on-the-fly compilation
+    // stalls mid-navigation). Locally, keep the dev server for fast iteration.
+    command: process.env.CI
+      ? 'npx vite preview --port 5173 --strictPort'
+      : 'npm run dev:client',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
+    timeout: 120_000,
     stdout: 'ignore',
     stderr: 'pipe',
   },

@@ -96,6 +96,9 @@ jobs:
       - name: Install Playwright chromium
         run: npx playwright install --with-deps chromium
 
+      - name: Build app for E2E (preview server serves dist/)
+        run: npm run build
+
       - name: Run Playwright tests
         run: npm run test:e2e
         env:
