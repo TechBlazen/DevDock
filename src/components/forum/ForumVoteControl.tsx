@@ -6,9 +6,10 @@ interface ForumVoteControlProps {
   votes: ForumVote[];
   onVote: (value: 1 | -1) => void;
   label?: string; // e.g. "Rate this answer"
+  disabled?: boolean;
 }
 
-export const ForumVoteControl = ({ votes, onVote, label }: ForumVoteControlProps) => {
+export const ForumVoteControl = ({ votes, onVote, label, disabled }: ForumVoteControlProps) => {
   const user = useAuthStore((s) => s.user);
   const userId = user?.id ?? '';
 
@@ -21,16 +22,19 @@ export const ForumVoteControl = ({ votes, onVote, label }: ForumVoteControlProps
     <div className="flex flex-col items-center gap-1" style={{ minWidth: 48 }}>
       {/* Upvote */}
       <button
-        onClick={(e) => { e.stopPropagation(); onVote(1); }}
+        onClick={(e) => { e.stopPropagation(); if (!disabled) onVote(1); }}
         className="w-8 h-8 flex items-center justify-center rounded-lg transition-all cursor-pointer"
         style={{
           color: userVote?.value === 1 ? '#fff' : 'var(--text-muted)',
           background: userVote?.value === 1 ? 'var(--accent)' : 'var(--bg-inset)',
           border: userVote?.value === 1 ? '1px solid var(--accent)' : '1px solid var(--border-subtle)',
           transform: userVote?.value === 1 ? 'scale(1.1)' : 'scale(1)',
+          opacity: disabled ? 0.5 : 1,
+          cursor: disabled ? 'not-allowed' : 'pointer',
         }}
-        title="Upvote — earns author reputation"
+        title={disabled ? 'Voting is locked on this topic' : 'Upvote — earns author reputation'}
         aria-label="Upvote"
+        disabled={disabled}
       >
         <ThumbsUp size={15} fill={userVote?.value === 1 ? '#fff' : 'none'} />
       </button>
@@ -50,16 +54,19 @@ export const ForumVoteControl = ({ votes, onVote, label }: ForumVoteControlProps
 
       {/* Downvote */}
       <button
-        onClick={(e) => { e.stopPropagation(); onVote(-1); }}
+        onClick={(e) => { e.stopPropagation(); if (!disabled) onVote(-1); }}
         className="w-8 h-8 flex items-center justify-center rounded-lg transition-all cursor-pointer"
         style={{
           color: userVote?.value === -1 ? '#fff' : 'var(--text-muted)',
           background: userVote?.value === -1 ? '#ef4444' : 'var(--bg-inset)',
           border: userVote?.value === -1 ? '1px solid #ef4444' : '1px solid var(--border-subtle)',
           transform: userVote?.value === -1 ? 'scale(1.1)' : 'scale(1)',
+          opacity: disabled ? 0.5 : 1,
+          cursor: disabled ? 'not-allowed' : 'pointer',
         }}
-        title="Downvote"
+        title={disabled ? 'Voting is locked on this topic' : 'Downvote'}
         aria-label="Downvote"
+        disabled={disabled}
       >
         <ThumbsDown size={15} fill={userVote?.value === -1 ? '#fff' : 'none'} />
       </button>

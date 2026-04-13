@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { MessageSquare, Send, GitFork, GitBranch } from 'lucide-react';
+import { MessageSquare, Send, GitFork, GitBranch, Lock, Pencil } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuthStore, useRepoStore } from '../../store';
 import { useForumStore } from '../../store/forum-store';
@@ -15,11 +15,18 @@ interface RepoCommentSectionProps {
 
 export const RepoCommentSection = ({ repo }: RepoCommentSectionProps) => {
   const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === 'admin';
   const updateRepoMeta = useRepoStore((s) => s.updateRepo);
-  const { threads, addThread, addAnswer, voteThread, voteAnswer } = useForumStore();
+  const { threads, addThread, addAnswer, voteThread, voteAnswer, updateThread, updateAnswer } = useForumStore();
 
   const [comment, setComment] = useState('');
   const [showForm, setShowForm] = useState(false);
+
+  // Inline editing state
+  const [editingThreadBody, setEditingThreadBody] = useState(false);
+  const [editThreadBodyDraft, setEditThreadBodyDraft] = useState('');
+  const [editingAnswerId, setEditingAnswerId] = useState<string | null>(null);
+  const [editAnswerDraft, setEditAnswerDraft] = useState('');
 
   // Find or create the linked forum thread for this repo
   const thread = useMemo(() => {
@@ -31,6 +38,7 @@ export const RepoCommentSection = ({ repo }: RepoCommentSectionProps) => {
   }, [threads, repo.forumThreadId, repo.id]);
 
   const commentCount = thread ? thread.answers.length + 1 : 0; // +1 for the thread body itself if it exists
+  const isLocked = !!thread?.acceptedAnswerId;
 
   const handlePostComment = () => {
     if (!comment.trim() || !user) return;
@@ -79,8 +87,13 @@ export const RepoCommentSection = ({ repo }: RepoCommentSectionProps) => {
               {commentCount}
             </span>
           )}
+          {isLocked && (
+            <span className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: '#f59e0b15', color: '#b45309', border: '1px solid #f59e0b30' }}>
+              <Lock size={10} /> Locked
+            </span>
+          )}
         </div>
-        {!showForm && (
+        {!showForm && (!isLocked || isAdmin) && (
           <Button variant="ghost" size="sm" onClick={() => setShowForm(true)}>
             <MessageSquare size={11} /> Add Comment
           </Button>
@@ -96,6 +109,7 @@ export const RepoCommentSection = ({ repo }: RepoCommentSectionProps) => {
               <ForumVoteControl
                 votes={thread.votes}
                 onVote={(value) => voteThread(thread.id, user?.id ?? '', value)}
+                disabled={isLocked && !isAdmin}
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1.5">
@@ -106,35 +120,96 @@ export const RepoCommentSection = ({ repo }: RepoCommentSectionProps) => {
                   <span className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
                     {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}
                   </span>
+                  {thread.updatedAt !== thread.createdAt && (
+                    <span className="text-[9px] italic" style={{ color: 'var(--text-faint)' }}>(edited)</span>
+                  )}
+                  {user?.id === thread.authorId && (!isLocked || isAdmin) && !editingThreadBody && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setEditingThreadBody(true); setEditThreadBodyDraft(thread.body); }}
+                      className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors hover:opacity-80 cursor-pointer"
+                      style={{ color: 'var(--text-muted)', background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}
+                    >
+                      <Pencil size={9} /> Edit
+                    </button>
+                  )}
                 </div>
-                <ForumMarkdownBody content={thread.body} />
+                {editingThreadBody ? (
+                  <div className="flex flex-col gap-2">
+                    <ForumMarkdownEditor
+                      value={editThreadBodyDraft}
+                      onChange={setEditThreadBodyDraft}
+                      placeholder="Edit your comment..."
+                      minHeight={80}
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <Button variant="ghost" size="sm" onClick={() => setEditingThreadBody(false)}>Cancel</Button>
+                      <Button variant="primary" size="sm" onClick={() => { if (editThreadBodyDraft.trim()) { updateThread(thread.id, { body: editThreadBodyDraft.trim() }); setEditingThreadBody(false); } }} disabled={!editThreadBodyDraft.trim()}>Save</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <ForumMarkdownBody content={thread.body} />
+                )}
               </div>
             </div>
           </div>
 
           {/* Replies */}
-          {thread.answers.map((answer) => (
-            <div key={answer.id} className="rounded-lg" style={{ padding: '12px 16px', background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)', marginLeft: 20 }}>
-              <div className="flex items-start gap-3">
-                <ForumVoteControl
-                  votes={answer.votes}
-                  onVote={(value) => voteAnswer(thread.id, answer.id, user?.id ?? '', value)}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0" style={{ background: 'var(--accent)' }}>
-                      {answer.authorName.charAt(0).toUpperCase()}
+          {thread.answers.map((answer) => {
+            const isAnswerAuthor = user?.id === answer.authorId;
+            const canEdit = (isAnswerAuthor && (!isLocked || isAdmin)) || isAdmin;
+            const isEditingThis = editingAnswerId === answer.id;
+
+            return (
+              <div key={answer.id} className="rounded-lg" style={{ padding: '12px 16px', background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)', marginLeft: 20 }}>
+                <div className="flex items-start gap-3">
+                  <ForumVoteControl
+                    votes={answer.votes}
+                    onVote={(value) => voteAnswer(thread.id, answer.id, user?.id ?? '', value)}
+                    disabled={isLocked && !isAdmin}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0" style={{ background: 'var(--accent)' }}>
+                        {answer.authorName.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-[11px] font-semibold" style={{ color: 'var(--text-primary)' }}>{answer.authorName}</span>
+                      <span className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
+                        {formatDistanceToNow(new Date(answer.createdAt), { addSuffix: true })}
+                      </span>
+                      {answer.updatedAt !== answer.createdAt && (
+                        <span className="text-[9px] italic" style={{ color: 'var(--text-faint)' }}>(edited)</span>
+                      )}
+                      {canEdit && !isEditingThis && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditingAnswerId(answer.id); setEditAnswerDraft(answer.body); }}
+                          className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors hover:opacity-80 cursor-pointer"
+                          style={{ color: 'var(--text-muted)', background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}
+                        >
+                          <Pencil size={9} /> Edit
+                        </button>
+                      )}
                     </div>
-                    <span className="text-[11px] font-semibold" style={{ color: 'var(--text-primary)' }}>{answer.authorName}</span>
-                    <span className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
-                      {formatDistanceToNow(new Date(answer.createdAt), { addSuffix: true })}
-                    </span>
+                    {isEditingThis ? (
+                      <div className="flex flex-col gap-2">
+                        <ForumMarkdownEditor
+                          value={editAnswerDraft}
+                          onChange={setEditAnswerDraft}
+                          placeholder="Edit your reply..."
+                          minHeight={80}
+                        />
+                        <div className="flex gap-2 justify-end">
+                          <Button variant="ghost" size="sm" onClick={() => setEditingAnswerId(null)}>Cancel</Button>
+                          <Button variant="primary" size="sm" onClick={() => { if (editAnswerDraft.trim()) { updateAnswer(thread.id, answer.id, editAnswerDraft.trim()); setEditingAnswerId(null); } }} disabled={!editAnswerDraft.trim()}>Save</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <ForumMarkdownBody content={answer.body} />
+                    )}
                   </div>
-                  <ForumMarkdownBody content={answer.body} />
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
