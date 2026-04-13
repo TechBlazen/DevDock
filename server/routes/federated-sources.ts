@@ -108,7 +108,7 @@ export function registerFederatedSourceRoutes(app: FastifyInstance, db: Database
   });
 
   // ── Get documents for a source ──────────────────────────────────────────
-  app.get('/api/federated-sources/:id/documents', { preHandler: guard }, async (request, reply) => {
+  app.get('/api/federated-sources/:id/documents', { preHandler: guard }, async (request, _reply) => {
     const { id } = request.params as { id: string };
     const docs = await db.getFederatedDocuments(id);
     return docs;

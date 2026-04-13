@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Send, Check, Eye, Settings2, Layout, FileText, Globe, Link2, BarChart3, ListChecks, MessageSquare, Sparkles } from 'lucide-react';
-import { Input, Button, Card } from '../ui';
+import { Send, Check, Eye, Settings2, Layout, FileText, Link2, Sparkles } from 'lucide-react';
+import { Button, Card } from '../ui';
 import { MarkdownViewer } from '../docs/MarkdownViewer';
 import { useWidgetSubmissionStore, useAuthStore } from '../../store';
 import type { WidgetContentType } from '../../types';
@@ -72,7 +72,7 @@ export const WidgetSubmissionForm = () => {
   const submitWidget = useWidgetSubmissionStore((s) => s.submitWidget);
 
   const [step, setStep] = useState<PropertyPaneStep>('template');
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [, setSelectedTemplate] = useState<string | null>(null);
 
   // Widget properties (SPFx-style property bag)
   const [title, setTitle] = useState('');

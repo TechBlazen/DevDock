@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Sun, Moon, Monitor, User } from 'lucide-react';
 import { useUserPreferences } from '../../hooks/useUserPreferences';
-import { useTheme } from '../../hooks/useTheme';
 
 const ACCENT_COLORS = [
   { value: '#005DAA', label: 'Blue' },
@@ -25,7 +24,6 @@ interface Props {
 export function UserPreferencesPanel({ onClose }: Props) {
   const navigate = useNavigate();
   const { prefs, update } = useUserPreferences();
-  const { resolvedTheme } = useTheme();
 
   return (
     <div

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import {
-  Search, Loader2, AlertCircle, CheckCircle2, XCircle,
+  Search, Loader2, AlertCircle, CheckCircle2,
   AlertTriangle, FileText, Shield, Info,
 } from 'lucide-react';
 

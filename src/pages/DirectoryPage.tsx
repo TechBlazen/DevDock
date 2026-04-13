@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  Users, User, Search, Shield, CheckCircle, XCircle,
+  Users, User, Search, Shield, CheckCircle,
   Loader2, ChevronRight, Building2, Mail, Briefcase, AlertTriangle,
 } from 'lucide-react';
 import { useSettingsStore } from '../store';
@@ -103,12 +103,6 @@ export const DirectoryPage = () => {
       setGroupMembers([]);
     }
     setLoadingMembers(false);
-  };
-
-  // Extract CN from DN for display
-  const cnFromDn = (dn: string) => {
-    const match = dn.match(/CN=([^,]+)/i);
-    return match ? match[1] : dn;
   };
 
   if (!ad.enabled || ad.mode !== 'on-prem') {

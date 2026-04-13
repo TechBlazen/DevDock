@@ -1,7 +1,7 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Key, CheckCircle, AlertCircle, Copy, Check, Clock,
-  User, Shield, FileText, ArrowRightLeft, Trash2, AlertTriangle,
+  Shield, FileText, Trash2, AlertTriangle,
 } from 'lucide-react';
 import { Button, Card, CardHeader, Pill } from '../ui';
 

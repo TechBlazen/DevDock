@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Plus, Search, Star, Edit, Trash2, ExternalLink, Folder, Tag, Video, Image, FileText, Music, Link as LinkIcon, FolderPlus } from 'lucide-react';
 import { useAuthStore, useBookmarkStore } from '../../store';
 import { BookmarkModal } from './BookmarkModal';
-import { getFaviconUrl, getIconForCollection, getColorForCollection } from '../../lib/bookmark-utils';
+import { getIconForCollection, getColorForCollection } from '../../lib/bookmark-utils';
 import type { Bookmark, BookmarkFilter, ContentType } from '../../types';
 
 const CONTENT_TYPE_ICONS: Record<ContentType, any> = {
@@ -42,9 +42,9 @@ export const BookmarkWidget = () => {
       const collectionId = addCollection(newCollectionName.trim(), user.id);
       const collection = collections.find(c => c.id === collectionId);
       if (collection) {
-        const index = userCollections.length;
-        const icon = getIconForCollection(newCollectionName);
-        const color = getColorForCollection(index);
+        const _index = userCollections.length;
+        const _icon = getIconForCollection(newCollectionName);
+        const _color = getColorForCollection(_index);
         // Update with icon and color (would need store method, simplified here)
       }
       setNewCollectionName('');

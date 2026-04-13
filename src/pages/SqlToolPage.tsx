@@ -8,7 +8,7 @@ import { useAuthStore, useUserAccountsStore } from '../store';
 import { useSqlToolStore } from '../store/sql-tool-store';
 import { sqlApi } from '../lib/api';
 import { SectionTitle, Card, CardHeader, Button, Pill, Input } from '../components/ui';
-import type { DatabaseEngine, DatabaseConnection, QueryResult, TableInfo, ColumnInfo, StoredProcedure, SavedQuery } from '../types';
+import type { DatabaseEngine, DatabaseConnection, QueryResult, TableInfo, ColumnInfo, StoredProcedure } from '../types';
 
 const ENGINE_CONFIG: Record<DatabaseEngine, { label: string; color: string; defaultPort: number }> = {
   postgresql: { label: 'PostgreSQL', color: '#336791', defaultPort: 5432 },
@@ -266,7 +266,7 @@ const FavButton = ({ toolId }: { toolId: string }) => {
 export const SqlToolPage = () => {
   const user = useAuthStore((s) => s.user);
   const userId = user?.id ?? '';
-  const { addConnection, updateConnection, removeConnection, setActiveConnection, touchConnection, activeConnectionId, addSavedQuery, removeSavedQuery, getConnectionsForUser, getSavedQueriesForUser } = useSqlToolStore();
+  const { addConnection, removeConnection, setActiveConnection, touchConnection, activeConnectionId, addSavedQuery, removeSavedQuery, getConnectionsForUser, getSavedQueriesForUser } = useSqlToolStore();
 
   const connections = useMemo(() => getConnectionsForUser(userId), [getConnectionsForUser, userId]);
   const savedQueries = useMemo(() => getSavedQueriesForUser(userId), [getSavedQueriesForUser, userId]);

@@ -20,7 +20,18 @@ export class DashboardPage {
   }
 
   async goto(path: string = '/') {
-    await this.page.goto(path);
+    // Prefer SPA navigation when the Shell is already mounted so we exercise
+    // React Router transitions instead of full page reloads (which would
+    // re-trigger auth bootstrapping and any mount-time fetches).
+    const shellMounted = await this.shell.isVisible().catch(() => false);
+    if (shellMounted) {
+      await this.page.evaluate((p) => {
+        window.history.pushState({}, '', p);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      }, path);
+    } else {
+      await this.page.goto(path);
+    }
   }
 
   navLink(routeTestid: string): Locator {

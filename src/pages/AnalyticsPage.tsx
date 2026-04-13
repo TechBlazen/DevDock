@@ -46,7 +46,7 @@ const KpiCard = ({ icon, iconBg, iconColor, label, value }: {
 
 // ─── Collapsible Section ────────────────────────────────────────────────────
 
-const CollapsibleSection = ({ id, title, icon, badge, actions, open, onToggle, children }: {
+const CollapsibleSection = ({ title, icon, badge, actions, open, onToggle, children }: {
   id: string; title: string; icon?: React.ReactNode; badge?: React.ReactNode; actions?: React.ReactNode;
   open: boolean; onToggle: () => void; children: React.ReactNode;
 }) => (

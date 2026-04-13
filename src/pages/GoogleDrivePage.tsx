@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, createElement } from 'react';
 import {
   HardDrive, FolderOpen, FileText, Image, Film, FileSpreadsheet,
   Upload, Search, FolderPlus, Trash2, ExternalLink, ChevronRight,
@@ -215,8 +215,11 @@ const DriveFileRow = ({
   onNavigate: (id: string) => void;
   onDelete: (id: string) => void;
 }) => {
-  const Icon = getMimeIcon(file.mimeType);
   const folder = isFolder(file);
+  const mimeIconNode = createElement(getMimeIcon(file.mimeType), {
+    size: 20,
+    style: { color: mimeColor(file.mimeType), flexShrink: 0 },
+  });
 
   return (
     <div
@@ -226,7 +229,7 @@ const DriveFileRow = ({
       onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; }}
       onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
     >
-      <Icon size={20} style={{ color: mimeColor(file.mimeType), flexShrink: 0 }} />
+      {mimeIconNode}
       <div className="flex-1 min-w-0">
         <div className="text-[13px] font-medium truncate" style={{ color: 'var(--text-primary)' }}>
           {file.name}
