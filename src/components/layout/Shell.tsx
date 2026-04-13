@@ -38,7 +38,7 @@ export const Shell = ({ children, editMode = false, onToggleEdit = () => {} }: S
   }, []);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ color: 'var(--text-primary)' }}>
+    <div data-testid="shell" className="flex flex-col h-screen overflow-hidden" style={{ color: 'var(--text-primary)' }}>
       <CommandPalette />
       {/* Topbar spans full width */}
       <Topbar />
@@ -49,7 +49,7 @@ export const Shell = ({ children, editMode = false, onToggleEdit = () => {} }: S
 
         <div className="flex-1 flex flex-col min-w-0">
           <div className="flex-1 flex overflow-hidden">
-            <main className="flex-1 overflow-y-auto" style={{ paddingLeft: 16 }}>
+            <main data-testid="main-content" className="flex-1 overflow-y-auto" style={{ paddingLeft: 16 }}>
               {children}
             </main>
 

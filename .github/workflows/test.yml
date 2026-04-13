@@ -1,0 +1,173 @@
+name: Test Suite (Unit + E2E)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  # ─── Lint (non-blocking — legacy errors tracked separately) ─────────────────
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+
+  # ─── Unit Tests (Vitest) ──────────────────────────────────────────────────────
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+        env:
+          CI: 'true'
+
+      - name: Upload unit test results (JUnit XML)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: results/vitest-junit.xml
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30
+          if-no-files-found: ignore
+
+  # ─── Build Check ──────────────────────────────────────────────────────────────
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+
+  # ─── E2E Tests (Playwright — chromium only, blocking) ────────────────────────
+  e2e-tests:
+    name: E2E Tests (chromium)
+    runs-on: ubuntu-latest
+    needs: [unit-tests, build]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        run: npm run test:e2e
+        env:
+          CI: 'true'
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Upload Playwright JUnit XML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: results/playwright-junit.xml
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Upload failure traces and screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # ─── Publish to ALM Octane (main branch only, opt-in via secrets) ────────────
+  publish-results:
+    name: Publish to ALM Octane
+    runs-on: ubuntu-latest
+    needs: [unit-tests, e2e-tests]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Check Octane secrets
+        id: check
+        env:
+          OCTANE_URL: ${{ secrets.OCTANE_URL }}
+        run: |
+          if [ -n "$OCTANE_URL" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::OCTANE_URL secret not configured — skipping ALM Octane publish."
+          fi
+
+      - name: Download unit test results
+        if: steps.check.outputs.enabled == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-test-results
+          path: results/
+
+      - name: Download Playwright results
+        if: steps.check.outputs.enabled == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: playwright-results
+          path: results/
+        continue-on-error: true
+
+      - name: Publish to ALM Octane
+        if: steps.check.outputs.enabled == 'true'
+        uses: MicroFocus/alm-octane-github-action@v1
+        with:
+          server-url: ${{ secrets.OCTANE_URL }}
+          client-id: ${{ secrets.OCTANE_CLIENT_ID }}
+          client-secret: ${{ secrets.OCTANE_SECRET }}
+          workspace-id: ${{ secrets.OCTANE_WORKSPACE_ID }}
+          test-results-glob: 'results/*.xml'

@@ -100,6 +100,7 @@ export const LoginPage = () => {
 
   return (
     <div
+      data-testid="login-page"
       className="min-h-screen flex items-center justify-center p-6"
       style={{
         background: 'var(--bg-primary)',
@@ -210,6 +211,7 @@ export const LoginPage = () => {
             {AUTH_PROVIDERS.map((provider) => (
               <button
                 key={provider.id}
+                data-testid={`login-${provider.id}`}
                 onClick={() => handleOAuthSignIn(provider.id)}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200"
                 style={{
@@ -359,6 +361,7 @@ export const LoginPage = () => {
           {/* Guest Access */}
           <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border-subtle)' }}>
             <button
+              data-testid="login-guest"
               onClick={signInAsGuest}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200"
               style={{

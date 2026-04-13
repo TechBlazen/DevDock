@@ -12,3 +12,10 @@ dist-server/
 
 # Claude AI configuration
 CLAUDE.md
+
+# Test artifacts
+coverage/
+results/
+playwright-report/
+test-results/
+.vitest-cache/

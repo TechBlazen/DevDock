@@ -89,6 +89,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
         to={to}
         end
         title={collapsed ? label : undefined}
+        data-testid={`sidebar-nav-${to.replace(/\//g, '-').replace(/^-/, '') || 'root'}`}
         className={`flex items-center ${collapsed ? 'justify-center' : ''} gap-2.5 ${collapsed ? 'px-0 py-2.5' : 'pl-7 pr-3 py-[10px]'} text-[13px] font-medium transition-all duration-200`}
         style={({ isActive }) => ({ ...navLinkStyle(isActive), ...(indent && !collapsed ? { marginLeft: 44 } : {}) })}
         {...hoverHandlers}
@@ -271,6 +272,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
 
   return (
     <aside
+      data-testid="sidebar"
       className="flex-shrink-0 flex flex-col relative"
       style={{
         width: collapsed ? 64 : 280,
@@ -284,6 +286,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
       <button
         onClick={onToggle}
         className="grid-toggle-btn"
+        data-testid="sidebar-toggle"
         style={{
           position: 'absolute',
           top: 16,
@@ -357,6 +360,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
                 </div>
               </div>
               <button
+                data-testid="sidebar-signout"
                 onClick={signOut}
                 className="p-1.5 rounded-md transition-all duration-200"
                 style={{ color: 'var(--text-faint)' }}
