@@ -3,8 +3,14 @@ import { nanoid } from 'nanoid';
 import type { DatabaseProvider, FederatedSourceRow } from '../db/provider.js';
 import { authGuard, getRequestUser } from '../middleware/auth.js';
 import { fetchFederatedResults } from '../lib/federated-fetcher.js';
+import type { VectorRuntime } from '../vector/runtime.js';
 
-export function registerFederatedSourceRoutes(app: FastifyInstance, db: DatabaseProvider, jwtSecret: string) {
+export function registerFederatedSourceRoutes(
+  app: FastifyInstance,
+  db: DatabaseProvider,
+  jwtSecret: string,
+  vector?: VectorRuntime,
+) {
   const guard = authGuard(jwtSecret);
 
   // ── List all sources (any user; non-admins get auth stripped) ────────────
@@ -83,7 +89,13 @@ export function registerFederatedSourceRoutes(app: FastifyInstance, db: Database
     const caller = getRequestUser(request);
     if (caller.role !== 'admin') return reply.status(403).send({ error: 'Admin only' });
     const { id } = request.params as { id: string };
+    // Snapshot doc ids before the cascade fires so we can remove them from
+    // the vector index too.
+    const docs = vector ? await db.getFederatedDocuments(id) : [];
     await db.deleteFederatedSource(id);
+    if (vector) {
+      for (const doc of docs) vector.enqueueDelete(doc.id);
+    }
     return reply.status(204).send();
   });
 
@@ -103,6 +115,28 @@ export function registerFederatedSourceRoutes(app: FastifyInstance, db: Database
       document_count: docs.length,
       updated_at: new Date().toISOString(),
     });
+
+    // Re-index every doc for this source. The federated layer wipes-and-replaces
+    // on each sync, so we mirror that: chunks for this source are replaced as
+    // each doc upserts (the doc id stays stable across syncs).
+    if (vector) {
+      for (const doc of docs) {
+        vector.enqueueUpsert({
+          id: doc.id,
+          kind: 'federated',
+          title: doc.title,
+          // content is the most useful signal; description provides context
+          // when content is empty (some sources only return a description).
+          text: [doc.title, doc.description, doc.content].filter(Boolean).join('\n\n'),
+          metadata: {
+            source_id: doc.source_id,
+            source_name: source.name,
+            url: doc.url,
+            fetched_at: doc.fetched_at,
+          },
+        });
+      }
+    }
 
     return { synced: true, documentCount: docs.length };
   });

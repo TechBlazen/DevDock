@@ -46,3 +46,17 @@ services:
       retries: 20
     tmpfs:
       - /var/lib/mysql
+
+  chroma-test:
+    # ChromaDB vector store. Used by the Phase 1 semantic search feature.
+    # In-memory tmpfs so the next `up` starts clean.
+    image: chromadb/chroma:0.5.20
+    ports:
+      - '8001:8000'
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:8000/api/v2/heartbeat || exit 1']
+      interval: 3s
+      timeout: 5s
+      retries: 20
+    tmpfs:
+      - /chroma/chroma
