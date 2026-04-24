@@ -88,6 +88,13 @@ export interface MCPServer {
 export type AIProvider = 'anthropic' | 'openai' | 'gemini' | 'local';
 export type ChatMode = 'devdock' | 'overwatch';
 
+export interface RagCitation {
+  parentId: string;
+  kind: 'doc' | 'doc-readme' | 'federated' | 'forum-thread' | 'forum-answer';
+  title: string;
+  url?: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
@@ -97,11 +104,23 @@ export interface ChatMessage {
   tokens?: number;
   traceId?: string;
   chatMode?: ChatMode;
+  /**
+   * For assistant messages only: the list of docs the LLM saw as injected
+   * context. Rendered under the reply so users can audit what RAG pulled in.
+   */
+  ragCitations?: RagCitation[];
 }
 
 export interface AIConfig {
   provider: AIProvider;
   apiKeys: Record<AIProvider, string>;
+  /**
+   * When true, ChatPanel retrieves top-k relevant docs via
+   * /api/search/semantic and injects them as context in the system prompt
+   * on every send. Requires the server's vector runtime to be configured
+   * (GEMINI_API_KEY + ChromaDB reachable).
+   */
+  useDocsAsContext?: boolean;
   localEndpoint: string;
   model: string;
   temperature: number;

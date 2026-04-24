@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, Bot, Send, Trash2, Shield, ChevronDown, Wifi, WifiOff } from 'lucide-react';
+import { X, Bot, Send, Trash2, Shield, ChevronDown, Wifi, WifiOff, Sparkles } from 'lucide-react';
 import { useChatStore, useSettingsStore, useMCPStore } from '../../store';
 import { sendChatMessage } from '../../lib/ai';
 import { sendOverwatchMessage } from '../../lib/overwatch';
+import { fetchDocsContext } from '../../lib/rag';
 import { StatusDot, Spinner } from '../ui';
-import type { ChatMessage, ChatMode } from '../../types';
+import type { ChatMessage, ChatMode, RagCitation } from '../../types';
 import { nanoid } from 'nanoid';
 import { providers, MessageBubble, TypingIndicator, OverwatchToolCallProgress, OVERWATCH_ACCENT } from './ChatComponents';
 
@@ -15,7 +16,8 @@ export const ChatPanel = () => {
     chatMode, setChatMode, overwatchToolCalls, overwatchThinking,
     setOverwatchToolCalls, setOverwatchThinking,
   } = useChatStore();
-  const { settings, updateAIProvider } = useSettingsStore();
+  const { settings, updateAIProvider, updateAIUseDocsAsContext } = useSettingsStore();
+  const useDocs = settings.ai.useDocsAsContext ?? false;
   const servers = useMCPStore((s) => s.servers);
   const runningMCP = servers.filter((s) => s.status === 'running').length;
   const isOverwatch = chatMode === 'overwatch';
@@ -77,7 +79,20 @@ export const ChatPanel = () => {
         onThinkingChange: (val) => setOverwatchThinking(val),
       });
     } else {
-      // Route to DevDock AI (existing behavior)
+      // Route to DevDock AI. If the user has "Use my docs" on, retrieve
+      // semantic context first and inject it into the system prompt. RAG is
+      // best-effort: if retrieval fails (server down, 503, etc.) we proceed
+      // without context rather than blocking the chat.
+      let systemPrompt: string | undefined;
+      let citations: RagCitation[] | undefined;
+      if (useDocs) {
+        const ctx = await fetchDocsContext(text);
+        if (ctx) {
+          systemPrompt = ctx.contextPrompt;
+          citations = ctx.citations;
+        }
+      }
+
       await sendChatMessage([...messages, userMsg], settings.ai, {
         onToken: () => {},
         onDone: (fullText, traceId) => {
@@ -89,6 +104,7 @@ export const ChatPanel = () => {
             provider: settings.ai.provider,
             chatMode: 'devdock',
             traceId,
+            ragCitations: citations,
           });
           setLoading(false);
         },
@@ -102,7 +118,7 @@ export const ChatPanel = () => {
           });
           setLoading(false);
         },
-      });
+      }, systemPrompt);
     }
   };
 
@@ -285,6 +301,28 @@ export const ChatPanel = () => {
               </button>
             );
           })}
+          {/* "Use my docs" RAG toggle — injects semantic-search hits as context
+              on each send. Requires the server's vector runtime to be up. */}
+          <button
+            onClick={() => updateAIUseDocsAsContext(!useDocs)}
+            className="rounded-lg transition-all ml-auto"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '6px 10px',
+              fontSize: 11,
+              fontWeight: 600,
+              background: useDocs ? 'var(--accent-bg)' : 'transparent',
+              color: useDocs ? 'var(--accent)' : 'var(--text-muted)',
+              border: `2px solid ${useDocs ? 'var(--accent)' : 'var(--border-color)'}`,
+              cursor: 'pointer',
+            }}
+            title="Use your indexed docs as context. Requires semantic search to be configured on the server."
+          >
+            <Sparkles size={11} />
+            Use my docs
+          </button>
         </div>
       )}
 
