@@ -315,7 +315,11 @@ function semanticHitsToResults(hits: SemanticHit[]): SearchResult[] {
       : 'doc';
     const url =
       h.kind === 'federated' ? (String(h.metadata.url ?? '') || `/docs?id=${h.parentId}`)
-      : h.kind.startsWith('forum') ? `/forum/thread/${h.parentId.split(':')[0] ?? h.parentId}`
+      // Forum threads: parentId IS the thread id. Answers: use thread_id from
+      // metadata (set by the Phase 3b enqueue); fall back to parentId so older
+      // entries still route somewhere sensible.
+      : h.kind === 'forum-thread' ? `/forum/thread/${h.parentId}`
+      : h.kind === 'forum-answer' ? `/forum/thread/${String(h.metadata.thread_id ?? h.parentId)}`
       : `/docs?id=${h.parentId}`;
     return {
       id: h.parentId,
