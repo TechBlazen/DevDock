@@ -125,6 +125,7 @@ interface SettingsStore {
   updateNavigation: (navigation: NavigationConfig) => void;
   resetNavigation: () => void;
   updateAIEnabled: (enabled: boolean) => void;
+  updateAIUseDocsAsContext: (enabled: boolean) => void;
   updateActiveTheme: (themeId: ThemeId) => void;
   updateOverwatchConfig: (partial: Partial<AppSettings['overwatch']>) => void;
 }
@@ -137,6 +138,7 @@ const defaultSettings: AppSettings = {
     model: 'claude-sonnet-4-20250514',
     temperature: 0.7,
     maxTokens: 2048,
+    useDocsAsContext: false,
   },
   otel: {
     endpoint: 'http://localhost:4317',
@@ -232,6 +234,8 @@ export const useSettingsStore = create<SettingsStore>()(
         set((s) => ({ settings: { ...s.settings, navigation: defaultNavigation } })),
       updateAIEnabled: (enabled) =>
         set((s) => ({ settings: { ...s.settings, aiEnabled: enabled } })),
+      updateAIUseDocsAsContext: (enabled) =>
+        set((s) => ({ settings: { ...s.settings, ai: { ...s.settings.ai, useDocsAsContext: enabled } } })),
       updateActiveTheme: (themeId) =>
         set((s) => ({ settings: { ...s.settings, activeTheme: themeId } })),
       updateOverwatchConfig: (partial) =>

@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useState } from 'react';
-import { Bot, Copy, Check, Shield, Loader2 } from 'lucide-react';
+import { Bot, Copy, Check, Shield, Loader2, Sparkles, FileText, ExternalLink } from 'lucide-react';
 import type { AIProvider, ChatMessage, OverwatchToolCall } from '../../types';
 
 // ─── Provider config ──────────────────────────────────────────────────────────────────
@@ -118,6 +118,40 @@ export const MessageBubble = ({ msg }: { msg: ChatMessage }) => {
         }}
       >
         <MarkdownText text={msg.content} />
+
+        {/* RAG citations — the docs the LLM saw when this reply was generated.
+            Shown only on assistant messages that used retrieved context, so
+            users can audit what was pulled in. */}
+        {!isUser && msg.ragCitations && msg.ragCitations.length > 0 && (
+          <div className="mt-2 pt-2" style={{ borderTop: '1px dashed var(--border-subtle)' }}>
+            <div className="flex items-center gap-1 text-[10px] font-semibold mb-1" style={{ color: 'var(--accent)' }}>
+              <Sparkles size={10} />
+              Used {msg.ragCitations.length} doc{msg.ragCitations.length === 1 ? '' : 's'} as context
+            </div>
+            <ul className="space-y-0.5">
+              {msg.ragCitations.map((c) => (
+                <li key={c.parentId} className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                  <FileText size={10} style={{ flexShrink: 0 }} />
+                  {c.url ? (
+                    <a
+                      href={c.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="truncate hover:underline"
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
+                      {c.title || c.parentId}
+                      <ExternalLink size={9} className="inline ml-0.5 mb-0.5" />
+                    </a>
+                  ) : (
+                    <span className="truncate">{c.title || c.parentId}</span>
+                  )}
+                  <span className="text-[9px] opacity-60">{c.kind}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Footer meta */}
         <div className="flex items-center gap-2 mt-1.5">
