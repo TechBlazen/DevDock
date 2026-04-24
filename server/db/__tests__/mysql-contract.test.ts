@@ -16,6 +16,7 @@ import { MysqlProvider } from '../mysql/client.js';
 import type {
   RepoRow, UserRow, SettingsRow, BookmarkRow, CollectionRow, DocRow,
   FederatedSourceRow, FederatedDocumentRow,
+  ForumThreadRow, ForumAnswerRow, FeatureRequestRow,
 } from '../provider.js';
 
 const TEST_URL = process.env.TEST_MYSQL_URL;
@@ -41,7 +42,9 @@ describeIfMysql('MysqlProvider (integration)', () => {
       const tables = [
         'federated_documents', 'federated_sources', 'analytics_errors',
         'analytics_page_views', 'plugins_state', 'docs', 'bookmarks',
-        'collections', 'repos', 'settings', 'users',
+        'collections', 'repos', 'settings',
+        'feature_requests', 'forum_answers', 'forum_threads',
+        'users',
       ];
       for (const t of tables) {
         await conn.query(`TRUNCATE TABLE ${t}`);
@@ -227,5 +230,73 @@ describeIfMysql('MysqlProvider (integration)', () => {
 
     await provider.deleteFederatedSource('s1');
     expect(await provider.getAllFederatedDocuments()).toEqual([]);
+  });
+
+  // ─── Forum threads + answers + feature requests ──────────────────────────
+  it('round-trips a forum thread with JSON tags/votes', async () => {
+    const thread: ForumThreadRow = {
+      id: 't1', title: 'How do I X?', body: 'Body text', category: 'how-to',
+      tags: JSON.stringify(['kubernetes', 'gke']),
+      author_id: 'u1', author_name: 'Alice',
+      votes: JSON.stringify([{ userId: 'u2', value: 1, createdAt: 't' }]),
+      view_count: 3, created_at: 't', updated_at: 't',
+    };
+    await provider.createForumThread(thread);
+    const got = await provider.getForumThreadById('t1');
+    expect(got).not.toBeNull();
+    expect(JSON.parse(got!.tags)).toEqual(['kubernetes', 'gke']);
+    expect(JSON.parse(got!.votes)).toHaveLength(1);
+
+    await provider.updateForumThread('t1', { view_count: 10 });
+    expect((await provider.getForumThreadById('t1'))?.view_count).toBe(10);
+
+    await provider.deleteForumThread('t1');
+    expect(await provider.getForumThreadById('t1')).toBeNull();
+  });
+
+  it('cascade-deletes answers when thread is removed and round-trips is_accepted', async () => {
+    const thread: ForumThreadRow = {
+      id: 't2', title: 'T', body: '', category: 'question',
+      tags: '[]', author_id: 'u1', author_name: 'A',
+      votes: '[]', view_count: 0, created_at: 't', updated_at: 't',
+    };
+    await provider.createForumThread(thread);
+
+    const answer: ForumAnswerRow = {
+      id: 'a1', thread_id: 't2', author_id: 'u2', author_name: 'B',
+      body: 'Answer body',
+      votes: JSON.stringify([{ userId: 'u1', value: 1, createdAt: 't' }]),
+      is_accepted: 1, created_at: 't', updated_at: 't',
+    };
+    await provider.createForumAnswer(answer);
+    const got = (await provider.getForumAnswersByThread('t2'))[0];
+    expect(got.is_accepted).toBe(1);
+    expect(JSON.parse(got.votes)).toHaveLength(1);
+
+    await provider.deleteForumThread('t2');
+    expect(await provider.getForumAnswersByThread('t2')).toEqual([]);
+  });
+
+  it('CRUDs a feature request with attachments JSON', async () => {
+    const req: FeatureRequestRow = {
+      id: 'fr1', title: 'Dark mode scheduler',
+      description: 'Auto-switch by time of day',
+      author_id: 'u1', author_name: 'Alice',
+      status: 'open',
+      votes: JSON.stringify([{ userId: 'u2', value: 1, createdAt: 't' }]),
+      attachments: JSON.stringify([{ id: 'att1', name: 'mock.png', url: 'data:', type: 'image/png', size: 123 }]),
+      tags: JSON.stringify(['Platform']),
+      created_at: 't', updated_at: 't',
+    };
+    await provider.createFeatureRequest(req);
+    const got = await provider.getFeatureRequestById('fr1');
+    expect(got?.status).toBe('open');
+    expect(JSON.parse(got!.attachments)).toHaveLength(1);
+
+    await provider.updateFeatureRequest('fr1', { status: 'planned' });
+    expect((await provider.getFeatureRequestById('fr1'))?.status).toBe('planned');
+
+    await provider.deleteFeatureRequest('fr1');
+    expect(await provider.getFeatureRequestById('fr1')).toBeNull();
   });
 });

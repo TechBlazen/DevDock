@@ -6,6 +6,7 @@ import type {
   DatabaseProvider, UserRow, RepoRow, SettingsRow,
   BookmarkRow, CollectionRow, DocRow, PluginStateRow,
   PageViewRow, ErrorRow, FederatedSourceRow, FederatedDocumentRow,
+  ForumThreadRow, ForumAnswerRow, FeatureRequestRow,
 } from '../provider.js';
 import { namedParams, mapRow, mapRows } from './sql.js';
 
@@ -450,5 +451,114 @@ export class PostgresProvider implements DatabaseProvider {
 
   async deleteFederatedDocumentsBySource(sourceId: string): Promise<void> {
     await this.pool.query('DELETE FROM federated_documents WHERE source_id = $1', [sourceId]);
+  }
+
+  // ─── Forum Threads ──────────────────────────────────────────────────────────
+
+  async getForumThreads(): Promise<ForumThreadRow[]> {
+    const { rows } = await this.pool.query('SELECT * FROM forum_threads ORDER BY created_at DESC');
+    return mapRows<ForumThreadRow>(rows, 'forum_threads');
+  }
+
+  async getForumThreadById(id: string): Promise<ForumThreadRow | null> {
+    const { rows } = await this.pool.query('SELECT * FROM forum_threads WHERE id = $1', [id]);
+    return mapRow<ForumThreadRow>(rows[0], 'forum_threads');
+  }
+
+  async createForumThread(thread: ForumThreadRow): Promise<ForumThreadRow> {
+    await this.query(
+      `INSERT INTO forum_threads (id, title, body, category, tags, author_id, author_name, author_avatar_url, votes, view_count, accepted_answer_id, repo_id, repo_name, repo_source, created_at, updated_at)
+       VALUES (@id, @title, @body, @category, @tags, @author_id, @author_name, @author_avatar_url, @votes, @view_count, @accepted_answer_id, @repo_id, @repo_name, @repo_source, @created_at, @updated_at)`,
+      thread as unknown as Record<string, unknown>
+    );
+    return thread;
+  }
+
+  async updateForumThread(id: string, partial: Partial<ForumThreadRow>): Promise<ForumThreadRow | null> {
+    const existing = await this.getForumThreadById(id);
+    if (!existing) return null;
+    const keys = Object.keys(partial).filter((k) => k !== 'id');
+    if (keys.length === 0) return existing;
+    const sets = keys.map((k) => `${k} = @${k}`).join(', ');
+    await this.query(`UPDATE forum_threads SET ${sets} WHERE id = @id`, { ...partial, id });
+    return { ...existing, ...partial };
+  }
+
+  async deleteForumThread(id: string): Promise<void> {
+    await this.pool.query('DELETE FROM forum_threads WHERE id = $1', [id]);
+  }
+
+  // ─── Forum Answers ──────────────────────────────────────────────────────────
+
+  async getForumAnswersByThread(threadId: string): Promise<ForumAnswerRow[]> {
+    const { rows } = await this.pool.query(
+      'SELECT * FROM forum_answers WHERE thread_id = $1 ORDER BY created_at ASC',
+      [threadId]
+    );
+    return mapRows<ForumAnswerRow>(rows, 'forum_answers');
+  }
+
+  async getAllForumAnswers(): Promise<ForumAnswerRow[]> {
+    const { rows } = await this.pool.query('SELECT * FROM forum_answers ORDER BY created_at ASC');
+    return mapRows<ForumAnswerRow>(rows, 'forum_answers');
+  }
+
+  async createForumAnswer(answer: ForumAnswerRow): Promise<ForumAnswerRow> {
+    await this.query(
+      `INSERT INTO forum_answers (id, thread_id, parent_answer_id, author_id, author_name, author_avatar_url, body, votes, is_accepted, created_at, updated_at)
+       VALUES (@id, @thread_id, @parent_answer_id, @author_id, @author_name, @author_avatar_url, @body, @votes, @is_accepted, @created_at, @updated_at)`,
+      answer as unknown as Record<string, unknown>
+    );
+    return answer;
+  }
+
+  async updateForumAnswer(id: string, partial: Partial<ForumAnswerRow>): Promise<ForumAnswerRow | null> {
+    const { rows: existingRows } = await this.pool.query('SELECT * FROM forum_answers WHERE id = $1', [id]);
+    const existing = mapRow<ForumAnswerRow>(existingRows[0], 'forum_answers');
+    if (!existing) return null;
+    const keys = Object.keys(partial).filter((k) => k !== 'id');
+    if (keys.length === 0) return existing;
+    const sets = keys.map((k) => `${k} = @${k}`).join(', ');
+    await this.query(`UPDATE forum_answers SET ${sets} WHERE id = @id`, { ...partial, id });
+    return { ...existing, ...partial };
+  }
+
+  async deleteForumAnswer(id: string): Promise<void> {
+    await this.pool.query('DELETE FROM forum_answers WHERE id = $1', [id]);
+  }
+
+  // ─── Feature Requests ───────────────────────────────────────────────────────
+
+  async getFeatureRequests(): Promise<FeatureRequestRow[]> {
+    const { rows } = await this.pool.query('SELECT * FROM feature_requests ORDER BY created_at DESC');
+    return mapRows<FeatureRequestRow>(rows, 'feature_requests');
+  }
+
+  async getFeatureRequestById(id: string): Promise<FeatureRequestRow | null> {
+    const { rows } = await this.pool.query('SELECT * FROM feature_requests WHERE id = $1', [id]);
+    return mapRow<FeatureRequestRow>(rows[0], 'feature_requests');
+  }
+
+  async createFeatureRequest(req: FeatureRequestRow): Promise<FeatureRequestRow> {
+    await this.query(
+      `INSERT INTO feature_requests (id, title, description, author_id, author_name, author_avatar_url, status, votes, attachments, tags, created_at, updated_at)
+       VALUES (@id, @title, @description, @author_id, @author_name, @author_avatar_url, @status, @votes, @attachments, @tags, @created_at, @updated_at)`,
+      req as unknown as Record<string, unknown>
+    );
+    return req;
+  }
+
+  async updateFeatureRequest(id: string, partial: Partial<FeatureRequestRow>): Promise<FeatureRequestRow | null> {
+    const existing = await this.getFeatureRequestById(id);
+    if (!existing) return null;
+    const keys = Object.keys(partial).filter((k) => k !== 'id');
+    if (keys.length === 0) return existing;
+    const sets = keys.map((k) => `${k} = @${k}`).join(', ');
+    await this.query(`UPDATE feature_requests SET ${sets} WHERE id = @id`, { ...partial, id });
+    return { ...existing, ...partial };
+  }
+
+  async deleteFeatureRequest(id: string): Promise<void> {
+    await this.pool.query('DELETE FROM feature_requests WHERE id = $1', [id]);
   }
 }

@@ -12,6 +12,8 @@ import { registerDocRoutes } from './routes/docs.js';
 import { registerPluginRoutes } from './routes/plugins.js';
 import { registerAnalyticsRoutes } from './routes/analytics.js';
 import { registerFederatedSourceRoutes } from './routes/federated-sources.js';
+import { registerForumRoutes } from './routes/forum.js';
+import { registerFeatureRequestRoutes } from './routes/feature-requests.js';
 import { registerDirectoryRoutes } from './routes/directory.js';
 import { registerSqlToolRoutes } from './routes/sql-tool.js';
 import { registerCodeRunnerRoutes } from './routes/code-runner.js';
@@ -60,6 +62,8 @@ async function main() {
   registerPluginRoutes(app, db, config.jwtSecret);
   registerAnalyticsRoutes(app, db, config.jwtSecret);
   registerFederatedSourceRoutes(app, db, config.jwtSecret, vector);
+  registerForumRoutes(app, db, config.jwtSecret);
+  registerFeatureRequestRoutes(app, db, config.jwtSecret);
   registerSemanticSearchRoutes(app, config.jwtSecret, vector);
   registerDirectoryRoutes(app, db, config.jwtSecret);
   registerSqlToolRoutes(app, db, config.jwtSecret);

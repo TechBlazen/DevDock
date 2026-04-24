@@ -71,6 +71,29 @@ export const settingsApi = {
   update: (data: Record<string, unknown>) => api.put('/settings', data).then(r => r.data),
 };
 
+// ─── Forum ──────────────────────────────────────────────────────────────────
+// Votes: the client computes the post-toggle votes array locally via applyVote
+// and PUTs the full array. Keeps the server stateless on vote semantics.
+export const forumApi = {
+  listThreads: () => api.get('/forum/threads').then(r => r.data),
+  getThread: (id: string) => api.get(`/forum/threads/${id}`).then(r => r.data),
+  createThread: (data: Record<string, unknown>) => api.post('/forum/threads', data).then(r => r.data),
+  updateThread: (id: string, data: Record<string, unknown>) => api.put(`/forum/threads/${id}`, data).then(r => r.data),
+  deleteThread: (id: string) => api.delete(`/forum/threads/${id}`).then(r => r.data),
+
+  createAnswer: (threadId: string, data: Record<string, unknown>) => api.post(`/forum/threads/${threadId}/answers`, data).then(r => r.data),
+  updateAnswer: (id: string, data: Record<string, unknown>) => api.put(`/forum/answers/${id}`, data).then(r => r.data),
+  deleteAnswer: (id: string) => api.delete(`/forum/answers/${id}`).then(r => r.data),
+};
+
+// ─── Feature Requests ───────────────────────────────────────────────────────
+export const featureRequestsApi = {
+  list: () => api.get('/feature-requests').then(r => r.data),
+  create: (data: Record<string, unknown>) => api.post('/feature-requests', data).then(r => r.data),
+  update: (id: string, data: Record<string, unknown>) => api.put(`/feature-requests/${id}`, data).then(r => r.data),
+  delete: (id: string) => api.delete(`/feature-requests/${id}`).then(r => r.data),
+};
+
 // ─── Bookmarks ──────────────────────────────────────────────────────────────
 export const bookmarksApi = {
   list: () => api.get('/bookmarks').then(r => r.data),
