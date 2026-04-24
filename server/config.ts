@@ -1,12 +1,13 @@
 import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 
-export type DbProviderType = 'sqlite' | 'postgres' | 'supabase';
+export type DbProviderType = 'sqlite' | 'postgres' | 'mysql' | 'supabase';
 
 export interface DbConfig {
   provider: DbProviderType;
   sqlite: { path: string };
   postgres: { connectionString: string; ssl: boolean };
+  mysql: { connectionString: string; ssl: boolean };
   supabase: { url: string; anonKey: string; serviceRoleKey?: string };
 }
 
@@ -34,6 +35,7 @@ const DEFAULT_CONFIG: ServerConfig = {
     provider: 'sqlite',
     sqlite: { path: resolve(process.cwd(), 'data/devdock.db') },
     postgres: { connectionString: '', ssl: false },
+    mysql: { connectionString: '', ssl: false },
     supabase: { url: '', anonKey: '' },
   },
   vector: {
@@ -57,6 +59,7 @@ export function loadConfig(): ServerConfig {
         if (file.database.provider) config.db.provider = file.database.provider;
         if (file.database.sqlite) config.db.sqlite = { ...config.db.sqlite, ...file.database.sqlite };
         if (file.database.postgres) config.db.postgres = { ...config.db.postgres, ...file.database.postgres };
+        if (file.database.mysql) config.db.mysql = { ...config.db.mysql, ...file.database.mysql };
         if (file.database.supabase) config.db.supabase = { ...config.db.supabase, ...file.database.supabase };
       }
     } catch {
@@ -71,6 +74,8 @@ export function loadConfig(): ServerConfig {
   if (process.env.DEVDOCK_SQLITE_PATH) config.db.sqlite.path = process.env.DEVDOCK_SQLITE_PATH;
   if (process.env.DEVDOCK_POSTGRES_URL) config.db.postgres.connectionString = process.env.DEVDOCK_POSTGRES_URL;
   if (process.env.DEVDOCK_POSTGRES_SSL === 'require') config.db.postgres.ssl = true;
+  if (process.env.DEVDOCK_MYSQL_URL) config.db.mysql.connectionString = process.env.DEVDOCK_MYSQL_URL;
+  if (process.env.DEVDOCK_MYSQL_SSL === 'require') config.db.mysql.ssl = true;
   if (process.env.DEVDOCK_SUPABASE_URL) config.db.supabase.url = process.env.DEVDOCK_SUPABASE_URL;
   if (process.env.DEVDOCK_SUPABASE_KEY) config.db.supabase.anonKey = process.env.DEVDOCK_SUPABASE_KEY;
 

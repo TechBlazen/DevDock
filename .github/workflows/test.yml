@@ -111,6 +111,38 @@ jobs:
         env:
           TEST_POSTGRES_URL: postgres://devdock:devdock@localhost:5432/devdock_test
 
+  # ─── MySQL Contract Tests ─────────────────────────────────────────────────────
+  # Same shape as the Postgres job, against an ephemeral MySQL 8.4 LTS.
+  mysql-tests:
+    name: MySQL Contract Tests
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: rootpw
+          MYSQL_USER: devdock
+          MYSQL_PASSWORD: devdock
+          MYSQL_DATABASE: devdock_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u devdock -pdevdock"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Run MySQL contract tests
+        run: npm run test:server
+        env:
+          TEST_MYSQL_URL: mysql://devdock:devdock@localhost:3306/devdock_test
+
   # ─── ChromaDB Vector Tests ────────────────────────────────────────────────────
   # Verifies the semantic-search infrastructure (embedder + chunker + Chroma
   # round-trip) using a deterministic FakeEmbedder so we don't need a Gemini

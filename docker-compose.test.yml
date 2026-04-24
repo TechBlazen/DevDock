@@ -25,6 +25,28 @@ services:
     tmpfs:
       - /var/lib/postgresql/data
 
+  mysql-test:
+    # 8.4 is the current LTS; 8.0.20+ required for the alias-form
+    # ON DUPLICATE KEY UPDATE syntax used by the upserts.
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpw
+      MYSQL_USER: devdock
+      MYSQL_PASSWORD: devdock
+      MYSQL_DATABASE: devdock_test
+    command:
+      - '--character-set-server=utf8mb4'
+      - '--collation-server=utf8mb4_unicode_ci'
+    ports:
+      - '3307:3306'
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'devdock', '-pdevdock']
+      interval: 3s
+      timeout: 5s
+      retries: 20
+    tmpfs:
+      - /var/lib/mysql
+
   chroma-test:
     # ChromaDB vector store. Used by the Phase 1 semantic search feature.
     # In-memory tmpfs so the next `up` starts clean.
