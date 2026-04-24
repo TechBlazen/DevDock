@@ -7,7 +7,7 @@ import { fetchDocsContext } from '../../lib/rag';
 import { StatusDot, Spinner } from '../ui';
 import type { ChatMessage, ChatMode, RagCitation } from '../../types';
 import { nanoid } from 'nanoid';
-import { providers, MessageBubble, TypingIndicator, OverwatchToolCallProgress, OVERWATCH_ACCENT } from './ChatComponents';
+import { providers, MessageBubble, TypingIndicator, OverwatchToolCallProgress, DateSeparator, OVERWATCH_ACCENT, CHAT_ACCENT } from './ChatComponents';
 
 // ─── Main chat panel ─────────────────────────────────────────────────────────────────
 export const ChatPanel = () => {
@@ -327,10 +327,39 @@ export const ChatPanel = () => {
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {messages.map((msg) => (
-          <MessageBubble key={msg.id} msg={msg} />
-        ))}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2" style={{ background: 'var(--bg-surface)' }}>
+        {messages.map((msg, idx) => {
+          const prev = idx > 0 ? messages[idx - 1] : null;
+          const next = idx < messages.length - 1 ? messages[idx + 1] : null;
+
+          const msgDate = new Date(msg.timestamp);
+          const prevDate = prev ? new Date(prev.timestamp) : null;
+          const showDate = !prevDate || msgDate.toDateString() !== prevDate.toDateString();
+
+          // A message starts a new group when the previous message was from a
+          // different role, or on a different day. The sender label only renders
+          // at the top of each AI group, matching the Sendbird layout.
+          const isFirstInGroup = !prev || prev.role !== msg.role || showDate;
+          const isLastInGroup = !next || next.role !== msg.role
+            || new Date(next.timestamp).toDateString() !== msgDate.toDateString();
+
+          return (
+            <div key={msg.id}>
+              {showDate && (
+                <div className="py-3">
+                  <DateSeparator date={msgDate} />
+                </div>
+              )}
+              <div className={isLastInGroup ? 'mb-1' : 'mb-0.5'}>
+                <MessageBubble
+                  msg={msg}
+                  showSenderName={isFirstInGroup}
+                  showAvatar={isLastInGroup}
+                />
+              </div>
+            </div>
+          );
+        })}
         {isOverwatch && (overwatchToolCalls.length > 0 || overwatchThinking) && (
           <OverwatchToolCallProgress toolCalls={overwatchToolCalls} isThinking={overwatchThinking} />
         )}
@@ -338,9 +367,9 @@ export const ChatPanel = () => {
         <div ref={bottomRef} />
       </div>
 
-      {/* Quick prompts */}
+      {/* Quick prompts — styled as outlined pills like Sendbird suggested replies */}
       {messages.length <= 1 && (
-        <div className="px-3 pb-2 flex gap-1.5 flex-wrap">
+        <div className="px-4 pb-3 flex gap-2 flex-wrap justify-end" style={{ background: 'var(--bg-surface)' }}>
           {(isOverwatch
             ? [
                 'Show my open incidents',
@@ -354,20 +383,25 @@ export const ChatPanel = () => {
                 'Help me write a GitHub Actions workflow',
                 'What repos need attention?',
               ]
-          ).map((q) => (
-            <button
-              key={q}
-              onClick={() => { setInput(q); textareaRef.current?.focus(); }}
-              className="text-[10px] px-2 py-1 rounded-lg transition-all font-mono hover:opacity-80"
-              style={{
-                background: isOverwatch ? `${OVERWATCH_ACCENT}10` : 'var(--bg-inset)',
-                border: `1px solid ${isOverwatch ? OVERWATCH_ACCENT + '30' : 'var(--border-color)'}`,
-                color: isOverwatch ? OVERWATCH_ACCENT : 'var(--text-muted)',
-              }}
-            >
-              {q}
-            </button>
-          ))}
+          ).map((q) => {
+            const accent = isOverwatch ? OVERWATCH_ACCENT : CHAT_ACCENT;
+            return (
+              <button
+                key={q}
+                onClick={() => { setInput(q); textareaRef.current?.focus(); }}
+                className="text-[12px] font-medium transition-all hover:opacity-80"
+                style={{
+                  padding: '7px 14px',
+                  borderRadius: 22,
+                  background: 'transparent',
+                  border: `1.5px solid ${accent}`,
+                  color: accent,
+                }}
+              >
+                {q}
+              </button>
+            );
+          })}
         </div>
       )}
 
