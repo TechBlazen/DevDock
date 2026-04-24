@@ -19,5 +19,25 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
+        },
+      ],
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
+      ],
+      // React Compiler-era hints — downgrade to warnings since the compiler
+      // is not enabled in this project's build pipeline. Real semantic issues
+      // (set-state-in-effect, static-components) stay as errors.
+      'react-hooks/purity': 'warn',
+      'react-hooks/preserve-manual-memoization': 'warn',
+    },
   },
 ])

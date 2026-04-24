@@ -5,7 +5,7 @@ import { openInVSCode, openInVSCodeWeb, parseRepoUrl, fetchGitHubRepo, fetchADOR
 import { useRepoStore, useAuthStore, useUserAccountsStore, useSettingsStore } from '../../store';
 import { RepoDetailPanel } from './RepoDetailPanel';
 import { RepoCommentSection } from './RepoCommentSection';
-import type { Repository, RepoEnvironment, CloudPlatform, RepoOwner } from '../../types';
+import type { Repository, RepoEnvironment, CloudPlatform } from '../../types';
 
 const langColors: Record<string, string> = {
   Python:     '#3572A5',

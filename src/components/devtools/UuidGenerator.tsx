@@ -69,7 +69,7 @@ function generateUUID(version: UUIDVersion): string {
 }
 
 function formatUUID(uuid: string, hyphens: boolean, uppercase: boolean): string {
-  let result = hyphens ? uuid : uuid.replace(/-/g, '');
+  const result = hyphens ? uuid : uuid.replace(/-/g, '');
   return uppercase ? result.toUpperCase() : result.toLowerCase();
 }
 

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
-import type { ForumThread, ForumAnswer, ForumCategory, ForumUserReputation, ReputationTier, FeatureRequest, FeatureRequestAttachment } from '../types';
+import type { ForumThread, ForumAnswer, ForumCategory, ForumUserReputation, FeatureRequest } from '../types';
 import { getTier } from '../lib/forum-constants';
 
 // ─── Seed Data ──────────────────────────────────────────────────────────────

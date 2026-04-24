@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { createElement, useState, useMemo, useRef } from 'react';
 import { nanoid } from 'nanoid';
 import {
   ChevronUp, ChevronDown, Pencil, Trash2, Eye, EyeOff,
@@ -15,7 +15,7 @@ import type { NavItem, NavLinkItem, NavGroupItem, NavigationConfig } from '../..
 const IconPicker = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const Icon = getIcon(value);
+  const icon = useMemo(() => getIcon(value), [value]);
 
   const filtered = search
     ? iconNames.filter((n) => n.toLowerCase().includes(search.toLowerCase()))
@@ -29,7 +29,7 @@ const IconPicker = ({ value, onChange }: { value: string; onChange: (v: string) 
         className="flex items-center gap-2 px-3 py-2 rounded-md text-[13px]"
         style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
       >
-        <Icon size={14} />
+        {createElement(icon, { size: 14 })}
         <span>{value}</span>
         <ChevronRight size={12} style={{ transform: open ? 'rotate(90deg)' : undefined, transition: 'transform 0.15s' }} />
       </button>

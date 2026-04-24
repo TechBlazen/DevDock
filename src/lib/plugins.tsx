@@ -1,8 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useMemo, useState, useCallback } from 'react';
-import { HeartPulse, ShieldCheck, BookOpen, FolderOpen, FileText, Search, RefreshCw, Plus, Trash2, Save, ChevronRight, AlertTriangle } from 'lucide-react';
+import { HeartPulse, ShieldCheck, BookOpen, FolderOpen, FileText, Search, Plus, Trash2, Save, ChevronRight, AlertTriangle } from 'lucide-react';
 import { usePluginStore, useSettingsStore, useMCPStore, useTelemetryStore } from '../store';
-import { Card, CardHeader, SectionTitle, StatusDot, Badge, Pill, Button, Input, EmptyState, Spinner } from '../components/ui';
+import { Card, SectionTitle, StatusDot, Badge, Pill, Button, Input, EmptyState } from '../components/ui';
 import type { ForgePlugin, DashboardWidget, PluginPage, PluginWidget, PluginNavItem } from '../types';
 
 // ─── Plugin SDK ──────────────────────────────────────────────────────────────

@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import Editor from '@monaco-editor/react';
 import {
-  Bot, Zap, Plus, Trash2, Copy, Download, Upload, Save,
-  FileText, User, ChevronRight, Send, Eye, Code2,
-  GitFork, GitBranch, X, Loader2, PlayCircle, Clock, AlertCircle, Star,
+  Bot, Zap, Plus, Trash2, Copy, Download, Upload,
+  FileText, User, Send, Eye, Code2,
+  X, Loader2, PlayCircle, Clock, AlertCircle, Star,
 } from 'lucide-react';
 import { useAuthStore, useDocsStore, useSettingsStore, useUserAccountsStore } from '../store';
 import { useBuilderStore } from '../store/builder-store';

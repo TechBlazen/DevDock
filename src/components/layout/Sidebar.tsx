@@ -9,7 +9,7 @@ import { useMCPStore, useAuthStore, useSearchStore, useSettingsStore } from '../
 import { usePluginExtensions } from '../../lib/plugins';
 import { getIcon } from '../../lib/icon-registry';
 import { defaultNavigation } from '../../lib/default-navigation';
-import type { NavItem, NavLinkItem, NavGroupItem } from '../../types';
+import type { NavItem, NavGroupItem } from '../../types';
 
 const PROVIDER_LABELS: Record<string, string> = {
   github: 'GitHub',

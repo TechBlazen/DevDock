@@ -1,4 +1,4 @@
-import { Sun, Moon, Monitor, User, Shield, Clock, Mail, Key, Bookmark } from 'lucide-react';
+import { Sun, Moon, Monitor, Shield, Clock, Mail, Key } from 'lucide-react';
 import { useAuthStore, useUserAccountsStore, useSettingsStore } from '../store';
 import { useUserPreferences } from '../hooks/useUserPreferences';
 import { useTheme } from '../hooks/useTheme';
