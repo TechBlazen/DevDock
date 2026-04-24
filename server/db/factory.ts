@@ -11,6 +11,10 @@ export async function createProvider(config: DbConfig): Promise<DatabaseProvider
       const { PostgresProvider } = await import('./postgres/client.js');
       return new PostgresProvider(config.postgres.connectionString, { ssl: config.postgres.ssl });
     }
+    case 'mysql': {
+      const { MysqlProvider } = await import('./mysql/client.js');
+      return new MysqlProvider(config.mysql.connectionString, { ssl: config.mysql.ssl });
+    }
     case 'supabase': {
       const { SupabaseProvider } = await import('./supabase/client.js');
       return new SupabaseProvider(config.supabase.url, config.supabase.anonKey);
