@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Shell } from './components/layout/Shell'
 import { initOTel } from './otel'
 import { useSettingsStore, useAuthStore, usePluginStore, useUserAccountsStore, useRepoStore } from './store'
+import { useForumStore } from './store/forum-store'
 import { changeLanguage } from './i18n'
 import { BUILT_IN_PLUGINS, usePluginExtensions } from './lib/plugins'
 import { LoginPage } from './pages/LoginPage'
@@ -93,6 +94,10 @@ export default function App() {
   useEffect(() => {
     if (authStatus === 'authenticated') {
       useRepoStore.getState().loadRepos()
+      // Forum threads + feature requests moved server-side in Phase 3a — hydrate
+      // them the same way on sign-in so every user sees the shared list.
+      useForumStore.getState().loadThreads()
+      useForumStore.getState().loadFeatureRequests()
     }
   }, [authStatus])
 

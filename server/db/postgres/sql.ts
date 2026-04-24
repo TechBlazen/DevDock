@@ -21,12 +21,16 @@ export const JSON_COLUMNS: Record<string, readonly string[]> = {
   analytics_errors: [],
   federated_sources: ['auth_config', 'result_mapping', 'trigger_config'],
   federated_documents: ['meta'],
+  forum_threads: ['tags', 'votes'],
+  forum_answers: ['votes'],
+  feature_requests: ['tags', 'votes', 'attachments'],
 } as const;
 
 export const BOOLEAN_COLUMNS: Record<string, readonly string[]> = {
   repos: ['is_private'],
   bookmarks: ['favorite'],
   federated_sources: ['enabled'],
+  forum_answers: ['is_accepted'],
 } as const;
 
 /**

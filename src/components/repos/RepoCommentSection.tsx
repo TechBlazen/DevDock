@@ -299,11 +299,11 @@ export const RepoCommentSection = ({ repo }: RepoCommentSectionProps) => {
   const isLocked = !!thread?.acceptedAnswerId;
   const canVoteThread = !isLocked || isAdmin;
 
-  const handlePostComment = useCallback(() => {
+  const handlePostComment = useCallback(async () => {
     if (!comment.trim() || !user) return;
 
     if (!thread) {
-      const threadId = addThread({
+      const threadId = await addThread({
         title: `Discussion: ${repo.name}`,
         body: comment.trim(),
         category: 'repo-comment',
@@ -315,9 +315,11 @@ export const RepoCommentSection = ({ repo }: RepoCommentSectionProps) => {
         repoName: repo.name,
         repoSource: repo.source,
       });
-      updateRepoMeta(repo.id, repo.source, { forumThreadId: threadId });
+      if (threadId) {
+        updateRepoMeta(repo.id, repo.source, { forumThreadId: threadId });
+      }
     } else {
-      addAnswer(thread.id, {
+      await addAnswer(thread.id, {
         authorId: user.id,
         authorName: user.displayName,
         authorAvatarUrl: user.avatarUrl,

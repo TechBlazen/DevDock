@@ -68,6 +68,26 @@ export interface DatabaseProvider {
   getAllFederatedDocuments(): Promise<FederatedDocumentRow[]>;
   replaceFederatedDocuments(sourceId: string, docs: FederatedDocumentRow[]): Promise<void>;
   deleteFederatedDocumentsBySource(sourceId: string): Promise<void>;
+
+  // ─── Forum (Threads + Answers) ──────────────────────────────────────────────
+  getForumThreads(): Promise<ForumThreadRow[]>;
+  getForumThreadById(id: string): Promise<ForumThreadRow | null>;
+  createForumThread(thread: ForumThreadRow): Promise<ForumThreadRow>;
+  updateForumThread(id: string, partial: Partial<ForumThreadRow>): Promise<ForumThreadRow | null>;
+  deleteForumThread(id: string): Promise<void>;
+
+  getForumAnswersByThread(threadId: string): Promise<ForumAnswerRow[]>;
+  getAllForumAnswers(): Promise<ForumAnswerRow[]>;
+  createForumAnswer(answer: ForumAnswerRow): Promise<ForumAnswerRow>;
+  updateForumAnswer(id: string, partial: Partial<ForumAnswerRow>): Promise<ForumAnswerRow | null>;
+  deleteForumAnswer(id: string): Promise<void>;
+
+  // ─── Feature Requests ───────────────────────────────────────────────────────
+  getFeatureRequests(): Promise<FeatureRequestRow[]>;
+  getFeatureRequestById(id: string): Promise<FeatureRequestRow | null>;
+  createFeatureRequest(req: FeatureRequestRow): Promise<FeatureRequestRow>;
+  updateFeatureRequest(id: string, partial: Partial<FeatureRequestRow>): Promise<FeatureRequestRow | null>;
+  deleteFeatureRequest(id: string): Promise<void>;
 }
 
 // ─── Row types (flat, JSON-serialized for complex fields) ───────────────────
@@ -213,4 +233,54 @@ export interface FederatedDocumentRow {
   extra: string;
   meta: string;
   fetched_at: string;
+}
+
+// Votes, tags, answers (when denormalised) are stored as JSON strings.
+// Accepted answer id is nullable — unset until one is accepted.
+export interface ForumThreadRow {
+  id: string;
+  title: string;
+  body: string;
+  category: string;
+  tags: string;                // JSON array<string>
+  author_id: string;
+  author_name: string;
+  author_avatar_url?: string;
+  votes: string;               // JSON array<ForumVote>
+  view_count: number;
+  accepted_answer_id?: string;
+  repo_id?: string;
+  repo_name?: string;
+  repo_source?: string;        // 'github' | 'ado'
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ForumAnswerRow {
+  id: string;
+  thread_id: string;
+  parent_answer_id?: string;   // reply-to-answer threading (optional)
+  author_id: string;
+  author_name: string;
+  author_avatar_url?: string;
+  body: string;
+  votes: string;               // JSON array<ForumVote>
+  is_accepted: number;         // 0 or 1 for SQLite compat
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FeatureRequestRow {
+  id: string;
+  title: string;
+  description: string;
+  author_id: string;
+  author_name: string;
+  author_avatar_url?: string;
+  status: string;              // 'open' | 'planned' | 'in-progress' | 'completed' | 'declined'
+  votes: string;               // JSON array<ForumVote>
+  attachments: string;         // JSON array<FeatureRequestAttachment>
+  tags: string;                // JSON array<string>
+  created_at: string;
+  updated_at: string;
 }

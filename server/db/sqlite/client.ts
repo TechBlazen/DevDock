@@ -6,6 +6,7 @@ import type {
   DatabaseProvider, UserRow, RepoRow, SettingsRow,
   BookmarkRow, CollectionRow, DocRow, PluginStateRow,
   PageViewRow, ErrorRow, FederatedSourceRow, FederatedDocumentRow,
+  ForumThreadRow, ForumAnswerRow, FeatureRequestRow,
 } from '../provider.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -296,6 +297,93 @@ export class SqliteProvider implements DatabaseProvider {
 
   async deleteFederatedDocumentsBySource(sourceId: string): Promise<void> {
     this.db.prepare('DELETE FROM federated_documents WHERE source_id = ?').run(sourceId);
+  }
+
+  // ─── Forum Threads ──────────────────────────────────────────────────────────
+  async getForumThreads(): Promise<ForumThreadRow[]> {
+    return this.db.prepare('SELECT * FROM forum_threads ORDER BY created_at DESC').all() as ForumThreadRow[];
+  }
+
+  async getForumThreadById(id: string): Promise<ForumThreadRow | null> {
+    return (this.db.prepare('SELECT * FROM forum_threads WHERE id = ?').get(id) as ForumThreadRow) ?? null;
+  }
+
+  async createForumThread(thread: ForumThreadRow): Promise<ForumThreadRow> {
+    this.db.prepare(`INSERT INTO forum_threads (id, title, body, category, tags, author_id, author_name, author_avatar_url, votes, view_count, accepted_answer_id, repo_id, repo_name, repo_source, created_at, updated_at)
+      VALUES (@id, @title, @body, @category, @tags, @author_id, @author_name, @author_avatar_url, @votes, @view_count, @accepted_answer_id, @repo_id, @repo_name, @repo_source, @created_at, @updated_at)`).run(nullify(thread));
+    return thread;
+  }
+
+  async updateForumThread(id: string, partial: Partial<ForumThreadRow>): Promise<ForumThreadRow | null> {
+    const existing = await this.getForumThreadById(id);
+    if (!existing) return null;
+    const keys = Object.keys(partial).filter((k) => k !== 'id');
+    if (keys.length === 0) return existing;
+    const sets = keys.map((k) => `${k} = @${k}`).join(', ');
+    this.db.prepare(`UPDATE forum_threads SET ${sets} WHERE id = @id`).run(nullify({ ...partial, id }));
+    return { ...existing, ...partial };
+  }
+
+  async deleteForumThread(id: string): Promise<void> {
+    this.db.prepare('DELETE FROM forum_threads WHERE id = ?').run(id);
+  }
+
+  // ─── Forum Answers ──────────────────────────────────────────────────────────
+  async getForumAnswersByThread(threadId: string): Promise<ForumAnswerRow[]> {
+    return this.db.prepare('SELECT * FROM forum_answers WHERE thread_id = ? ORDER BY created_at ASC').all(threadId) as ForumAnswerRow[];
+  }
+
+  async getAllForumAnswers(): Promise<ForumAnswerRow[]> {
+    return this.db.prepare('SELECT * FROM forum_answers ORDER BY created_at ASC').all() as ForumAnswerRow[];
+  }
+
+  async createForumAnswer(answer: ForumAnswerRow): Promise<ForumAnswerRow> {
+    this.db.prepare(`INSERT INTO forum_answers (id, thread_id, parent_answer_id, author_id, author_name, author_avatar_url, body, votes, is_accepted, created_at, updated_at)
+      VALUES (@id, @thread_id, @parent_answer_id, @author_id, @author_name, @author_avatar_url, @body, @votes, @is_accepted, @created_at, @updated_at)`).run(nullify(answer));
+    return answer;
+  }
+
+  async updateForumAnswer(id: string, partial: Partial<ForumAnswerRow>): Promise<ForumAnswerRow | null> {
+    const existing = this.db.prepare('SELECT * FROM forum_answers WHERE id = ?').get(id) as ForumAnswerRow | undefined;
+    if (!existing) return null;
+    const keys = Object.keys(partial).filter((k) => k !== 'id');
+    if (keys.length === 0) return existing;
+    const sets = keys.map((k) => `${k} = @${k}`).join(', ');
+    this.db.prepare(`UPDATE forum_answers SET ${sets} WHERE id = @id`).run(nullify({ ...partial, id }));
+    return { ...existing, ...partial };
+  }
+
+  async deleteForumAnswer(id: string): Promise<void> {
+    this.db.prepare('DELETE FROM forum_answers WHERE id = ?').run(id);
+  }
+
+  // ─── Feature Requests ───────────────────────────────────────────────────────
+  async getFeatureRequests(): Promise<FeatureRequestRow[]> {
+    return this.db.prepare('SELECT * FROM feature_requests ORDER BY created_at DESC').all() as FeatureRequestRow[];
+  }
+
+  async getFeatureRequestById(id: string): Promise<FeatureRequestRow | null> {
+    return (this.db.prepare('SELECT * FROM feature_requests WHERE id = ?').get(id) as FeatureRequestRow) ?? null;
+  }
+
+  async createFeatureRequest(req: FeatureRequestRow): Promise<FeatureRequestRow> {
+    this.db.prepare(`INSERT INTO feature_requests (id, title, description, author_id, author_name, author_avatar_url, status, votes, attachments, tags, created_at, updated_at)
+      VALUES (@id, @title, @description, @author_id, @author_name, @author_avatar_url, @status, @votes, @attachments, @tags, @created_at, @updated_at)`).run(nullify(req));
+    return req;
+  }
+
+  async updateFeatureRequest(id: string, partial: Partial<FeatureRequestRow>): Promise<FeatureRequestRow | null> {
+    const existing = await this.getFeatureRequestById(id);
+    if (!existing) return null;
+    const keys = Object.keys(partial).filter((k) => k !== 'id');
+    if (keys.length === 0) return existing;
+    const sets = keys.map((k) => `${k} = @${k}`).join(', ');
+    this.db.prepare(`UPDATE feature_requests SET ${sets} WHERE id = @id`).run(nullify({ ...partial, id }));
+    return { ...existing, ...partial };
+  }
+
+  async deleteFeatureRequest(id: string): Promise<void> {
+    this.db.prepare('DELETE FROM feature_requests WHERE id = ?').run(id);
   }
 }
 
