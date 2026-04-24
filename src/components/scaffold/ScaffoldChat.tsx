@@ -240,13 +240,14 @@ export const ScaffoldChat = ({ onBack }: ScaffoldChatProps) => {
                   senderName={agent.name}
                   accentColor={color}
                   avatarIcon={<Icon size={16} />}
+                  bubbleBg={`${color}1F`}
                 />
               </div>
             </div>
           );
         })}
         {isLoading && (
-          <TypingIndicator accentColor={color} avatarIcon={<Icon size={16} />} />
+          <TypingIndicator accentColor={color} avatarIcon={<Icon size={16} />} bubbleBg={`${color}1F`} />
         )}
         <div ref={bottomRef} />
       </div>
