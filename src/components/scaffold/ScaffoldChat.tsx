@@ -37,6 +37,11 @@ export const ScaffoldChat = ({ onBack }: ScaffoldChatProps) => {
   const agent = session ? SCAFFOLD_AGENTS.find((a) => a.id === session.agentId) : null;
   const Icon = ICON_MAP[agent?.icon ?? 'Boxes'] ?? Boxes;
   const color = AGENT_COLORS[session?.agentId ?? ''] ?? '#2a6fff';
+  // Blend the agent color with --bg-surface so the AI bubble reads against
+  // ScaffoldChat's near-black panel regardless of the agent color's
+  // luminance. Pure alpha-over-panel fails for dark agent colors (e.g.
+  // 'devops-github' is #24292e — essentially black).
+  const bubbleTint = `color-mix(in srgb, ${color} 22%, var(--bg-surface))`;
 
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -240,14 +245,14 @@ export const ScaffoldChat = ({ onBack }: ScaffoldChatProps) => {
                   senderName={agent.name}
                   accentColor={color}
                   avatarIcon={<Icon size={16} />}
-                  bubbleBg={`${color}1F`}
+                  bubbleBg={bubbleTint}
                 />
               </div>
             </div>
           );
         })}
         {isLoading && (
-          <TypingIndicator accentColor={color} avatarIcon={<Icon size={16} />} bubbleBg={`${color}1F`} />
+          <TypingIndicator accentColor={color} avatarIcon={<Icon size={16} />} bubbleBg={bubbleTint} />
         )}
         <div ref={bottomRef} />
       </div>
