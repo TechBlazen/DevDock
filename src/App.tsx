@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Shell } from './components/layout/Shell'
 import { initOTel } from './otel'
-import { useSettingsStore, useAuthStore, usePluginStore, useUserAccountsStore } from './store'
+import { useSettingsStore, useAuthStore, usePluginStore, useUserAccountsStore, useRepoStore } from './store'
 import { changeLanguage } from './i18n'
 import { BUILT_IN_PLUGINS, usePluginExtensions } from './lib/plugins'
 import { LoginPage } from './pages/LoginPage'
@@ -87,6 +87,14 @@ export default function App() {
     const lang = userAccount?.preferences?.language || settings.defaultLanguage || 'en'
     changeLanguage(lang)
   }, [userAccount?.preferences?.language, settings.defaultLanguage])
+
+  // Hydrate the shared repo list from the server once the user is authenticated.
+  // If the server is unreachable, useRepoStore falls back to its localStorage cache.
+  useEffect(() => {
+    if (authStatus === 'authenticated') {
+      useRepoStore.getState().loadRepos()
+    }
+  }, [authStatus])
 
   // Auth gate — show login page if not authenticated
   if (authStatus === 'unauthenticated') {
