@@ -78,6 +78,39 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+  # ─── Postgres Contract Tests ──────────────────────────────────────────────────
+  # Verifies the PostgresProvider implements the same observable behavior as the
+  # SQLite provider for the CRUD paths the app uses. Runs against an ephemeral
+  # Postgres 16 service container.
+  postgres-tests:
+    name: Postgres Contract Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: devdock
+          POSTGRES_PASSWORD: devdock
+          POSTGRES_DB: devdock_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U devdock -d devdock_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Run Postgres contract tests
+        run: npm run test:server
+        env:
+          TEST_POSTGRES_URL: postgres://devdock:devdock@localhost:5432/devdock_test
+
   # ─── E2E Tests (Playwright — chromium only, blocking) ────────────────────────
   e2e-tests:
     name: E2E Tests (chromium)

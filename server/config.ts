@@ -6,7 +6,7 @@ export type DbProviderType = 'sqlite' | 'postgres' | 'supabase';
 export interface DbConfig {
   provider: DbProviderType;
   sqlite: { path: string };
-  postgres: { connectionString: string };
+  postgres: { connectionString: string; ssl: boolean };
   supabase: { url: string; anonKey: string; serviceRoleKey?: string };
 }
 
@@ -22,7 +22,7 @@ const DEFAULT_CONFIG: ServerConfig = {
   db: {
     provider: 'sqlite',
     sqlite: { path: resolve(process.cwd(), 'data/devdock.db') },
-    postgres: { connectionString: '' },
+    postgres: { connectionString: '', ssl: false },
     supabase: { url: '', anonKey: '' },
   },
 };
@@ -54,6 +54,7 @@ export function loadConfig(): ServerConfig {
   if (process.env.DEVDOCK_DB_PROVIDER) config.db.provider = process.env.DEVDOCK_DB_PROVIDER as DbProviderType;
   if (process.env.DEVDOCK_SQLITE_PATH) config.db.sqlite.path = process.env.DEVDOCK_SQLITE_PATH;
   if (process.env.DEVDOCK_POSTGRES_URL) config.db.postgres.connectionString = process.env.DEVDOCK_POSTGRES_URL;
+  if (process.env.DEVDOCK_POSTGRES_SSL === 'require') config.db.postgres.ssl = true;
   if (process.env.DEVDOCK_SUPABASE_URL) config.db.supabase.url = process.env.DEVDOCK_SUPABASE_URL;
   if (process.env.DEVDOCK_SUPABASE_KEY) config.db.supabase.anonKey = process.env.DEVDOCK_SUPABASE_KEY;
 
