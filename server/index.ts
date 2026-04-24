@@ -62,7 +62,7 @@ async function main() {
   registerPluginRoutes(app, db, config.jwtSecret);
   registerAnalyticsRoutes(app, db, config.jwtSecret);
   registerFederatedSourceRoutes(app, db, config.jwtSecret, vector);
-  registerForumRoutes(app, db, config.jwtSecret);
+  registerForumRoutes(app, db, config.jwtSecret, vector);
   registerFeatureRequestRoutes(app, db, config.jwtSecret);
   registerSemanticSearchRoutes(app, config.jwtSecret, vector);
   registerDirectoryRoutes(app, db, config.jwtSecret);
