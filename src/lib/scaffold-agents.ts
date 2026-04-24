@@ -403,7 +403,6 @@ RULES:
   },
   {
     id: 'enterprise-devops',
-    // TODO: confirm icon — placeholder, swap for the lucide-react icon you want (e.g. Container, Ship, Boxes)
     icon: 'Container',
     name: 'Enterprise DevOps Builder',
     description:
