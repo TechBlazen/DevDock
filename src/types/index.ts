@@ -415,7 +415,8 @@ export type ScaffoldAgentId =
   | 'mcp-server'
   | 'full-stack'
   | 'devops-github'
-  | 'playwright-testing';
+  | 'playwright-testing'
+  | 'enterprise-devops';
 
 export interface ScaffoldAgent {
   id: ScaffoldAgentId;
