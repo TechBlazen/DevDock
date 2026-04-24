@@ -41,6 +41,32 @@ html, body, #root { height: 100%; width: 100%; overflow: hidden; }
   --btn-radius: 9999px;
   --tooltip-bg: #333;
   --tooltip-text: #fff;
+
+  /* ─── Costco-style form tokens (scoped to Form* primitives) ─────────────
+     Subtle radius, taller inputs, crisp gray borders, solid-blue primary
+     button. These are intentionally independent of --btn-radius so the
+     pill-shaped buttons elsewhere in the app are untouched. */
+  --form-radius: 4px;
+  --form-card-bg: #ffffff;
+  --form-card-border: #d5d9d9;
+  --form-card-shadow: none;
+  --form-input-bg: #ffffff;
+  --form-input-border: #b7bcc1;
+  --form-input-border-focus: #005DAA;
+  --form-input-focus-ring: rgba(0,93,170,0.25);
+  --form-input-height: 44px;
+  --form-input-text: #1a1a2e;
+  --form-input-placeholder: #7a7f85;
+  --form-label-text: #1a1a2e;
+  --form-primary-bg: #005DAA;
+  --form-primary-bg-hover: #004a88;
+  --form-primary-text: #ffffff;
+  --form-secondary-bg: #ffffff;
+  --form-secondary-border: #005DAA;
+  --form-secondary-text: #005DAA;
+  --form-secondary-bg-hover: #e8f0fe;
+  --form-divider: #d5d9d9;
+  --form-title-text: #1a1a2e;
 }
 
 [data-theme="dark"] {
@@ -79,6 +105,31 @@ html, body, #root { height: 100%; width: 100%; overflow: hidden; }
   --btn-radius: 9999px;
   --tooltip-bg: #e8eaed;
   --tooltip-text: #1a1a2e;
+
+  /* Form tokens — dark equivalents. Keep Costco layout identity (crisp
+     borders, subtle radius, solid-blue primary) but adapt colors for dark
+     surfaces so the forms don't glow white inside a dark panel. */
+  --form-radius: 4px;
+  --form-card-bg: #1a1d27;
+  --form-card-border: #3d4050;
+  --form-card-shadow: var(--shadow-md);
+  --form-input-bg: #0f1117;
+  --form-input-border: #4a4f5e;
+  --form-input-border-focus: #4a9eff;
+  --form-input-focus-ring: rgba(74,158,255,0.25);
+  --form-input-height: 44px;
+  --form-input-text: #e8eaed;
+  --form-input-placeholder: #6b7280;
+  --form-label-text: #e8eaed;
+  --form-primary-bg: #0072C6;
+  --form-primary-bg-hover: #1a8ae0;
+  --form-primary-text: #ffffff;
+  --form-secondary-bg: transparent;
+  --form-secondary-border: #4a9eff;
+  --form-secondary-text: #4a9eff;
+  --form-secondary-bg-hover: rgba(74,158,255,0.12);
+  --form-divider: #3d4050;
+  --form-title-text: #e8eaed;
 }
 
 body {

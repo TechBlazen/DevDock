@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { Server, Play, Square, Trash2, Plus, ChevronDown, ChevronRight, Terminal } from 'lucide-react';
 import { useMCPStore } from '../../store';
-import { Card, Badge, Button, Input, Pill } from '../ui';
+import {
+  Card, Badge, Button, Pill,
+  FormTitle, FormCard, FormField, FormInput, FormPrimaryButton, FormSecondaryButton, FormFieldLabel,
+} from '../ui';
 import type { MCPServer } from '../../types';
 
 // ─── Individual server card ───────────────────────────────────────────────────
@@ -150,52 +153,57 @@ const AddServerModal = ({ onClose }: { onClose: () => void }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose} style={{
       background: 'var(--overlay)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)'
     }}>
       <div
-        className="rounded-2xl p-6 w-full max-w-md"
+        className="w-full max-w-md"
         onClick={(e) => e.stopPropagation()}
-        style={{
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-color)',
-          backdropFilter: 'blur(40px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-          boxShadow: 'var(--shadow-lg)'
-        }}
       >
-        <h3 className="text-base font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Register MCP Server</h3>
+        <FormTitle>Register MCP Server</FormTitle>
+        <FormCard>
+          <div className="space-y-4">
+            <FormField label="Server Name" htmlFor="mcp-name">
+              <FormInput id="mcp-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="my-custom-server" autoFocus />
+            </FormField>
 
-        <div className="space-y-3">
-          <Input label="Server Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="my-custom-server" />
-          <Input label="Description" value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="What does this server do?" />
-          <Input label="Port" type="number" value={port} onChange={(e) => setPort(e.target.value)} />
+            <FormField label="Description" htmlFor="mcp-desc">
+              <FormInput id="mcp-desc" value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="What does this server do?" />
+            </FormField>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Transport</label>
-            <div className="flex gap-2">
-              {(['stdio', 'sse', 'websocket'] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTransport(t)}
-                  className="flex-1 py-1.5 rounded-lg text-xs transition-all"
-                  style={{
-                    background: transport === t ? 'rgba(42, 111, 255, 0.12)' : 'transparent',
-                    color: transport === t ? '#2a6fff' : 'var(--text-muted)',
-                    border: transport === t ? '1px solid rgba(42, 111, 255, 0.3)' : '1px solid var(--border-input)'
-                  }}
-                >
-                  {t}
-                </button>
-              ))}
+            <FormField label="Port" htmlFor="mcp-port">
+              <FormInput id="mcp-port" type="number" value={port} onChange={(e) => setPort(e.target.value)} />
+            </FormField>
+
+            <div>
+              <FormFieldLabel>Transport</FormFieldLabel>
+              <div className="grid grid-cols-3 gap-2">
+                {(['stdio', 'sse', 'websocket'] as const).map((t) => {
+                  const active = transport === t;
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => setTransport(t)}
+                      className="text-[14px] font-medium transition-colors"
+                      style={{
+                        height: 'var(--form-input-height)',
+                        borderRadius: 'var(--form-radius)',
+                        background: active ? 'var(--form-secondary-bg-hover)' : 'var(--form-input-bg)',
+                        color: active ? 'var(--form-primary-bg)' : 'var(--text-secondary)',
+                        border: `1px solid ${active ? 'var(--form-primary-bg)' : 'var(--form-input-border)'}`,
+                      }}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        </div>
 
-        <div className="flex gap-2 mt-5">
-          <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" className="flex-1" onClick={handleAdd}>Register Server</Button>
-        </div>
+            <FormPrimaryButton onClick={handleAdd} disabled={!name.trim()}>
+              Register Server
+            </FormPrimaryButton>
+            <FormSecondaryButton onClick={onClose}>Cancel</FormSecondaryButton>
+          </div>
+        </FormCard>
       </div>
     </div>
   );

@@ -13,8 +13,71 @@ import {
   fetchADOFile,
   pushADOFile,
 } from '../../lib/repos';
-import { Button, Pill } from '../ui';
+import {
+  Pill,
+  FormTitle, FormCard, FormField, FormInput, FormPrimaryButton, FormSecondaryButton,
+  FormDivider,
+} from '../ui';
 import type { DocEntry } from '../../types';
+
+// Shared overlay wrapper — matches the Costco "card-on-light-overlay" look.
+const ModalShell = ({
+  onClose,
+  title,
+  children,
+  maxWidth = 'max-w-lg',
+}: {
+  onClose: () => void;
+  title: React.ReactNode;
+  children: React.ReactNode;
+  maxWidth?: string;
+}) => (
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+    onClick={onClose}
+    style={{ background: 'var(--overlay)' }}
+  >
+    <div className={`w-full ${maxWidth} my-8`} onClick={(e) => e.stopPropagation()}>
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <FormTitle className="!mb-0">{title}</FormTitle>
+        <button
+          onClick={onClose}
+          className="p-1.5 rounded transition-colors"
+          style={{ color: 'var(--text-muted)' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+        >
+          <X size={20} />
+        </button>
+      </div>
+      {children}
+    </div>
+  </div>
+);
+
+const ErrorBanner = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex items-start gap-2 p-3 text-[13px]" style={{
+    background: 'rgba(209,52,56,0.08)',
+    border: '1px solid rgba(209,52,56,0.35)',
+    borderRadius: 'var(--form-radius)',
+    color: '#b02226',
+  }}>
+    <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+    <span>{children}</span>
+  </div>
+);
+
+const SuccessBanner = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex items-center gap-2 p-3 text-[13px]" style={{
+    background: 'rgba(46,125,50,0.08)',
+    border: '1px solid rgba(46,125,50,0.35)',
+    borderRadius: 'var(--form-radius)',
+    color: '#1e5b23',
+  }}>
+    <CheckCircle size={16} />
+    <span>{children}</span>
+  </div>
+);
 
 // ─── Import Modal ────────────────────────────────────────────────────────────
 export const ImportModal = ({ onClose }: { onClose: () => void }) => {
@@ -113,108 +176,99 @@ export const ImportModal = ({ onClose }: { onClose: () => void }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose} style={{
-      background: 'var(--overlay)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-    }}>
-      <div className="rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-color)',
-        backdropFilter: 'blur(40px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-        boxShadow: 'var(--shadow-lg)',
-      }}>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Download size={16} style={{ color: 'var(--accent)' }} />
-            <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Import Markdown from Repository</h3>
-          </div>
-          <button onClick={onClose} className="p-1" style={{ color: 'var(--text-faint)' }}>
-            <X size={16} />
-          </button>
-        </div>
+    <ModalShell onClose={onClose} title={
+      <span className="inline-flex items-center gap-2">
+        <Download size={22} style={{ color: 'var(--form-primary-bg)' }} />
+        Import Markdown
+      </span>
+    }>
+      <FormCard>
+        <div className="space-y-4">
+          <FormField label="Repository URL" htmlFor="import-url">
+            <FormInput
+              id="import-url"
+              value={repoUrl}
+              onChange={(e) => setRepoUrl(e.target.value)}
+              placeholder="https://github.com/owner/repo"
+              autoFocus
+            />
+          </FormField>
 
-        {/* Repo URL */}
-        <div className="space-y-2 mb-4">
-          <input
-            value={repoUrl}
-            onChange={(e) => setRepoUrl(e.target.value)}
-            placeholder="https://github.com/owner/repo"
-            className="w-full rounded-xl px-3 py-2 text-xs outline-none"
-            style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
-          />
-          <div className="flex gap-2">
-            <input
+          <FormField
+            label="Directory Path"
+            htmlFor="import-dir"
+            help="Leave empty to scan from repository root."
+          >
+            <FormInput
+              id="import-dir"
               value={dirPath}
               onChange={(e) => setDirPath(e.target.value)}
-              placeholder="Directory path (e.g., docs/ or leave empty for root)"
-              className="flex-1 rounded-xl px-3 py-2 text-xs outline-none"
-              style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
+              placeholder="docs/"
             />
-            <Button variant="outline" size="sm" onClick={handleDiscover} disabled={!repoUrl.trim() || loading}>
-              {loading && files.length === 0 ? <Loader2 size={12} className="animate-spin" /> : 'Discover'}
-            </Button>
-          </div>
+          </FormField>
+
+          {error && <ErrorBanner>{error}</ErrorBanner>}
+          {imported > 0 && <SuccessBanner>Imported {imported} file{imported > 1 ? 's' : ''} successfully.</SuccessBanner>}
+
+          <FormPrimaryButton onClick={handleDiscover} disabled={!repoUrl.trim() || loading}>
+            {loading && files.length === 0 ? <Loader2 size={16} className="animate-spin" /> : null}
+            {loading && files.length === 0 ? 'Discovering…' : 'Discover Markdown Files'}
+          </FormPrimaryButton>
         </div>
 
-        {error && (
-          <div className="flex items-start gap-2 p-2.5 rounded-lg mb-3 text-[11px]" style={{
-            background: 'rgba(255,71,87,0.06)', border: '1px solid rgba(255,71,87,0.15)', color: '#ff4757',
-          }}>
-            <AlertCircle size={13} className="flex-shrink-0 mt-0.5" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {imported > 0 && (
-          <div className="flex items-center gap-2 p-2.5 rounded-lg mb-3 text-[11px]" style={{
-            background: 'rgba(0,229,160,0.06)', border: '1px solid rgba(0,229,160,0.2)', color: '#00e5a0',
-          }}>
-            <CheckCircle size={13} />
-            <span>Imported {imported} file{imported > 1 ? 's' : ''} successfully.</span>
-          </div>
-        )}
-
-        {/* File list */}
         {files.length > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>
-                {files.length} markdown file{files.length > 1 ? 's' : ''} found
-              </span>
-              <button onClick={selectAll} className="text-[10px] font-semibold" style={{ color: 'var(--accent)' }}>
-                {selected.size === files.length ? 'Deselect all' : 'Select all'}
-              </button>
+          <>
+            <FormDivider />
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[13px] font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                  {files.length} markdown file{files.length > 1 ? 's' : ''} found
+                </span>
+                <button
+                  onClick={selectAll}
+                  className="text-[13px] font-semibold underline"
+                  style={{ color: 'var(--form-primary-bg)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  {selected.size === files.length ? 'Deselect all' : 'Select all'}
+                </button>
+              </div>
+              <div className="space-y-1 max-h-[280px] overflow-y-auto mb-4">
+                {files.map((f) => {
+                  const isSelected = selected.has(f.path);
+                  return (
+                    <label
+                      key={f.path}
+                      className="flex items-center gap-2.5 px-3 py-2 cursor-pointer transition-colors"
+                      style={{
+                        background: isSelected ? 'var(--form-secondary-bg-hover)' : 'transparent',
+                        border: `1px solid ${isSelected ? 'var(--form-primary-bg)' : 'var(--form-input-border)'}`,
+                        borderRadius: 'var(--form-radius)',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleFile(f.path)}
+                        style={{ accentColor: 'var(--form-primary-bg)' }}
+                      />
+                      <FileText size={14} style={{ color: 'var(--text-muted)' }} />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[14px] font-semibold truncate" style={{ color: 'var(--form-title-text)' }}>{f.name}</div>
+                        <div className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>{f.path}</div>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+              <FormPrimaryButton onClick={handleImport} disabled={selected.size === 0 || loading}>
+                {loading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                Import {selected.size} file{selected.size !== 1 ? 's' : ''}
+              </FormPrimaryButton>
             </div>
-            <div className="space-y-1 max-h-[240px] overflow-y-auto mb-4">
-              {files.map((f) => (
-                <label key={f.path} className="flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-all" style={{
-                  background: selected.has(f.path) ? 'var(--accent-bg)' : 'transparent',
-                  border: selected.has(f.path) ? '1px solid var(--accent)' : '1px solid var(--border-subtle)',
-                }}>
-                  <input
-                    type="checkbox"
-                    checked={selected.has(f.path)}
-                    onChange={() => toggleFile(f.path)}
-                    className="accent-[#2a6fff]"
-                  />
-                  <FileText size={13} style={{ color: 'var(--text-faint)' }} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[12px] font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{f.name}</div>
-                    <div className="text-[10px] truncate" style={{ color: 'var(--text-faint)' }}>{f.path}</div>
-                  </div>
-                </label>
-              ))}
-            </div>
-            <Button variant="primary" size="md" onClick={handleImport} disabled={selected.size === 0 || loading}>
-              {loading ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
-              Import {selected.size} file{selected.size !== 1 ? 's' : ''}
-            </Button>
-          </div>
+          </>
         )}
-      </div>
-    </div>
+      </FormCard>
+    </ModalShell>
   );
 };
 
@@ -249,7 +303,6 @@ export const ExportModal = ({ doc, onClose }: { doc: DocEntry; onClose: () => vo
         const token = settings.github.accessToken;
         if (!token) throw new Error('GitHub access token not configured. Set it in Settings.');
 
-        // Check if file already exists to get SHA
         let sha: string | undefined;
         try {
           const existing = await fetch(
@@ -277,116 +330,84 @@ export const ExportModal = ({ doc, onClose }: { doc: DocEntry; onClose: () => vo
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose} style={{
-      background: 'var(--overlay)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-    }}>
-      <div className="rounded-2xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()} style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-color)',
-        backdropFilter: 'blur(40px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-        boxShadow: 'var(--shadow-lg)',
-      }}>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Upload size={16} style={{ color: '#00e5a0' }} />
-            <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Export to Repository</h3>
-          </div>
-          <button onClick={onClose} className="p-1" style={{ color: 'var(--text-faint)' }}>
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* Doc info */}
-        <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg" style={{
-          background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)',
+    <ModalShell
+      onClose={onClose}
+      maxWidth="max-w-md"
+      title={
+        <span className="inline-flex items-center gap-2">
+          <Upload size={22} style={{ color: 'var(--form-primary-bg)' }} />
+          Export to Repository
+        </span>
+      }
+    >
+      <FormCard>
+        <div className="flex items-center gap-2 mb-4 px-3 py-2" style={{
+          background: 'var(--bg-inset)',
+          border: '1px solid var(--form-input-border)',
+          borderRadius: 'var(--form-radius)',
         }}>
-          <FileText size={14} style={{ color: 'var(--text-muted)' }} />
-          <span className="text-[12px] font-semibold" style={{ color: 'var(--text-secondary)' }}>{doc.title}</span>
-          <Pill color="var(--text-faint)">{doc.content.length} chars</Pill>
+          <FileText size={16} style={{ color: 'var(--text-muted)' }} />
+          <span className="text-[14px] font-semibold flex-1 truncate" style={{ color: 'var(--form-title-text)' }}>{doc.title}</span>
+          <Pill color="var(--text-muted)">{doc.content.length} chars</Pill>
         </div>
 
-        <div className="space-y-3 mb-4">
-          <div>
-            <label className="text-[10px] uppercase tracking-widest mb-1 block" style={{ color: 'var(--text-muted)' }}>Repository URL</label>
-            <input
+        <div className="space-y-4">
+          <FormField label="Repository URL" htmlFor="export-url">
+            <FormInput
+              id="export-url"
               value={repoUrl}
               onChange={(e) => { setRepoUrl(e.target.value); setError(''); setSuccess(false); }}
               placeholder="https://github.com/owner/repo"
-              className="w-full rounded-xl px-3 py-2 text-xs outline-none"
-              style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
+              autoFocus
             />
             {parsed && (
-              <div className="flex items-center gap-1.5 mt-1">
-                {isGitHub ? <GitFork size={10} style={{ color: 'var(--accent)' }} /> : <GitBranch size={10} style={{ color: 'var(--accent)' }} />}
-                <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+              <div className="flex items-center gap-1.5 mt-1.5">
+                {isGitHub ? <GitFork size={12} style={{ color: 'var(--form-primary-bg)' }} /> : <GitBranch size={12} style={{ color: 'var(--form-primary-bg)' }} />}
+                <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
                   {isGitHub ? `${parsed.owner}/${parsed.repo}` : `${parsed.org}/${parsed.project}/${parsed.repo}`}
                 </span>
               </div>
             )}
-          </div>
+          </FormField>
 
-          <div>
-            <label className="text-[10px] uppercase tracking-widest mb-1 block" style={{ color: 'var(--text-muted)' }}>File Path</label>
-            <input
+          <FormField label="File Path" htmlFor="export-path">
+            <FormInput
+              id="export-path"
               value={filePath}
               onChange={(e) => setFilePath(e.target.value)}
-              className="w-full rounded-xl px-3 py-2 text-xs outline-none font-mono"
-              style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
+              style={{ fontFamily: 'Source Code Pro, monospace', fontSize: 14 }}
             />
-          </div>
+          </FormField>
 
           {isADO && (
-            <div>
-              <label className="text-[10px] uppercase tracking-widest mb-1 block" style={{ color: 'var(--text-muted)' }}>Branch</label>
-              <input
+            <FormField label="Branch" htmlFor="export-branch">
+              <FormInput
+                id="export-branch"
                 value={branch}
                 onChange={(e) => setBranch(e.target.value)}
-                className="w-full rounded-xl px-3 py-2 text-xs outline-none font-mono"
-                style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
+                style={{ fontFamily: 'Source Code Pro, monospace', fontSize: 14 }}
               />
-            </div>
+            </FormField>
           )}
 
-          <div>
-            <label className="text-[10px] uppercase tracking-widest mb-1 block" style={{ color: 'var(--text-muted)' }}>Commit Message</label>
-            <input
+          <FormField label="Commit Message" htmlFor="export-msg">
+            <FormInput
+              id="export-msg"
               value={commitMsg}
               onChange={(e) => setCommitMsg(e.target.value)}
-              className="w-full rounded-xl px-3 py-2 text-xs outline-none"
-              style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
             />
-          </div>
-        </div>
+          </FormField>
 
-        {error && (
-          <div className="flex items-start gap-2 p-2.5 rounded-lg mb-3 text-[11px]" style={{
-            background: 'rgba(255,71,87,0.06)', border: '1px solid rgba(255,71,87,0.15)', color: '#ff4757',
-          }}>
-            <AlertCircle size={13} className="flex-shrink-0 mt-0.5" />
-            <span>{error}</span>
-          </div>
-        )}
+          {error && <ErrorBanner>{error}</ErrorBanner>}
+          {success && <SuccessBanner>Exported successfully to {filePath}</SuccessBanner>}
 
-        {success && (
-          <div className="flex items-center gap-2 p-2.5 rounded-lg mb-3 text-[11px]" style={{
-            background: 'rgba(0,229,160,0.06)', border: '1px solid rgba(0,229,160,0.2)', color: '#00e5a0',
-          }}>
-            <CheckCircle size={13} />
-            <span>Exported successfully to {filePath}</span>
-          </div>
-        )}
-
-        <div className="flex gap-2">
-          <Button variant="primary" size="md" onClick={handleExport} disabled={!parsed || !filePath.trim() || loading}>
-            {loading ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+          <FormPrimaryButton onClick={handleExport} disabled={!parsed || !filePath.trim() || loading}>
+            {loading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
             {success ? 'Export Again' : 'Export'}
-          </Button>
-          <Button variant="ghost" size="md" onClick={onClose}>Cancel</Button>
+          </FormPrimaryButton>
+          <FormSecondaryButton onClick={onClose}>Cancel</FormSecondaryButton>
         </div>
-      </div>
-    </div>
+      </FormCard>
+    </ModalShell>
   );
 };
