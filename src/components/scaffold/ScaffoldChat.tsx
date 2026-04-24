@@ -7,7 +7,7 @@ import { useScaffoldStore, useSettingsStore } from '../../store';
 import { sendChatMessage } from '../../lib/ai';
 import { SCAFFOLD_AGENTS } from '../../lib/scaffold-agents';
 import { Button, Spinner } from '../ui';
-import { providers, MessageBubble, TypingIndicator } from '../chat/ChatComponents';
+import { providers, MessageBubble, TypingIndicator, DateSeparator } from '../chat/ChatComponents';
 import type { ChatMessage } from '../../types';
 import { nanoid } from 'nanoid';
 
@@ -212,11 +212,42 @@ export const ScaffoldChat = ({ onBack }: ScaffoldChatProps) => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
-        {messages.map((msg) => (
-          <MessageBubble key={msg.id} msg={msg} />
-        ))}
-        {isLoading && <TypingIndicator />}
+      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-2">
+        {messages.map((msg, idx) => {
+          const prev = idx > 0 ? messages[idx - 1] : null;
+          const next = idx < messages.length - 1 ? messages[idx + 1] : null;
+
+          const msgDate = new Date(msg.timestamp);
+          const prevDate = prev ? new Date(prev.timestamp) : null;
+          const showDate = !prevDate || msgDate.toDateString() !== prevDate.toDateString();
+
+          const isFirstInGroup = !prev || prev.role !== msg.role || showDate;
+          const isLastInGroup = !next || next.role !== msg.role
+            || new Date(next.timestamp).toDateString() !== msgDate.toDateString();
+
+          return (
+            <div key={msg.id}>
+              {showDate && (
+                <div className="py-3">
+                  <DateSeparator date={msgDate} />
+                </div>
+              )}
+              <div className={isLastInGroup ? 'mb-1' : 'mb-0.5'}>
+                <MessageBubble
+                  msg={msg}
+                  showSenderName={isFirstInGroup}
+                  showAvatar={isLastInGroup}
+                  senderName={agent.name}
+                  accentColor={color}
+                  avatarIcon={<Icon size={16} />}
+                />
+              </div>
+            </div>
+          );
+        })}
+        {isLoading && (
+          <TypingIndicator accentColor={color} avatarIcon={<Icon size={16} />} />
+        )}
         <div ref={bottomRef} />
       </div>
 
