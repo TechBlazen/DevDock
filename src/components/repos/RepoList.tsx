@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, RefreshCw, Star } from 'lucide-react';
+import { Search, RefreshCw, Star, AlertTriangle } from 'lucide-react';
 import { RepoCard } from './RepoCard';
 import { RegisterRepo } from './RegisterRepo';
 import { useRepoStore, useAuthStore, useUserAccountsStore } from '../../store';
@@ -17,7 +17,7 @@ interface RepoListProps {
 }
 
 export const RepoList = ({ source, showFilter = true }: RepoListProps) => {
-  const { githubRepos, adoRepos } = useRepoStore();
+  const { githubRepos, adoRepos, syncError, loadRepos } = useRepoStore();
   const allRepos = source === 'github' ? githubRepos : adoRepos;
   const user = useAuthStore((s) => s.user);
   const isFavoriteRepo = useUserAccountsStore((s) => s.isFavoriteRepo);
@@ -58,12 +58,24 @@ export const RepoList = ({ source, showFilter = true }: RepoListProps) => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await new Promise((r) => setTimeout(r, 800));
+    await loadRepos();
     setRefreshing(false);
   };
 
   return (
     <div className="flex flex-col gap-4">
+      {syncError && (
+        <div
+          className="flex items-start gap-2 p-2.5 rounded-lg text-[11px]"
+          style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', color: '#d97706' }}
+        >
+          <AlertTriangle size={13} className="flex-shrink-0 mt-0.5" />
+          <div>
+            <span className="font-semibold">Showing cached repos.</span> Couldn't reach the server, so changes you make may not be visible to other users until the connection is restored.
+          </div>
+        </div>
+      )}
+
       {showFilter && (
         <div className="flex flex-col gap-2">
           {/* Row 1: Search + Language + Refresh + Register + Count */}

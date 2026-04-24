@@ -32,6 +32,7 @@ import { defaultNavigation } from '../lib/default-navigation';
 import { nanoid } from 'nanoid';
 import { createGuestUser } from '../lib/auth';
 import { SEED_ACCOUNTS, ROLE_PERMISSIONS, hashPassword, verifyPassword } from '../lib/rbac';
+import { reposApi } from '../lib/api';
 
 // ─── User Preferences Defaults ───────────────────────────────────────────────
 export const DEFAULT_PREFERENCES: UserPreferences = {
@@ -409,15 +410,23 @@ export const useChatStore = create<ChatStore>()((set) => ({
 }));
 
 // ─── Repo Store ───────────────────────────────────────────────────────────────
+// Repos are SHARED across all users via the backend API. Local state acts as
+// a hot cache: actions update local state optimistically, then fire-and-forget
+// to /api/repos. If the server is unreachable, the local state still reflects
+// the change for this session (and persists to localStorage), but other users
+// won't see it until the server is reachable again — surfaced via syncError.
 interface RepoStore {
   githubRepos: Repository[];
   adoRepos: Repository[];
   selectedRepo: Repository | null;
+  loadingRepos: boolean;
+  syncError: string | null;
+  loadRepos: () => Promise<void>;
   setRepos: (source: 'github' | 'ado', repos: Repository[]) => void;
-  addRepo: (repo: Repository) => void;
-  removeRepo: (id: string, source: 'github' | 'ado') => void;
+  addRepo: (repo: Repository) => Promise<void>;
+  removeRepo: (id: string, source: 'github' | 'ado') => Promise<void>;
   selectRepo: (repo: Repository | null) => void;
-  updateRepoMeta: (id: string, source: 'github' | 'ado', meta: Partial<Pick<Repository, 'environments' | 'cloudPlatform' | 'owners' | 'customTags' | 'visible'>>) => void;
+  updateRepoMeta: (id: string, source: 'github' | 'ado', meta: Partial<Pick<Repository, 'environments' | 'cloudPlatform' | 'owners' | 'customTags' | 'visible'>>) => Promise<void>;
   updateRepo: (id: string, source: 'github' | 'ado', updates: Partial<Repository>) => void;
 }
 
@@ -438,12 +447,31 @@ export const useRepoStore = create<RepoStore>()(
         { id: 'ado4', name: 'Costco.Overwatch.Core', fullName: 'Costco/Costco.Overwatch.Core', description: 'Overwatch AI agent core services', source: 'ado', language: 'Python', defaultBranch: 'main', isPrivate: true, updatedAt: '6h ago', cloneUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.Overwatch.Core', webUrl: 'https://dev.azure.com/costco/Platform/_git/Costco.Overwatch.Core', environments: ['PRD', 'UAT', 'QAT', 'SBX'], cloudPlatform: 'GCP', owners: [{ name: 'judge', type: 'user' }, { name: 'Platform Team', type: 'team' }], customTags: ['ai', 'agents'] },
       ],
       selectedRepo: null,
+      loadingRepos: false,
+      syncError: null,
+      loadRepos: async () => {
+        set({ loadingRepos: true, syncError: null });
+        try {
+          const all = (await reposApi.list()) as Repository[];
+          set({
+            githubRepos: all.filter((r) => r.source === 'github'),
+            adoRepos: all.filter((r) => r.source === 'ado'),
+            loadingRepos: false,
+          });
+        } catch (e) {
+          // Server unreachable — keep whatever's in localStorage so the user
+          // still sees something (the seeded mocks on a first run, their own
+          // additions otherwise).
+          set({ loadingRepos: false, syncError: e instanceof Error ? e.message : String(e) });
+        }
+      },
       setRepos: (source, repos) =>
         set(source === 'github' ? { githubRepos: repos } : { adoRepos: repos }),
-      addRepo: (repo) => {
+      addRepo: async (repo) => {
         const currentUserId = useAuthStore.getState().user?.id;
         const repoWithOwner = { ...repo, addedBy: repo.addedBy ?? currentUserId };
 
+        // Optimistic local update (also keeps the offline-first flow alive)
         set((s) => {
           if (repo.source === 'github') {
             if (s.githubRepos.some((r) => r.id === repo.id)) return s;
@@ -457,19 +485,44 @@ export const useRepoStore = create<RepoStore>()(
         import('../lib/auto-import-docs').then(({ autoImportRepoMarkdown }) => {
           autoImportRepoMarkdown(repoWithOwner);
         });
+
+        // Persist to server so other users see it
+        try {
+          await reposApi.create(repoWithOwner as unknown as Record<string, unknown>);
+          set({ syncError: null });
+        } catch (e) {
+          set({ syncError: e instanceof Error ? e.message : String(e) });
+        }
       },
-      removeRepo: (id, source) =>
+      removeRepo: async (id, source) => {
+        // Optimistic remove
         set((s) =>
           source === 'github'
             ? { githubRepos: s.githubRepos.filter((r) => r.id !== id) }
             : { adoRepos: s.adoRepos.filter((r) => r.id !== id) }
-        ),
+        );
+
+        try {
+          await reposApi.delete(id);
+          set({ syncError: null });
+        } catch (e) {
+          set({ syncError: e instanceof Error ? e.message : String(e) });
+        }
+      },
       selectRepo: (repo) => set({ selectedRepo: repo }),
-      updateRepoMeta: (id, source, meta) =>
+      updateRepoMeta: async (id, source, meta) => {
         set((s) => {
           const key = source === 'github' ? 'githubRepos' : 'adoRepos';
           return { [key]: (s[key] as Repository[]).map((r) => r.id === id ? { ...r, ...meta } : r) };
-        }),
+        });
+
+        try {
+          await reposApi.updateMeta(id, meta as Record<string, unknown>);
+          set({ syncError: null });
+        } catch (e) {
+          set({ syncError: e instanceof Error ? e.message : String(e) });
+        }
+      },
       updateRepo: (id, source, updates) =>
         set((s) => {
           const key = source === 'github' ? 'githubRepos' : 'adoRepos';
