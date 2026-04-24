@@ -46,7 +46,7 @@ const KpiCard = ({ icon, iconBg, iconColor, label, value }: {
 
 // ─── Collapsible Section ────────────────────────────────────────────────────
 
-const CollapsibleSection = ({ id, title, icon, badge, actions, open, onToggle, children }: {
+const CollapsibleSection = ({ title, icon, badge, actions, open, onToggle, children }: {
   id: string; title: string; icon?: React.ReactNode; badge?: React.ReactNode; actions?: React.ReactNode;
   open: boolean; onToggle: () => void; children: React.ReactNode;
 }) => (
@@ -207,7 +207,7 @@ export const AnalyticsPage = () => {
                 userActivity.map((u) => (
                   <tr key={u.userId}>
                     <td style={tdStyle}>{u.userName}</td>
-                    <td style={tdStyle}><Pill color={roleBadgeColor[u.role] ?? '#888'}>{getRoleLabel(u.role as any)}</Pill></td>
+                    <td style={tdStyle}><Pill color={roleBadgeColor[u.role] ?? '#888'}>{getRoleLabel(u.role)}</Pill></td>
                     <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 600 }}>{u.count}</td>
                     <td style={{ ...tdStyle, color: 'var(--text-muted)', fontSize: 12 }}>{u.lastSeen ? relative(u.lastSeen) : '-'}</td>
                     <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: 12 }}>{u.topPage}</td>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   HeartPulse, StickyNote, ShieldCheck, Puzzle, BookOpen,
   ChevronDown, ChevronUp, Globe, Layout, Link2,
-  Check, X, Clock, Send, AlertTriangle,
+  Check, X, Clock, Send,
   type LucideIcon,
 } from 'lucide-react';
 import { usePluginStore, useAuthStore } from '../store';

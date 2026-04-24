@@ -176,7 +176,7 @@ export const GraphqlExplorer = () => {
                           [/\b(true|false|null)\b/, 'constant'],
                           [/\$\w+/, 'variable'],
                           [/@\w+/, 'annotation'],
-                          [/[{}()\[\]]/, 'delimiter.bracket'],
+                          [/[{}()[\]]/, 'delimiter.bracket'],
                           [/[!:=|&]/, 'delimiter'],
                           [/\d+/, 'number'],
                           [/\w+/, 'identifier'],

@@ -40,7 +40,8 @@ export const WebSocketDebugger = () => {
   const [input, setInput] = useState('');
   const [autoScroll, setAutoScroll] = useState(true);
   const [connectedAt, setConnectedAt] = useState<number | null>(null);
-  const [duration, setDuration] = useState('0s');
+  const [now, setNow] = useState(() => Date.now());
+  const duration = connectedAt ? formatDuration(now - connectedAt) : '0s';
   const nextId = useRef(0);
   const wsRef = useRef<WebSocket | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
@@ -52,10 +53,10 @@ export const WebSocketDebugger = () => {
     }
   }, [messages, autoScroll]);
 
-  // Duration timer
+  // Duration timer — tick `now` while connected so derived `duration` stays fresh
   useEffect(() => {
-    if (!connectedAt) { setDuration('0s'); return; }
-    const id = setInterval(() => setDuration(formatDuration(Date.now() - connectedAt)), 1000);
+    if (!connectedAt) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [connectedAt]);
 

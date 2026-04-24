@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import {
   ShieldCheck, AlertTriangle, CheckCircle, XCircle, Clock,
-  Copy, Check, Upload, Trash2, Lock, Globe, User, Building2,
-  CalendarDays, Key, FileText, Info,
+  Copy, Check, Upload, Trash2, Globe, Building2,
+  CalendarDays, Key,
 } from 'lucide-react';
 import { Button, Card, CardHeader, Pill } from '../ui';
 
@@ -91,7 +91,7 @@ function parsePemCert(pem: string): CertInfo | null {
     // Extensions (v3)
     let keyUsage: string[] = [];
     let extKeyUsage: string[] = [];
-    let subjectAltNames: string[] = [];
+    const subjectAltNames: string[] = [];
     let isCA = false;
 
     // Check for remaining TBS fields for extensions
@@ -157,7 +157,7 @@ interface Asn1Node { tag: number; value: Uint8Array | number; length: number; to
 function parseAsn1(data: Uint8Array, offset: number): Asn1Node | null {
   if (offset >= data.length) return null;
   const tag = data[offset];
-  let lenByte = data[offset + 1];
+  const lenByte = data[offset + 1];
   let valueOffset = offset + 2;
   let length: number;
 
@@ -252,6 +252,17 @@ function parseTime(node: Asn1Node): string {
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────
+const StatusBadge = ({ valid, label }: { valid: boolean; label: string }) => (
+  <span className="flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg" style={{
+    background: valid ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
+    color: valid ? '#16a34a' : '#dc2626',
+    border: `1px solid ${valid ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`,
+  }}>
+    {valid ? <CheckCircle size={12} /> : <XCircle size={12} />}
+    {label}
+  </span>
+);
+
 export const CertDecoder = () => {
   const [pem, setPem] = useState('');
   const [cert, setCert] = useState<CertInfo | null>(null);
@@ -284,17 +295,6 @@ export const CertDecoder = () => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
-  const StatusBadge = ({ valid, label }: { valid: boolean; label: string }) => (
-    <span className="flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-lg" style={{
-      background: valid ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
-      color: valid ? '#16a34a' : '#dc2626',
-      border: `1px solid ${valid ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`,
-    }}>
-      {valid ? <CheckCircle size={12} /> : <XCircle size={12} />}
-      {label}
-    </span>
-  );
 
   return (
     <div className="h-full flex flex-col overflow-hidden" style={{ fontFamily: 'Verdana, Geneva, sans-serif' }}>

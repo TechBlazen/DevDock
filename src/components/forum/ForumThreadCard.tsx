@@ -7,7 +7,6 @@ import { ForumReputationBadge } from './ForumReputationBadge';
 import { useForumStore } from '../../store/forum-store';
 import { useAuthStore } from '../../store';
 import { getCategoryColor, getCategoryLabel } from '../../lib/forum-constants';
-import { getTier } from '../../lib/forum-constants';
 import type { ForumThread } from '../../types';
 
 interface ForumThreadCardProps {

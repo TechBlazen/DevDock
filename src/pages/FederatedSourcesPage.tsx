@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Globe, Plus, RefreshCw, Trash2, Pencil, Loader2, Database, Cpu, Rss, CheckCircle2, XCircle, BookOpen, Download } from 'lucide-react';
+import { Globe, Plus, RefreshCw, Trash2, Pencil, Loader2, Database, Cpu, Rss, CheckCircle2, BookOpen, Download } from 'lucide-react';
 import { useFederatedSourceStore } from '../store';
 import { SectionTitle, Card, Button, Toggle } from '../components/ui';
 import { FederatedSourceForm } from '../components/federated/FederatedSourceForm';

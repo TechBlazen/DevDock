@@ -1,7 +1,7 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Key, CheckCircle, AlertCircle, Copy, Check, Clock,
-  User, Shield, FileText, ArrowRightLeft, Trash2, AlertTriangle,
+  Shield, FileText, Trash2, AlertTriangle,
 } from 'lucide-react';
 import { Button, Card, CardHeader, Pill } from '../ui';
 
@@ -155,7 +155,10 @@ export const JwtDecoder = () => {
   const [mode, setMode] = useState<'decode' | 'encode'>('decode');
   const [token, setToken] = useState('');
   const [encHeader, setEncHeader] = useState('{\n  "alg": "HS256",\n  "typ": "JWT"\n}');
-  const [encPayload, setEncPayload] = useState('{\n  "sub": "1234567890",\n  "name": "Terry Ashley",\n  "role": "admin",\n  "iat": ' + Math.floor(Date.now() / 1000) + ',\n  "exp": ' + (Math.floor(Date.now() / 1000) + 3600) + '\n}');
+  const [encPayload, setEncPayload] = useState(() => {
+    const now = Math.floor(Date.now() / 1000);
+    return `{\n  "sub": "1234567890",\n  "name": "Terry Ashley",\n  "role": "admin",\n  "iat": ${now},\n  "exp": ${now + 3600}\n}`;
+  });
   const [copied, setCopied] = useState<string | null>(null);
 
   const analysis = useMemo(() => mode === 'decode' ? decodeJwt(token) : null, [token, mode]);
@@ -376,18 +379,18 @@ export const JwtDecoder = () => {
               <div className="text-[10px] font-bold uppercase tracking-wider mt-4" style={{ color: 'var(--text-muted)' }}>Quick Insert Claims</div>
               <div className="flex flex-wrap gap-1.5">
                 {[
-                  { label: 'exp (+1h)', claim: `"exp": ${Math.floor(Date.now() / 1000) + 3600}` },
-                  { label: 'iat (now)', claim: `"iat": ${Math.floor(Date.now() / 1000)}` },
-                  { label: 'role', claim: '"role": "admin"' },
-                  { label: 'email', claim: '"email": "user@example.com"' },
-                  { label: 'scope', claim: '"scope": "read write"' },
-                ].map(({ label, claim }) => (
+                  { label: 'exp (+1h)', getClaim: () => `"exp": ${Math.floor(Date.now() / 1000) + 3600}` },
+                  { label: 'iat (now)', getClaim: () => `"iat": ${Math.floor(Date.now() / 1000)}` },
+                  { label: 'role', getClaim: () => '"role": "admin"' },
+                  { label: 'email', getClaim: () => '"email": "user@example.com"' },
+                  { label: 'scope', getClaim: () => '"scope": "read write"' },
+                ].map(({ label, getClaim }) => (
                   <button
                     key={label}
                     onClick={() => {
                       try {
                         const obj = JSON.parse(encPayload);
-                        const kv = JSON.parse(`{${claim}}`);
+                        const kv = JSON.parse(`{${getClaim()}}`);
                         const merged = { ...obj, ...kv };
                         setEncPayload(JSON.stringify(merged, null, 2));
                       } catch { /* ignore */ }

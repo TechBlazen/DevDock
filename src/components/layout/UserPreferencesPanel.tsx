@@ -25,7 +25,7 @@ interface Props {
 export function UserPreferencesPanel({ onClose }: Props) {
   const navigate = useNavigate();
   const { prefs, update } = useUserPreferences();
-  const { resolvedTheme } = useTheme();
+  useTheme();
 
   return (
     <div

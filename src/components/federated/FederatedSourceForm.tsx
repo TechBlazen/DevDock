@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Input, Button, Card, CardHeader, Toggle } from '../ui';
+import { Input, Button, Card, CardHeader } from '../ui';
 import { Globe, Key, Database, Cpu, Rss, Save, X } from 'lucide-react';
 import type { FederatedSource, FederatedSourceType, FederatedAuthType, ResultMapping, TriggerConfig, FederatedAuthConfig } from '../../lib/search/federated-types';
 

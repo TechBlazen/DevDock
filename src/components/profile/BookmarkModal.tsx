@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Star, Loader } from 'lucide-react';
 import { useAuthStore, useBookmarkStore } from '../../store';
-import { validateUrl, fetchUrlMetadata, normalizeTags, formatTagsForInput, getIconForCollection } from '../../lib/bookmark-utils';
+import { validateUrl, fetchUrlMetadata, normalizeTags, formatTagsForInput } from '../../lib/bookmark-utils';
 import type { Bookmark } from '../../types';
 
 interface BookmarkModalProps {
@@ -40,7 +40,7 @@ export const BookmarkModal = ({ bookmark, onClose }: BookmarkModalProps) => {
         if (!title) setTitle(metadata.title);
         if (!description) setDescription(metadata.description);
       }
-    } catch (err) {
+    } catch {
       setError('Failed to fetch URL metadata');
     } finally {
       setLoading(false);

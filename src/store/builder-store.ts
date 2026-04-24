@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
-import type { BuilderItem, BuilderItemType, MockMessage } from '../types';
+import type { BuilderItem } from '../types';
 
 interface BuilderStore {
   items: BuilderItem[];
