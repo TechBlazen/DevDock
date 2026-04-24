@@ -98,6 +98,8 @@ jobs:
 
       - name: Build app for E2E (preview server serves dist/)
         run: npm run build
+        env:
+          E2E: 'true'
 
       - name: Run Playwright tests
         run: npm run test:e2e
