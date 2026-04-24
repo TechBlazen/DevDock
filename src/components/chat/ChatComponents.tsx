@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Bot, Copy, Check, Shield, Loader2, Sparkles, FileText, ExternalLink } from 'lucide-react';
 import type { AIProvider, ChatMessage, OverwatchToolCall } from '../../types';
 
@@ -112,17 +112,29 @@ export const MessageBubble = ({
   msg,
   showAvatar = true,
   showSenderName = true,
+  senderName: senderNameOverride,
+  accentColor: accentOverride,
+  avatarIcon,
 }: {
   msg: ChatMessage;
   /** When false, reserves avatar gutter space but hides the icon — used to group consecutive messages. */
   showAvatar?: boolean;
   /** When false, suppresses the "Finch from Sendbird"-style sender label above the bubble. */
   showSenderName?: boolean;
+  /** Override the default sender label ("DevDock AI" / "Overwatch Ask AI"). */
+  senderName?: string;
+  /** Override the default accent (CHAT_ACCENT / OVERWATCH_ACCENT) — used by ScaffoldChat for per-agent colors. */
+  accentColor?: string;
+  /** Override the default avatar icon (Bot / Shield). */
+  avatarIcon?: ReactNode;
 }) => {
   const isUser = msg.role === 'user';
   const isOverwatch = msg.chatMode === 'overwatch';
-  const accent = isOverwatch ? OVERWATCH_ACCENT : CHAT_ACCENT;
-  const senderName = isOverwatch ? 'Overwatch Ask AI' : 'DevDock AI';
+  const defaultAccent = isOverwatch ? OVERWATCH_ACCENT : CHAT_ACCENT;
+  const accent = accentOverride ?? defaultAccent;
+  const senderName = senderNameOverride ?? (isOverwatch ? 'Overwatch Ask AI' : 'DevDock AI');
+  const defaultAvatar = isOverwatch ? <Shield size={16} /> : <Bot size={16} />;
+  const avatar = avatarIcon ?? defaultAvatar;
   const timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
   if (isUser) {
@@ -160,7 +172,7 @@ export const MessageBubble = ({
               className="w-9 h-9 rounded-lg flex items-center justify-center"
               style={{ background: `${accent}18`, color: accent }}
             >
-              {isOverwatch ? <Shield size={16} /> : <Bot size={16} />}
+              {avatar}
             </div>
           )}
         </div>
@@ -234,15 +246,26 @@ export const MessageBubble = ({
 };
 
 // ─── Typing indicator ───────────────────────────────────────────────────────────────
-export const TypingIndicator = ({ isOverwatch = false }: { isOverwatch?: boolean }) => {
-  const accent = isOverwatch ? OVERWATCH_ACCENT : CHAT_ACCENT;
+export const TypingIndicator = ({
+  isOverwatch = false,
+  accentColor: accentOverride,
+  avatarIcon,
+}: {
+  isOverwatch?: boolean;
+  accentColor?: string;
+  avatarIcon?: ReactNode;
+}) => {
+  const defaultAccent = isOverwatch ? OVERWATCH_ACCENT : CHAT_ACCENT;
+  const accent = accentOverride ?? defaultAccent;
+  const defaultAvatar = isOverwatch ? <Shield size={16} /> : <Bot size={16} />;
+  const avatar = avatarIcon ?? defaultAvatar;
   return (
     <div className="flex items-end gap-2">
       <div
         className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
         style={{ background: `${accent}18`, color: accent }}
       >
-        {isOverwatch ? <Shield size={16} /> : <Bot size={16} />}
+        {avatar}
       </div>
       <div
         className="px-4 py-3 flex gap-1.5 items-center"
