@@ -1,10 +1,11 @@
-import { useRef, useEffect, useCallback, useMemo } from 'react';
+import { useRef, useEffect, useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search } from 'lucide-react';
+import { Search, Sparkles } from 'lucide-react';
 import { useSearchStore } from '../../store';
 import { useHotkey } from '../../hooks/useHotkey';
 import { SearchResultGroup } from './SearchResultGroup';
 import type { SearchResult, SearchCategory } from '../../lib/search/types';
+import { semanticSearchApi, type SemanticHit } from '../../lib/api';
 
 const CATEGORIES: { value: SearchCategory | null; label: string }[] = [
   { value: null, label: 'All' },
@@ -27,7 +28,7 @@ export function CommandPalette() {
 
   const isOpen = useSearchStore((s) => s.isOpen);
   const query = useSearchStore((s) => s.query);
-  const results = useSearchStore((s) => s.results);
+  const keywordResults = useSearchStore((s) => s.results);
   const activeCategory = useSearchStore((s) => s.activeCategory);
   const selectedIndex = useSearchStore((s) => s.selectedIndex);
   const open = useSearchStore((s) => s.open);
@@ -35,6 +36,38 @@ export function CommandPalette() {
   const setQuery = useSearchStore((s) => s.setQuery);
   const setActiveCategory = useSearchStore((s) => s.setActiveCategory);
   const moveSelection = useSearchStore((s) => s.moveSelection);
+
+  // Semantic mode: when on, query the server's /api/search/semantic instead
+  // of MiniSearch. Restricted to docs + federated content (the only kinds
+  // we index in Phase 1). 503 from the server (vector disabled) auto-toggles
+  // back to keyword mode with an inline notice.
+  const [semantic, setSemantic] = useState(false);
+  const [semanticHits, setSemanticHits] = useState<SemanticHit[]>([]);
+  const [semanticError, setSemanticError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!semantic || !query.trim()) return;
+    let cancelled = false;
+    semanticSearchApi.search(query, { k: 15 })
+      .then((hits) => {
+        if (!cancelled) {
+          setSemanticHits(hits);
+          setSemanticError(null);
+        }
+      })
+      .catch((e: { response?: { status?: number } }) => {
+        if (cancelled) return;
+        if (e?.response?.status === 503) {
+          setSemantic(false);
+          setSemanticError('Semantic search is not configured on this server.');
+        } else {
+          setSemanticError('Semantic search failed — falling back to keyword.');
+        }
+      });
+    return () => { cancelled = true; };
+  }, [semantic, query]);
+
+  const results = semantic && query.trim() ? semanticHitsToResults(semanticHits) : keywordResults;
 
   const toggle = useCallback(() => {
     if (isOpen) close(); else open();
@@ -152,6 +185,25 @@ export function CommandPalette() {
             }}
           />
           <button
+            onClick={() => setSemantic((v) => !v)}
+            title="Semantic (AI) search across docs + external content"
+            style={{
+              flexShrink: 0,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '2px 8px',
+              fontSize: 11,
+              color: semantic ? 'var(--accent)' : 'var(--text-muted)',
+              background: semantic ? 'var(--accent-bg)' : 'var(--bg-inset)',
+              border: `1px solid ${semantic ? 'var(--accent)' : 'var(--border-input)'}`,
+              borderRadius: 4,
+              cursor: 'pointer',
+            }}
+          >
+            <Sparkles size={11} /> Semantic
+          </button>
+          <button
             onClick={close}
             style={{
               flexShrink: 0,
@@ -194,6 +246,11 @@ export function CommandPalette() {
 
         {/* Results */}
         <div ref={listRef} role="listbox" style={{ overflowY: 'auto', flex: 1 }}>
+          {semanticError && (
+            <div style={{ padding: '12px 16px', fontSize: 12, color: 'var(--text-muted)', borderBottom: '1px solid var(--border-subtle)' }}>
+              {semanticError}
+            </div>
+          )}
           {results.length === 0 && query.trim() && (
             <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>
               No results for "{query}"
@@ -246,3 +303,29 @@ const kbdStyle: React.CSSProperties = {
   borderRadius: 3,
   marginRight: 4,
 };
+
+// Server-side semantic hits → the SearchResult shape the rest of the palette
+// already renders. Distance (lower = better) is converted to a 0–1 score so
+// the SearchResultGroup sorts the same way it does for keyword hits.
+function semanticHitsToResults(hits: SemanticHit[]): SearchResult[] {
+  return hits.map((h) => {
+    const category: SearchCategory =
+      h.kind === 'federated' ? 'federated'
+      : h.kind === 'forum-thread' || h.kind === 'forum-answer' ? 'forum'
+      : 'doc';
+    const url =
+      h.kind === 'federated' ? (String(h.metadata.url ?? '') || `/docs?id=${h.parentId}`)
+      : h.kind.startsWith('forum') ? `/forum/thread/${h.parentId.split(':')[0] ?? h.parentId}`
+      : `/docs?id=${h.parentId}`;
+    return {
+      id: h.parentId,
+      category,
+      title: h.title || '(untitled)',
+      description: h.heading
+        ? `${h.heading}\n${h.snippet.slice(0, 200)}`
+        : h.snippet.slice(0, 240),
+      url,
+      score: 1 / (1 + h.distance),
+    };
+  });
+}

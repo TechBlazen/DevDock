@@ -16,6 +16,8 @@ import { registerDirectoryRoutes } from './routes/directory.js';
 import { registerSqlToolRoutes } from './routes/sql-tool.js';
 import { registerCodeRunnerRoutes } from './routes/code-runner.js';
 import { registerAiProxyRoutes } from './routes/ai-proxy.js';
+import { registerSemanticSearchRoutes } from './routes/semantic-search.js';
+import { createVectorRuntime } from './vector/runtime.js';
 
 async function main() {
   const config = loadConfig();
@@ -32,6 +34,14 @@ async function main() {
   await seed(db);
   console.log(`Database ready (${config.db.provider})`);
 
+  // Vector / semantic search (no-op if GEMINI_API_KEY is unset).
+  const vector = createVectorRuntime(config.vector);
+  if (vector.enabled) {
+    console.log(`Semantic search enabled (chroma: ${config.vector.chromaUrl})`);
+  } else {
+    console.log('Semantic search disabled (set GEMINI_API_KEY to enable)');
+  }
+
   // Health check
   app.get('/api/health', async () => ({
     status: 'ok',
@@ -46,10 +56,11 @@ async function main() {
   registerRepoRoutes(app, db, config.jwtSecret);
   registerSettingsRoutes(app, db, config.jwtSecret);
   registerBookmarkRoutes(app, db, config.jwtSecret);
-  registerDocRoutes(app, db, config.jwtSecret);
+  registerDocRoutes(app, db, config.jwtSecret, vector);
   registerPluginRoutes(app, db, config.jwtSecret);
   registerAnalyticsRoutes(app, db, config.jwtSecret);
-  registerFederatedSourceRoutes(app, db, config.jwtSecret);
+  registerFederatedSourceRoutes(app, db, config.jwtSecret, vector);
+  registerSemanticSearchRoutes(app, config.jwtSecret, vector);
   registerDirectoryRoutes(app, db, config.jwtSecret);
   registerSqlToolRoutes(app, db, config.jwtSecret);
   registerCodeRunnerRoutes(app, db, config.jwtSecret);

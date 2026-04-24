@@ -111,6 +111,36 @@ jobs:
         env:
           TEST_POSTGRES_URL: postgres://devdock:devdock@localhost:5432/devdock_test
 
+  # ─── ChromaDB Vector Tests ────────────────────────────────────────────────────
+  # Verifies the semantic-search infrastructure (embedder + chunker + Chroma
+  # round-trip) using a deterministic FakeEmbedder so we don't need a Gemini
+  # key in CI. The unit-test layer above also runs these; this job adds the
+  # real-Chroma integration test by setting TEST_CHROMA_URL.
+  chroma-tests:
+    name: Chroma Vector Tests
+    runs-on: ubuntu-latest
+    services:
+      chroma:
+        image: chromadb/chroma:0.5.20
+        ports:
+          - 8000:8000
+        options: >-
+          --health-cmd "curl -f http://localhost:8000/api/v2/heartbeat || exit 1"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Run Chroma integration tests
+        run: npm run test:server
+        env:
+          TEST_CHROMA_URL: http://localhost:8000
+
   # ─── E2E Tests (Playwright — chromium only, blocking) ────────────────────────
   e2e-tests:
     name: E2E Tests (chromium)

@@ -1,8 +1,15 @@
 import type { FastifyInstance } from 'fastify';
 import type { DatabaseProvider, DocRow } from '../db/provider.js';
 import { authGuard } from '../middleware/auth.js';
+import type { VectorRuntime } from '../vector/runtime.js';
+import type { ContentKind } from '../vector/index.js';
 
-export function registerDocRoutes(app: FastifyInstance, db: DatabaseProvider, jwtSecret: string) {
+export function registerDocRoutes(
+  app: FastifyInstance,
+  db: DatabaseProvider,
+  jwtSecret: string,
+  vector?: VectorRuntime,
+) {
   const guard = authGuard(jwtSecret);
 
   app.get('/api/docs', { preHandler: guard }, async () => {
@@ -26,6 +33,7 @@ export function registerDocRoutes(app: FastifyInstance, db: DatabaseProvider, jw
     };
 
     const created = await db.createDoc(row);
+    enqueueIndexUpsert(vector, created);
     return deserializeDoc(created);
   });
 
@@ -41,13 +49,37 @@ export function registerDocRoutes(app: FastifyInstance, db: DatabaseProvider, jw
 
     const updated = await db.updateDoc(id, partial);
     if (!updated) return reply.status(404).send({ error: 'Doc not found' });
+    enqueueIndexUpsert(vector, updated);
     return deserializeDoc(updated);
   });
 
   app.delete('/api/docs/:id', { preHandler: guard }, async (request) => {
     const { id } = request.params as { id: string };
     await db.deleteDoc(id);
+    vector?.enqueueDelete(id);
     return { success: true };
+  });
+}
+
+// Auto-imported repo READMEs come through the same docs API but get tagged
+// 'auto-imported' by src/lib/auto-import-docs. Use a distinct kind so semantic
+// search can scope to "just READMEs" or "just user-authored docs".
+function enqueueIndexUpsert(vector: VectorRuntime | undefined, doc: DocRow): void {
+  if (!vector) return;
+  const tags = safeParseJson<string[]>(doc.tags, []);
+  const isReadme = tags.includes('auto-imported');
+  const kind: ContentKind = isReadme ? 'doc-readme' : 'doc';
+
+  vector.enqueueUpsert({
+    id: doc.id,
+    kind,
+    title: doc.title,
+    text: `${doc.title}\n\n${doc.content}`,
+    metadata: {
+      source_url: doc.source_url ?? '',
+      created_at: doc.created_at,
+      updated_at: doc.updated_at,
+    },
   });
 }
 

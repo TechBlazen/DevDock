@@ -10,10 +10,21 @@ export interface DbConfig {
   supabase: { url: string; anonKey: string; serviceRoleKey?: string };
 }
 
+export interface VectorConfig {
+  /** Whether semantic search is wired up for this server. False → embedder
+   *  + Chroma are not initialised and search routes return 503. */
+  enabled: boolean;
+  /** Chroma server URL. Default http://localhost:8000 (chromadb image default). */
+  chromaUrl: string;
+  /** Gemini API key for embeddings. */
+  geminiApiKey: string;
+}
+
 export interface ServerConfig {
   port: number;
   db: DbConfig;
   jwtSecret: string;
+  vector: VectorConfig;
 }
 
 const DEFAULT_CONFIG: ServerConfig = {
@@ -24,6 +35,11 @@ const DEFAULT_CONFIG: ServerConfig = {
     sqlite: { path: resolve(process.cwd(), 'data/devdock.db') },
     postgres: { connectionString: '', ssl: false },
     supabase: { url: '', anonKey: '' },
+  },
+  vector: {
+    enabled: false,
+    chromaUrl: 'http://localhost:8000',
+    geminiApiKey: '',
   },
 };
 
@@ -57,6 +73,12 @@ export function loadConfig(): ServerConfig {
   if (process.env.DEVDOCK_POSTGRES_SSL === 'require') config.db.postgres.ssl = true;
   if (process.env.DEVDOCK_SUPABASE_URL) config.db.supabase.url = process.env.DEVDOCK_SUPABASE_URL;
   if (process.env.DEVDOCK_SUPABASE_KEY) config.db.supabase.anonKey = process.env.DEVDOCK_SUPABASE_KEY;
+
+  // Vector / embeddings: env-var-wins so deployments can opt in without code
+  // changes. Setting GEMINI_API_KEY is what flips the feature on.
+  if (process.env.DEVDOCK_CHROMA_URL) config.vector.chromaUrl = process.env.DEVDOCK_CHROMA_URL;
+  if (process.env.GEMINI_API_KEY) config.vector.geminiApiKey = process.env.GEMINI_API_KEY;
+  config.vector.enabled = Boolean(config.vector.geminiApiKey);
 
   return config;
 }

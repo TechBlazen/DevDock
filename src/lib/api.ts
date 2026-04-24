@@ -40,6 +40,22 @@ export const usersApi = {
   updateDashboard: (id: string, widgets: string[]) => api.put(`/users/${id}/dashboard`, { widgets }).then(r => r.data),
 };
 
+// ─── Semantic Search ────────────────────────────────────────────────────────
+export interface SemanticHit {
+  parentId: string;
+  kind: 'doc' | 'doc-readme' | 'federated' | 'forum-thread' | 'forum-answer';
+  title: string;
+  snippet: string;
+  heading: string | null;
+  metadata: Record<string, string | number | boolean>;
+  distance: number;
+}
+
+export const semanticSearchApi = {
+  search: (query: string, opts?: { kind?: string | string[]; k?: number }) =>
+    api.post<{ hits: SemanticHit[] }>('/search/semantic', { query, ...opts }).then(r => r.data.hits),
+};
+
 // ─── Repos ──────────────────────────────────────────────────────────────────
 export const reposApi = {
   list: (source?: 'github' | 'ado') => api.get('/repos', { params: source ? { source } : {} }).then(r => r.data),
