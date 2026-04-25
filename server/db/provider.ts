@@ -88,6 +88,14 @@ export interface DatabaseProvider {
   createFeatureRequest(req: FeatureRequestRow): Promise<FeatureRequestRow>;
   updateFeatureRequest(id: string, partial: Partial<FeatureRequestRow>): Promise<FeatureRequestRow | null>;
   deleteFeatureRequest(id: string): Promise<void>;
+
+  // ─── APIs (Swagger / OpenAPI specs) ─────────────────────────────────────────
+  getApis(): Promise<ApiRow[]>;
+  getApiById(id: string): Promise<ApiRow | null>;
+  getApisByRepo(repoId: string): Promise<ApiRow[]>;
+  createApi(api: ApiRow): Promise<ApiRow>;
+  updateApi(id: string, partial: Partial<ApiRow>): Promise<ApiRow | null>;
+  deleteApi(id: string): Promise<void>;
 }
 
 // ─── Row types (flat, JSON-serialized for complex fields) ───────────────────
@@ -281,6 +289,26 @@ export interface FeatureRequestRow {
   votes: string;               // JSON array<ForumVote>
   attachments: string;         // JSON array<FeatureRequestAttachment>
   tags: string;                // JSON array<string>
+  created_at: string;
+  updated_at: string;
+}
+
+// API specs registered in DevDock. spec_raw holds the original YAML/JSON
+// the user pointed us at — opaque to the server, parsed on the client.
+// source_repo_id is a soft FK (no DB constraint) so users can paste a
+// spec URL without first registering the underlying repo.
+export interface ApiRow {
+  id: string;
+  name: string;
+  description?: string;
+  source_repo_id?: string;
+  source_repo_name?: string;
+  source_url: string;
+  spec_kind: string;           // 'swagger' (2.x) | 'openapi' (3.x)
+  spec_version?: string;       // exact version string from the spec
+  spec_raw: string;            // original YAML or JSON
+  base_url?: string;           // first servers[].url (OpenAPI 3) or host+basePath (Swagger 2)
+  added_by?: string;
   created_at: string;
   updated_at: string;
 }

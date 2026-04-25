@@ -6,6 +6,7 @@ export const defaultNavigation: NavigationConfig = {
     { id: 'dashboard',  type: 'link', label: 'Dashboard',    icon: 'LayoutDashboard', route: '/',         visible: true, locked: true },
     { id: 'github',     type: 'link', label: 'GitHub',       icon: 'GitFork',         route: '/github',   visible: true },
     { id: 'ado',        type: 'link', label: 'Azure DevOps', icon: 'GitBranch',       route: '/ado',      visible: true },
+    { id: 'apis',       type: 'link', label: 'APIs',          icon: 'Webhook',         route: '/apis',     visible: true },
     { id: 'mcp',        type: 'link', label: 'MCP Servers',  icon: 'Cpu',             route: '/mcp',      visible: true },
 
     // ── Tools & monitoring ──

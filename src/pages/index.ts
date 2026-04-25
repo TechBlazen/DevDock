@@ -1,5 +1,6 @@
 export { DashboardPage } from './DashboardPage';
 export { GitHubPage, ADOPage, MCPPage, TelemetryPageRoute } from './RepoPages';
+export { ApisPage } from './ApisPage';
 export { CatalogPage } from './CatalogPage';
 export { ScaffoldPage } from './ScaffoldPage';
 export {

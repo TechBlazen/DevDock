@@ -16,7 +16,7 @@ import { MysqlProvider } from '../mysql/client.js';
 import type {
   RepoRow, UserRow, SettingsRow, BookmarkRow, CollectionRow, DocRow,
   FederatedSourceRow, FederatedDocumentRow,
-  ForumThreadRow, ForumAnswerRow, FeatureRequestRow,
+  ForumThreadRow, ForumAnswerRow, FeatureRequestRow, ApiRow,
 } from '../provider.js';
 
 const TEST_URL = process.env.TEST_MYSQL_URL;
@@ -44,6 +44,7 @@ describeIfMysql('MysqlProvider (integration)', () => {
         'analytics_page_views', 'plugins_state', 'docs', 'bookmarks',
         'collections', 'repos', 'settings',
         'feature_requests', 'forum_answers', 'forum_threads',
+        'apis',
         'users',
       ];
       for (const t of tables) {
@@ -275,6 +276,55 @@ describeIfMysql('MysqlProvider (integration)', () => {
 
     await provider.deleteForumThread('t2');
     expect(await provider.getForumAnswersByThread('t2')).toEqual([]);
+  });
+
+  // ─── APIs ─────────────────────────────────────────────────────────────────
+  it('CRUDs an API spec and round-trips spec_raw verbatim', async () => {
+    const yamlSpec = `openapi: 3.0.1
+info:
+  title: Petstore
+  version: 1.0.0
+paths:
+  /pets:
+    get:
+      summary: List pets
+`;
+    const api: ApiRow = {
+      id: 'api1', name: 'Petstore', description: 'Sample',
+      source_url: 'https://example.com/openapi.yaml',
+      spec_kind: 'openapi', spec_version: '3.0.1',
+      spec_raw: yamlSpec, base_url: 'https://api.example.com',
+      added_by: 'u1',
+      created_at: '2026-04-25', updated_at: '2026-04-25',
+    };
+    await provider.createApi(api);
+
+    const got = await provider.getApiById('api1');
+    expect(got?.name).toBe('Petstore');
+    expect(got?.spec_raw).toBe(yamlSpec);
+
+    await provider.updateApi('api1', { description: 'Updated' });
+    expect((await provider.getApiById('api1'))?.description).toBe('Updated');
+
+    await provider.deleteApi('api1');
+    expect(await provider.getApiById('api1')).toBeNull();
+  });
+
+  it('getApisByRepo filters to APIs sourced from that repo', async () => {
+    const baseSpec: Omit<ApiRow, 'id' | 'source_repo_id' | 'source_repo_name'> = {
+      name: 'X', source_url: 'u',
+      spec_kind: 'openapi', spec_raw: '{}',
+      created_at: 't', updated_at: 't',
+    };
+    await provider.createApi({ ...baseSpec, id: 'a1', source_repo_id: 'r1', source_repo_name: 'r1' });
+    await provider.createApi({ ...baseSpec, id: 'a2', source_repo_id: 'r1', source_repo_name: 'r1' });
+    await provider.createApi({ ...baseSpec, id: 'a3', source_repo_id: 'r2', source_repo_name: 'r2' });
+    await provider.createApi({ ...baseSpec, id: 'a4' });
+
+    expect((await provider.getApisByRepo('r1')).map((a) => a.id).sort()).toEqual(['a1', 'a2']);
+    expect(await provider.getApisByRepo('r2')).toHaveLength(1);
+    expect(await provider.getApisByRepo('nonexistent')).toEqual([]);
+    expect(await provider.getApis()).toHaveLength(4);
   });
 
   it('CRUDs a feature request with attachments JSON', async () => {
