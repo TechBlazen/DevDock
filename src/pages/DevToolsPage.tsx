@@ -3,6 +3,7 @@ import {
   Braces, Send, Wrench, ArrowRight, Globe, Wifi, FileSearch,
   ShieldCheck, LayoutList, Cable, Waypoints, FileDiff, Binary,
   Regex, Table, GitMerge, Container, Database, Play, Bot, Key, Fingerprint,
+  Type,
   type LucideIcon,
 } from 'lucide-react';
 import { Star } from 'lucide-react';
@@ -24,6 +25,7 @@ import { GitGenerator } from '../components/devtools/GitGenerator';
 import { CertDecoder } from '../components/devtools/CertDecoder';
 import { JwtDecoder } from '../components/devtools/JwtDecoder';
 import { UuidGenerator } from '../components/devtools/UuidGenerator';
+import { LoremIpsum } from '../components/devtools/LoremIpsum';
 import { DockerGenerator } from '../components/devtools/DockerGenerator';
 import { SectionTitle, Card } from '../components/ui';
 
@@ -62,6 +64,7 @@ export const TOOLS: ToolDef[] = [
   { id: 'jwt', name: 'JWT Encoder/Decoder', description: 'Decode JWT tokens to inspect header, payload, and claims. Encode custom JWTs with quick-insert claim buttons.', path: '/devtools/jwt', icon: Key, color: '#7c3aed', tags: ['jwt', 'token', 'auth', 'decode'], category: 'Security' },
   // ── Generators ──
   { id: 'uuid', name: 'UUID Generator', description: 'Generate UUIDs v1, v4, and v7 with configurable hyphens, case, and batch count. Click to copy, export, and history.', path: '/devtools/uuid', icon: Fingerprint, color: '#0891b2', tags: ['uuid', 'guid', 'generator', 'id'], category: 'Generators' },
+  { id: 'lorem', name: 'Lorem Ipsum', description: 'Generate placeholder text — classic lorem ipsum or topical sample copy via AI on right-click.', path: '/devtools/lorem', icon: Type, color: '#9333ea', tags: ['lorem', 'ipsum', 'placeholder', 'text', 'ai'], category: 'Generators' },
   // ── Advanced ──
   { id: 'sql', name: 'SQL Tool', description: 'Connect to PostgreSQL, MySQL, SQL Server, and SQLite databases. Browse schemas, execute queries, and manage saved queries.', path: '/devtools/sql', icon: Database, color: '#336791', tags: ['sql', 'database', 'query'], category: 'Advanced' },
   { id: 'playground', name: 'Code Playground', description: 'Write and execute code in JavaScript, TypeScript, Python, Ruby, Go, and Bash with instant output.', path: '/devtools/playground', icon: Play, color: '#22c55e', tags: ['code', 'execute', 'playground'], category: 'Advanced' },
@@ -134,6 +137,7 @@ export const DockerGeneratorPage = () => <ToolPage title="Docker Command Generat
 export const CertDecoderPage = () => <ToolPage title="Certificate Decoder" subtitle="Decode and validate PEM-encoded X.509 certificates." toolId="cert-decoder"><CertDecoder /></ToolPage>;
 export const JwtDecoderPage = () => <ToolPage title="JWT Encoder/Decoder" subtitle="Decode and encode JSON Web Tokens." toolId="jwt"><JwtDecoder /></ToolPage>;
 export const UuidGeneratorPage = () => <ToolPage title="UUID Generator" subtitle="Generate UUIDs v1, v4, v7 with configurable formatting." toolId="uuid"><UuidGenerator /></ToolPage>;
+export const LoremIpsumPage = () => <ToolPage title="Lorem Ipsum" subtitle="Classic placeholder text, or topical sample copy via AI." toolId="lorem"><LoremIpsum /></ToolPage>;
 
 // ─── Main DevTools page ──────────────────────────────────────────────────────
 export const DevToolsPage = () => {

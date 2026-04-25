@@ -9,7 +9,7 @@ export {
   HttpHeadersPage, WebSocketDebuggerPage, GraphqlExplorerPage,
   TextDiffPage, Base64ToolPage, RegexTesterPage, CsvViewerPage,
   GitGeneratorPage, DockerGeneratorPage, CertDecoderPage, JwtDecoderPage,
-  UuidGeneratorPage,
+  UuidGeneratorPage, LoremIpsumPage,
 } from './DevToolsPage';
 export { DocsPage } from './DocsPage';
 export { GoogleDrivePage } from './GoogleDrivePage';
