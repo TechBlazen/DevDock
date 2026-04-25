@@ -43,6 +43,7 @@ export const defaultNavigation: NavigationConfig = {
       children: [
         { id: 'grafana',       type: 'link', label: 'Grafana',           icon: 'LineChart',    route: '/grafana',             visible: true },
         { id: 'network',       type: 'link', label: 'Network',           icon: 'Network',      route: '/network',             visible: true },
+        { id: 'n8n',           type: 'link', label: 'n8n',               icon: 'Workflow',     route: '/n8n',                 visible: true },
         { id: 'dt-json',       type: 'link', label: 'JSON Validator',    icon: 'Braces',      route: '/devtools/json',       visible: true },
         { id: 'dt-api',        type: 'link', label: 'API Tester',        icon: 'Send',         route: '/devtools/api',        visible: true },
         { id: 'dt-dns',        type: 'link', label: 'DNS Lookup',        icon: 'Globe',        route: '/devtools/dns',        visible: true },

@@ -278,6 +278,15 @@ export interface ADOConfig {
   projects: string[];
 }
 
+// Connection settings for an external n8n instance. The /n8n page uses
+// these to list workflows and executions and to trigger webhook flows.
+// baseUrl is the host root (e.g. https://n8n.example.com); the API key
+// authenticates against n8n's public REST API via the X-N8N-API-KEY header.
+export interface N8nConfig {
+  baseUrl: string;
+  apiKey: string;
+}
+
 export interface GoogleDriveConfig {
   accessToken: string;
   connected: boolean;
@@ -423,6 +432,7 @@ export interface AppSettings {
   grafana: GrafanaConfig;
   github: GitHubConfig;
   ado: ADOConfig;
+  n8n: N8nConfig;
   googleDrive: GoogleDriveConfig;
   activeDirectory: ActiveDirectoryConfig;
   branding: BrandingConfig;

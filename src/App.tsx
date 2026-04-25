@@ -49,6 +49,7 @@ import {
   DocsPage,
   GoogleDrivePage,
   GrafanaPage,
+  N8nPage,
   NetworkPage,
   PluginsPage,
   UsersPage,
@@ -202,6 +203,7 @@ function PluginRoutes({ editMode }: { editMode: boolean }) {
       <Route path="/docs"               element={<DocsPage />} />
       <Route path="/docs/google-drive"  element={<GoogleDrivePage />} />
       <Route path="/network"   element={<NetworkPage />} />
+      <Route path="/n8n"       element={<N8nPage />} />
       <Route path="/plugins"   element={<PluginsPage />} />
       <Route path="/profile"   element={<ProfilePage />} />
       <Route path="/whats-new" element={<WhatsNewPage />} />
