@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight, ExternalLink, X } from 'lucide-react';
 import { parseSpec, type ParsedSpec, type ParsedOperation, type HttpMethod } from '../../lib/openapi';
 import type { ApiSpec } from '../../store/api-store';
 import { Spinner } from '../ui';
+import { OperationTester } from './OperationTester';
 
 interface ApiDetailPanelProps {
   api: ApiSpec;
@@ -112,7 +113,7 @@ export const ApiDetailPanel = ({ api, onClose }: ApiDetailPanelProps) => {
               </div>
               <div className="flex flex-col gap-3">
                 {[...grouped.entries()].map(([tag, ops]) => (
-                  <TagGroup key={tag} tag={tag} operations={ops} />
+                  <TagGroup key={tag} tag={tag} operations={ops} baseUrl={parsed.baseUrl} />
                 ))}
               </div>
             </>
@@ -124,7 +125,7 @@ export const ApiDetailPanel = ({ api, onClose }: ApiDetailPanelProps) => {
   );
 };
 
-const TagGroup = ({ tag, operations }: { tag: string; operations: ParsedOperation[] }) => {
+const TagGroup = ({ tag, operations, baseUrl }: { tag: string; operations: ParsedOperation[]; baseUrl: string }) => {
   const [expanded, setExpanded] = useState(true);
   return (
     <div className="rounded" style={{ border: '1px solid var(--border-subtle)' }}>
@@ -139,14 +140,14 @@ const TagGroup = ({ tag, operations }: { tag: string; operations: ParsedOperatio
       </button>
       {expanded && (
         <div className="flex flex-col">
-          {operations.map((op, i) => <OperationRow key={`${op.method}-${op.path}-${i}`} op={op} />)}
+          {operations.map((op, i) => <OperationRow key={`${op.method}-${op.path}-${i}`} op={op} baseUrl={baseUrl} />)}
         </div>
       )}
     </div>
   );
 };
 
-const OperationRow = ({ op }: { op: ParsedOperation }) => {
+const OperationRow = ({ op, baseUrl }: { op: ParsedOperation; baseUrl: string }) => {
   const [expanded, setExpanded] = useState(false);
   const color = METHOD_COLOR[op.method];
   return (
@@ -203,6 +204,11 @@ const OperationRow = ({ op }: { op: ParsedOperation }) => {
               </div>
             </div>
           )}
+
+          <div className="pt-2 mt-1" style={{ borderTop: '1px dashed var(--border-subtle)' }}>
+            <div className="text-[10px] uppercase font-semibold mb-2" style={{ color: 'var(--text-faint)' }}>Try it out</div>
+            <OperationTester op={op} baseUrl={baseUrl} />
+          </div>
         </div>
       )}
     </div>
