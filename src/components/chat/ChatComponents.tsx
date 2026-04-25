@@ -115,6 +115,7 @@ export const MessageBubble = ({
   senderName: senderNameOverride,
   accentColor: accentOverride,
   avatarIcon,
+  bubbleBg,
 }: {
   msg: ChatMessage;
   /** When false, reserves avatar gutter space but hides the icon — used to group consecutive messages. */
@@ -127,6 +128,8 @@ export const MessageBubble = ({
   accentColor?: string;
   /** Override the default avatar icon (Bot / Shield). */
   avatarIcon?: ReactNode;
+  /** Override the AI bubble background (defaults to var(--bg-inset)). Used by ScaffoldChat to tint with the agent color so the bubble reads against its near-black panel. */
+  bubbleBg?: string;
 }) => {
   const isUser = msg.role === 'user';
   const isOverwatch = msg.chatMode === 'overwatch';
@@ -135,6 +138,7 @@ export const MessageBubble = ({
   const senderName = senderNameOverride ?? (isOverwatch ? 'Overwatch Ask AI' : 'DevDock AI');
   const defaultAvatar = isOverwatch ? <Shield size={16} /> : <Bot size={16} />;
   const avatar = avatarIcon ?? defaultAvatar;
+  const aiBubbleBg = bubbleBg ?? 'var(--bg-inset)';
   const timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
   if (isUser) {
@@ -180,7 +184,7 @@ export const MessageBubble = ({
           <div
             className="px-4 py-2.5"
             style={{
-              background: 'var(--bg-inset)',
+              background: aiBubbleBg,
               borderRadius: 22,
               borderTopLeftRadius: showSenderName ? 6 : 22,
             }}
@@ -250,15 +254,19 @@ export const TypingIndicator = ({
   isOverwatch = false,
   accentColor: accentOverride,
   avatarIcon,
+  bubbleBg,
 }: {
   isOverwatch?: boolean;
   accentColor?: string;
   avatarIcon?: ReactNode;
+  /** Override the bubble background (defaults to var(--bg-inset)). */
+  bubbleBg?: string;
 }) => {
   const defaultAccent = isOverwatch ? OVERWATCH_ACCENT : CHAT_ACCENT;
   const accent = accentOverride ?? defaultAccent;
   const defaultAvatar = isOverwatch ? <Shield size={16} /> : <Bot size={16} />;
   const avatar = avatarIcon ?? defaultAvatar;
+  const bubbleBackground = bubbleBg ?? 'var(--bg-inset)';
   return (
     <div className="flex items-end gap-2">
       <div
@@ -269,7 +277,7 @@ export const TypingIndicator = ({
       </div>
       <div
         className="px-4 py-3 flex gap-1.5 items-center"
-        style={{ background: 'var(--bg-inset)', borderRadius: 22 }}
+        style={{ background: bubbleBackground, borderRadius: 22 }}
       >
         {[0, 1, 2].map((i) => (
           <div
