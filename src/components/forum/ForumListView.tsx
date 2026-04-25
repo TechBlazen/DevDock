@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, MessageSquareText } from 'lucide-react';
 import { Button, SectionTitle, EmptyState } from '../ui';
@@ -17,6 +17,7 @@ export const ForumListView = () => {
   const [askModalOpen, setAskModalOpen] = useState(false);
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
 
+  const allThreads = useForumStore((s) => s.threads);
   const sortBy = useForumStore((s) => s.sortBy);
   const filterCategory = useForumStore((s) => s.filterCategory);
   const filterTag = useForumStore((s) => s.filterTag);
@@ -25,7 +26,14 @@ export const ForumListView = () => {
   const setFilterTag = useForumStore((s) => s.setFilterTag);
   const getSortedFilteredThreads = useForumStore((s) => s.getSortedFilteredThreads);
 
-  const threads = getSortedFilteredThreads(searchQuery);
+  // Subscribe to s.threads above so this list re-renders once loadThreads()
+  // hydrates the store on sign-in. Selecting the helper alone gives a stable
+  // function ref and would never fire; computing inside the selector returns
+  // a fresh array each call and trips React 18's getSnapshot cache check.
+  const threads = useMemo(
+    () => getSortedFilteredThreads(searchQuery),
+    [allThreads, sortBy, filterCategory, filterTag, searchQuery, getSortedFilteredThreads],
+  );
 
   return (
     <>

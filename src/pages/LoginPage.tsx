@@ -11,6 +11,7 @@ import {
   getRedirectUri,
   fetchUserProfile,
 } from '../lib/auth';
+import { authApi } from '../lib/api';
 import type { AuthProvider } from '../types';
 
 export const LoginPage = () => {
@@ -26,23 +27,40 @@ export const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [localLoading, setLocalLoading] = useState(false);
 
-  const handleLocalSignIn = () => {
+  const handleLocalSignIn = async () => {
     if (!username.trim() || !password.trim()) return;
     setError('');
     setLocalLoading(true);
 
+    // 1. Client-side credential check against the seeded accounts (gives us
+    //    role + display info without a server roundtrip).
     const account = authenticate(username.trim(), password);
-    if (account) {
-      signIn('local', {
-        id: account.id,
-        displayName: account.displayName,
-        email: account.email,
-        provider: 'local',
-        role: account.role,
-      }, null);
-    } else {
+    if (!account) {
       setError('Invalid username or password.');
+      setLocalLoading(false);
+      return;
     }
+
+    // 2. ALSO mint a real JWT via the server so authenticated /api/* calls
+    //    work. Without this step every authed call returns 401, even though
+    //    the chrome shows the user as signed in. Stash the token where the
+    //    axios interceptor in lib/api.ts looks for it.
+    try {
+      const { token } = await authApi.login(username.trim(), password);
+      localStorage.setItem('devdock-api-token', token);
+    } catch (e) {
+      setError(`Server login failed: ${e instanceof Error ? e.message : String(e)}`);
+      setLocalLoading(false);
+      return;
+    }
+
+    signIn('local', {
+      id: account.id,
+      displayName: account.displayName,
+      email: account.email,
+      provider: 'local',
+      role: account.role,
+    }, null);
     setLocalLoading(false);
   };
 
