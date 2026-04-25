@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, ChevronRight, ExternalLink, X } from 'lucide-react';
 import { parseSpec, type ParsedSpec, type ParsedOperation, type HttpMethod } from '../../lib/openapi';
 import type { ApiSpec } from '../../store/api-store';
@@ -47,7 +48,10 @@ export const ApiDetailPanel = ({ api, onClose }: ApiDetailPanelProps) => {
     return map;
   }, [parsed, filter]);
 
-  return (
+  // Rendered via portal so the panel is anchored to the viewport regardless of
+  // any ancestor that creates a containing block for `position: fixed` (the
+  // <main> region with `overflow: hidden` chains was clipping it to a sliver).
+  return createPortal(
     <div
       className="fixed inset-0 z-40 flex justify-end"
       onClick={onClose}
@@ -115,7 +119,8 @@ export const ApiDetailPanel = ({ api, onClose }: ApiDetailPanelProps) => {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 
