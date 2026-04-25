@@ -11,7 +11,6 @@ export const defaultNavigation: NavigationConfig = {
 
     // ── Tools & monitoring ──
     { id: 'telemetry',  type: 'link', label: 'Observability', icon: 'Activity',       route: '/telemetry', visible: true },
-    { id: 'grafana',    type: 'link', label: 'Grafana',       icon: 'LineChart',      route: '/grafana',   visible: true },
     { id: 'catalog',    type: 'link', label: 'Widgets',       icon: 'Layers',         route: '/catalog',   visible: true },
     { id: 'scaffold',   type: 'link', label: 'Scaffold',      icon: 'Hammer',         route: '/scaffold',  visible: true },
     {
@@ -27,7 +26,6 @@ export const defaultNavigation: NavigationConfig = {
         { id: 'google-drive', type: 'link', label: 'Google Drive',  icon: 'HardDrive', route: '/docs/google-drive', visible: true },
       ],
     },
-    { id: 'network',    type: 'link', label: 'Network',       icon: 'Network',        route: '/network',   visible: true },
     { id: 'forum',      type: 'link', label: 'Community',     icon: 'MessageSquare',  route: '/forum',     visible: true },
 
     // ── Divider ──
@@ -43,6 +41,8 @@ export const defaultNavigation: NavigationConfig = {
       visible: true,
       defaultExpanded: false,
       children: [
+        { id: 'grafana',       type: 'link', label: 'Grafana',           icon: 'LineChart',    route: '/grafana',             visible: true },
+        { id: 'network',       type: 'link', label: 'Network',           icon: 'Network',      route: '/network',             visible: true },
         { id: 'dt-json',       type: 'link', label: 'JSON Validator',    icon: 'Braces',      route: '/devtools/json',       visible: true },
         { id: 'dt-api',        type: 'link', label: 'API Tester',        icon: 'Send',         route: '/devtools/api',        visible: true },
         { id: 'dt-dns',        type: 'link', label: 'DNS Lookup',        icon: 'Globe',        route: '/devtools/dns',        visible: true },
