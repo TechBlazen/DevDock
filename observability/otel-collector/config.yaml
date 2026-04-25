@@ -1,0 +1,70 @@
+# OpenTelemetry Collector config — dev/local observability stack.
+# Receives OTLP (both gRPC and HTTP) from the browser SDK in src/otel/index.ts,
+# fans out to Tempo (traces), Prometheus (metrics, via a scrape-friendly
+# exporter), and Loki (logs).
+#
+# CORS is wide-open on the HTTP receiver because the OTLP exporter runs in the
+# user's browser — a stricter origin policy in production would list the app's
+# public origin explicitly.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - "*"
+          allowed_headers:
+            - "*"
+
+processors:
+  # Prevent the collector from OOMing under a burst — bails out at 80% RSS,
+  # resumes at 65%. Small footprint keeps the dev stack friendly.
+  memory_limiter:
+    check_interval: 1s
+    limit_percentage: 80
+    spike_limit_percentage: 15
+  batch:
+    timeout: 5s
+    send_batch_size: 512
+
+exporters:
+  # Traces → Tempo via OTLP gRPC.
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
+  # Metrics → Prometheus exposition format. Prometheus scrapes :8889 on the
+  # collector; no remote_write needed for a local setup.
+  prometheus:
+    endpoint: 0.0.0.0:8889
+
+  # Logs → Loki push API.
+  otlphttp/loki:
+    endpoint: http://loki:3100/otlp
+
+  # Always-on stdout exporter for debugging. Cheap; comment out if noisy.
+  debug:
+    verbosity: basic
+
+service:
+  telemetry:
+    logs:
+      level: info
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp/tempo, debug]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [prometheus, debug]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp/loki, debug]

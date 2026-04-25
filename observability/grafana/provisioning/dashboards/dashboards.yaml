@@ -1,0 +1,15 @@
+# Grafana dashboard provider — loads every *.json under /etc/grafana/dashboards
+# as an auto-provisioned dashboard in the "DevDock" folder.
+
+apiVersion: 1
+
+providers:
+  - name: DevDock
+    folder: DevDock
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/dashboards
+      foldersFromFilesStructure: true

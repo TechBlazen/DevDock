@@ -10,6 +10,7 @@ export const defaultNavigation: NavigationConfig = {
 
     // ── Tools & monitoring ──
     { id: 'telemetry',  type: 'link', label: 'Observability', icon: 'Activity',       route: '/telemetry', visible: true },
+    { id: 'grafana',    type: 'link', label: 'Grafana',       icon: 'LineChart',      route: '/grafana',   visible: true },
     { id: 'catalog',    type: 'link', label: 'Widgets',       icon: 'Layers',         route: '/catalog',   visible: true },
     { id: 'scaffold',   type: 'link', label: 'Scaffold',      icon: 'Hammer',         route: '/scaffold',  visible: true },
     {

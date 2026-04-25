@@ -1,0 +1,105 @@
+# Local observability stack — brings up Grafana, OTel Collector, Tempo,
+# Prometheus, and Loki. The app (src/otel/index.ts) already sends OTLP to
+# :4318; no code change needed after this comes up.
+#
+#   docker compose -f docker-compose.observability.yml up -d
+#   open http://localhost:3001                   # Grafana
+#
+# Each service's config lives under ./observability/<service>/. Data is kept
+# in named volumes so `compose down` preserves it; use `compose down -v` to
+# wipe and start fresh.
+#
+# Port map:
+#   3001  Grafana UI
+#   4317  OTLP gRPC (collector)
+#   4318  OTLP HTTP (collector) — this is what the browser SDK hits
+#   3100  Loki
+#   3200  Tempo
+#   9090  Prometheus
+
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.115.1
+    container_name: devdock-otel-collector
+    command: ["--config=/etc/otel-collector/config.yaml"]
+    volumes:
+      - ./observability/otel-collector/config.yaml:/etc/otel-collector/config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "8889:8889"   # Prometheus scrape
+    depends_on:
+      - tempo
+      - loki
+      - prometheus
+    restart: unless-stopped
+
+  tempo:
+    image: grafana/tempo:2.6.1
+    container_name: devdock-tempo
+    command: ["-config.file=/etc/tempo/config.yaml"]
+    volumes:
+      - ./observability/tempo/config.yaml:/etc/tempo/config.yaml:ro
+      - tempo-data:/var/tempo
+    ports:
+      - "3200:3200"
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.0.1
+    container_name: devdock-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-remote-write-receiver'   # Tempo metrics_generator pushes here
+      - '--enable-feature=exemplar-storage'
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:3.3.2
+    container_name: devdock-loki
+    command: ["-config.file=/etc/loki/config.yaml"]
+    volumes:
+      - ./observability/loki/config.yaml:/etc/loki/config.yaml:ro
+      - loki-data:/var/loki
+    ports:
+      - "3100:3100"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: devdock-grafana
+    environment:
+      # Embed the UI inside the app's /grafana page without X-Frame-Options
+      # blocking it. Anonymous viewer auth keeps the dev stack one-click.
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_AUTH_DISABLE_LOGIN_FORM=false
+      - GF_USERS_DEFAULT_THEME=dark
+      # Set the default home dashboard to the one we provision below.
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/dashboards/devdock-overview.json
+      # Disable analytics + update checks — quieter logs in dev.
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/etc/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+      - tempo
+      - loki
+    restart: unless-stopped
+
+volumes:
+  tempo-data:
+  prometheus-data:
+  loki-data:
+  grafana-data:

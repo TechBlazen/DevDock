@@ -164,6 +164,15 @@ export interface OTelConfig {
   headers?: Record<string, string>;
 }
 
+// Settings for the Grafana page (/grafana). Pointed at the local
+// docker-compose stack by default; users with their own Grafana can repoint.
+// `dashboardUid` opens that specific dashboard inside the iframe; empty
+// loads the Grafana home page.
+export interface GrafanaConfig {
+  url: string;
+  dashboardUid: string;
+}
+
 export interface MetricSnapshot {
   reqPerSec: number;
   p99Latency: number;
@@ -411,6 +420,7 @@ export interface Theme {
 export interface AppSettings {
   ai: AIConfig;
   otel: OTelConfig;
+  grafana: GrafanaConfig;
   github: GitHubConfig;
   ado: ADOConfig;
   googleDrive: GoogleDriveConfig;

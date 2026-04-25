@@ -116,6 +116,7 @@ interface SettingsStore {
   updateAIProvider: (provider: AIProvider) => void;
   updateApiKey: (provider: AIProvider, key: string) => void;
   updateOTelConfig: (partial: Partial<AppSettings['otel']>) => void;
+  updateGrafanaConfig: (partial: Partial<AppSettings['grafana']>) => void;
   updateGitHubConfig: (partial: Partial<AppSettings['github']>) => void;
   updateADOConfig: (partial: Partial<AppSettings['ado']>) => void;
   updateDashboardWidgets: (widgets: WidgetId[]) => void;
@@ -141,12 +142,22 @@ const defaultSettings: AppSettings = {
     useDocsAsContext: false,
   },
   otel: {
-    endpoint: 'http://localhost:4317',
+    // OTLP HTTP receiver. The browser SDK uses HTTP (see src/otel/index.ts);
+    // 4318 is the OTel Collector's standard HTTP port. Previously 4317 (the
+    // gRPC port) was set by mistake — kept the data flowing nowhere.
+    endpoint: 'http://localhost:4318',
     serviceName: 'devdock',
     enabled: true,
     exportTraces: true,
     exportMetrics: true,
     exportLogs: false,
+  },
+  grafana: {
+    // docker-compose.observability.yml exposes Grafana on :3001. Anyone
+    // pointing at their own (cloud) Grafana can override here. dashboardUid
+    // matches the provisioned DevDock Overview dashboard.
+    url: 'http://localhost:3001',
+    dashboardUid: 'devdock-overview',
   },
   github: {
     accessToken: '',
@@ -216,6 +227,8 @@ export const useSettingsStore = create<SettingsStore>()(
         })),
       updateOTelConfig: (partial) =>
         set((s) => ({ settings: { ...s.settings, otel: { ...s.settings.otel, ...partial } } })),
+      updateGrafanaConfig: (partial) =>
+        set((s) => ({ settings: { ...s.settings, grafana: { ...s.settings.grafana, ...partial } } })),
       updateGitHubConfig: (partial) =>
         set((s) => ({ settings: { ...s.settings, github: { ...s.settings.github, ...partial } } })),
       updateADOConfig: (partial) =>

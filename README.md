@@ -232,10 +232,35 @@ Or use environment variables: `DEVDOCK_DB_PROVIDER`, `DEVDOCK_SQLITE_PATH`, `DEV
 
 ## OpenTelemetry Setup
 
-Auto-instruments AI chat completions and repo API fetches. To collect traces:
+Auto-instruments AI chat completions and repo API fetches. There are two
+ways to collect traces:
+
+### Option 1 — Bundled Grafana stack (recommended)
+
+`docker-compose.observability.yml` brings up the full Grafana + OTel
+Collector + Tempo + Prometheus + Loki stack with everything wired together
+and a default DevDock dashboard pre-provisioned:
 
 ```bash
-# Jaeger (quickstart)
+docker compose -f docker-compose.observability.yml up -d
+```
+
+The browser SDK is already pointed at `http://localhost:4318` (the
+collector's OTLP HTTP port). Open the **Grafana** page in the sidebar to see
+your traces, metrics, and logs in the embedded dashboard. The same view is
+also available standalone at <http://localhost:3001> with anonymous viewer
+access.
+
+To stop and wipe data: `docker compose -f docker-compose.observability.yml down -v`.
+
+If you want to point at your own Grafana instance instead, change the URL in
+**Settings > Grafana** — your Grafana needs `allow_embedding: true` for the
+in-app iframe to work.
+
+### Option 2 — Bring your own collector
+
+```bash
+# Jaeger (quickstart, traces only)
 docker run -d -p 4317:4317 -p 16686:16686 jaegertracing/all-in-one:latest
 
 # View traces at http://localhost:16686

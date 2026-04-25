@@ -45,6 +45,7 @@ import {
   UuidGeneratorPage,
   DocsPage,
   GoogleDrivePage,
+  GrafanaPage,
   NetworkPage,
   PluginsPage,
   UsersPage,
@@ -166,6 +167,7 @@ function PluginRoutes({ editMode }: { editMode: boolean }) {
       <Route path="/ado"       element={<ADOPage />} />
       <Route path="/mcp"       element={<MCPPage />} />
       <Route path="/telemetry" element={<TelemetryPageRoute />} />
+      <Route path="/grafana"   element={<GrafanaPage />} />
       <Route path="/catalog"   element={<CatalogPage />} />
       <Route path="/scaffold"  element={<ScaffoldPage />} />
       <Route path="/devtools"         element={<DevToolsPage />} />
