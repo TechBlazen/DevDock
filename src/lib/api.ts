@@ -72,12 +72,27 @@ export const settingsApi = {
 };
 
 // ─── APIs (Swagger / OpenAPI specs) ─────────────────────────────────────────
+export interface ProxyRequest {
+  method: string;
+  url: string;
+  headers?: Record<string, string>;
+  body?: string;
+}
+export interface ProxyResponse {
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+  body: string;
+  durationMs: number;
+}
+
 export const apisApi = {
   list: (repoId?: string) => api.get('/apis', { params: repoId ? { repoId } : {} }).then(r => r.data),
   get: (id: string) => api.get(`/apis/${id}`).then(r => r.data),
   create: (data: Record<string, unknown>) => api.post('/apis', data).then(r => r.data),
   update: (id: string, data: Record<string, unknown>) => api.put(`/apis/${id}`, data).then(r => r.data),
   delete: (id: string) => api.delete(`/apis/${id}`).then(r => r.data),
+  proxy: (req: ProxyRequest) => api.post<ProxyResponse>('/apis/proxy', req).then(r => r.data),
 };
 
 // ─── Forum ──────────────────────────────────────────────────────────────────

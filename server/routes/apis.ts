@@ -73,6 +73,58 @@ export function registerApiRoutes(app: FastifyInstance, db: DatabaseProvider, jw
     return deserializeApi(updated);
   });
 
+  // Browser → server → target API. Sidesteps CORS for the in-app tester so
+  // arbitrary specs can be exercised without each origin having to allow us.
+  // Only blocks the obvious local-loopback hostnames; deeper SSRF hardening
+  // (private IP ranges via DNS resolution) is left for a follow-up.
+  app.post('/api/apis/proxy', { preHandler: guard }, async (request, reply) => {
+    const body = request.body as {
+      method?: string;
+      url?: string;
+      headers?: Record<string, string>;
+      body?: string;
+    };
+    if (!body.url || !body.method) {
+      return reply.status(400).send({ error: 'method and url are required' });
+    }
+
+    let target: URL;
+    try { target = new URL(body.url); }
+    catch { return reply.status(400).send({ error: 'Invalid url' }); }
+
+    if (target.protocol !== 'http:' && target.protocol !== 'https:') {
+      return reply.status(400).send({ error: 'Only http/https URLs are allowed' });
+    }
+    const host = target.hostname.toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || host === '::1') {
+      return reply.status(400).send({ error: 'Loopback addresses are not allowed' });
+    }
+
+    const startedAt = Date.now();
+    try {
+      const res = await fetch(target.toString(), {
+        method: body.method.toUpperCase(),
+        headers: body.headers ?? {},
+        body: ['GET', 'HEAD'].includes(body.method.toUpperCase()) ? undefined : body.body,
+      });
+      const text = await res.text();
+      const headers: Record<string, string> = {};
+      res.headers.forEach((v, k) => { headers[k] = v; });
+      return {
+        status: res.status,
+        statusText: res.statusText,
+        headers,
+        body: text,
+        durationMs: Date.now() - startedAt,
+      };
+    } catch (e) {
+      return reply.status(502).send({
+        error: e instanceof Error ? e.message : 'Upstream request failed',
+        durationMs: Date.now() - startedAt,
+      });
+    }
+  });
+
   app.delete('/api/apis/:id', { preHandler: guard }, async (request, reply) => {
     const caller = getRequestUser(request);
     const { id } = request.params as { id: string };
