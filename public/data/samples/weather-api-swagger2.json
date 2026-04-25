@@ -1,0 +1,181 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Weather API",
+    "version": "1.0.0",
+    "description": "A simple weather API for demonstration purposes"
+  },
+  "host": "api.weather.example.com",
+  "basePath": "/v1",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/weather/current": {
+      "get": {
+        "summary": "Get current weather",
+        "description": "Returns the current weather conditions for a specified location",
+        "tags": ["Weather"],
+        "parameters": [
+          {
+            "name": "city",
+            "in": "query",
+            "description": "City name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "units",
+            "in": "query",
+            "description": "Temperature units (metric or imperial)",
+            "required": false,
+            "type": "string",
+            "enum": ["metric", "imperial"],
+            "default": "metric"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/CurrentWeather"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Location not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/weather/forecast": {
+      "get": {
+        "summary": "Get weather forecast",
+        "description": "Returns a 5-day weather forecast for a specified location",
+        "tags": ["Weather"],
+        "parameters": [
+          {
+            "name": "city",
+            "in": "query",
+            "description": "City name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "description": "Number of days (1-5)",
+            "required": false,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "default": 5
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/Forecast"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "CurrentWeather": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "type": "string",
+          "description": "Location name"
+        },
+        "temperature": {
+          "type": "number",
+          "description": "Current temperature"
+        },
+        "conditions": {
+          "type": "string",
+          "description": "Weather conditions (sunny, cloudy, rainy, etc.)"
+        },
+        "humidity": {
+          "type": "integer",
+          "description": "Humidity percentage"
+        },
+        "windSpeed": {
+          "type": "number",
+          "description": "Wind speed"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Observation timestamp"
+        }
+      }
+    },
+    "Forecast": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "type": "string"
+        },
+        "days": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DayForecast"
+          }
+        }
+      }
+    },
+    "DayForecast": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "high": {
+          "type": "number"
+        },
+        "low": {
+          "type": "number"
+        },
+        "conditions": {
+          "type": "string"
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

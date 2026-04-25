@@ -41,6 +41,9 @@ export function registerUserRoutes(app: FastifyInstance, db: DatabaseProvider, j
       avatar_url: body.avatar_url,
       role: body.role ?? 'viewer',
       permissions: body.permissions ?? '{}',
+      dashboard_widgets: body.dashboard_widgets ?? '[]',
+      favorite_repos: body.favorite_repos ?? '[]',
+      preferences: body.preferences ?? '{}',
       created_at: new Date().toISOString(),
     };
 

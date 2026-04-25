@@ -23,6 +23,7 @@ import { registerSqlToolRoutes } from './routes/sql-tool.js';
 import { registerCodeRunnerRoutes } from './routes/code-runner.js';
 import { registerAiProxyRoutes } from './routes/ai-proxy.js';
 import { registerSemanticSearchRoutes } from './routes/semantic-search.js';
+import { registerApiConverterRoutes } from './routes/api-converter.js';
 import { createVectorRuntime } from './vector/runtime.js';
 
 async function main() {
@@ -74,6 +75,7 @@ async function main() {
   registerSqlToolRoutes(app, db, config.jwtSecret);
   registerCodeRunnerRoutes(app, db, config.jwtSecret);
   registerAiProxyRoutes(app, db, config.jwtSecret);
+  registerApiConverterRoutes(app, config.jwtSecret);
 
   // Serve the built Vite client from the same process when present. In dev,
   // Vite runs its own server on :5173 and proxies /api to us, so `dist/`
