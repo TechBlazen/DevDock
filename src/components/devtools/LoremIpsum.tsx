@@ -118,7 +118,7 @@ export const LoremIpsum = () => {
   const charCount = output.length;
 
   return (
-    <div className="h-full flex flex-col gap-3 p-5 overflow-auto">
+    <div className="h-full flex flex-col gap-3 p-5 overflow-auto max-w-5xl w-full mx-auto">
       {/* Controls */}
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1">
