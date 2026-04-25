@@ -45,6 +45,7 @@ export function registerUserRoutes(app: FastifyInstance, db: DatabaseProvider, j
       favorite_repos: body.favorite_repos ?? '[]',
       preferences: body.preferences ?? '{}',
       created_at: new Date().toISOString(),
+      last_login: body.last_login ?? null as unknown as string,
     };
 
     const created = await db.createUser(user);
