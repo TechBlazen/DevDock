@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowRight, Copy, Download, FileJson, RefreshCw } from 'lucide-react';
-import { api } from '../../lib/api';
+import axios from 'axios';
 
 type SpecFormat = 'openapi_3' | 'swagger_2';
 type SpecSyntax = 'json' | 'yaml';
@@ -24,12 +24,15 @@ export const ApiConverter = () => {
       setError(null);
       
       // Auto-detect format
-      const detection = await api.post('/convert/detect', { spec: text });
-      if (detection.detected) {
-        setFromFormat(detection.format);
-        setDetectFormat(detection.format);
+      const token = localStorage.getItem('devdock-api-token');
+      const detection = await axios.post('/api/convert/detect', { spec: text }, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (detection.data.detected) {
+        setFromFormat(detection.data.format);
+        setDetectFormat(detection.data.format);
         // Auto-set target format to the opposite
-        setToFormat(detection.format === 'swagger_2' ? 'openapi_3' : 'swagger_2');
+        setToFormat(detection.data.format === 'swagger_2' ? 'openapi_3' : 'swagger_2');
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load sample');
@@ -45,13 +48,16 @@ export const ApiConverter = () => {
     setConverting(true);
     setError(null);
     try {
-      const result = await api.post('/convert/spec', {
+      const token = localStorage.getItem('devdock-api-token');
+      const result = await axios.post('/api/convert/spec', {
         spec: inputSpec,
         from: fromFormat,
         to: toFormat,
         syntax,
+      }, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      setOutputSpec(result.spec);
+      setOutputSpec(result.data.spec);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Conversion failed');
       setOutputSpec('');

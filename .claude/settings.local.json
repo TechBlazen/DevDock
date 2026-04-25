@@ -50,7 +50,11 @@
       "Bash(xargs grep:*)",
       "Bash(grep -n \"bg-\\\\|#[0-9a-fA-F]\\\\{3,6\\\\}\\\\|rgb\\\\|rgba\" /Users/terry/Public/Apps/Personal/forge-portal-clean/src/components/layout/Footer.tsx)",
       "Bash(grep -rn \"#[0-9a-fA-F]\\\\{3,6\\\\}\\\\|rgb\\(.*\\)\\\\|rgba\\(.*\\)\" /Users/terry/Public/Apps/Personal/forge-portal-clean/src/components --include=\"*.tsx\")",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/api/health)",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/login -H \"Content-Type: application/json\" -d '{\"username\":\"admin\",\"password\":\"admin\"}')",
+      "Bash(lsof -nP -iTCP -sTCP:LISTEN)",
+      "Bash(lsof -nP -iTCP:3000 -sTCP:LISTEN)"
     ]
   }
 }

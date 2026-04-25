@@ -1,3 +1,4 @@
+// @ts-expect-error - api-spec-converter lacks TypeScript declarations
 import Converter from 'api-spec-converter';
 
 export type SpecFormat = 'openapi_3' | 'swagger_2';
@@ -42,7 +43,7 @@ export async function convertSpec(
 
   try {
     // Parse the input spec (detect if it's JSON or YAML)
-    let parsedSpec: any;
+    let parsedSpec: string | Record<string, unknown>;
     try {
       parsedSpec = JSON.parse(inputSpec);
     } catch {
