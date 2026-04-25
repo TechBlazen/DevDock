@@ -15,6 +15,7 @@ export { DocsPage } from './DocsPage';
 export { GoogleDrivePage } from './GoogleDrivePage';
 export { GrafanaPage } from './GrafanaPage';
 export { LoginPage } from './LoginPage';
+export { N8nPage } from './N8nPage';
 export { NetworkPage } from './NetworkPage';
 export { PluginsPage } from './PluginsPage';
 export { UsersPage } from './UsersPage';

@@ -119,6 +119,7 @@ interface SettingsStore {
   updateGrafanaConfig: (partial: Partial<AppSettings['grafana']>) => void;
   updateGitHubConfig: (partial: Partial<AppSettings['github']>) => void;
   updateADOConfig: (partial: Partial<AppSettings['ado']>) => void;
+  updateN8nConfig: (partial: Partial<AppSettings['n8n']>) => void;
   updateDashboardWidgets: (widgets: WidgetId[]) => void;
   updateGoogleDriveConfig: (partial: Partial<AppSettings['googleDrive']>) => void;
   updateActiveDirectoryConfig: (partial: Partial<AppSettings['activeDirectory']>) => void;
@@ -168,6 +169,10 @@ const defaultSettings: AppSettings = {
     organization: '',
     personalAccessToken: '',
     projects: [],
+  },
+  n8n: {
+    baseUrl: '',
+    apiKey: '',
   },
   googleDrive: {
     accessToken: '',
@@ -233,6 +238,8 @@ export const useSettingsStore = create<SettingsStore>()(
         set((s) => ({ settings: { ...s.settings, github: { ...s.settings.github, ...partial } } })),
       updateADOConfig: (partial) =>
         set((s) => ({ settings: { ...s.settings, ado: { ...s.settings.ado, ...partial } } })),
+      updateN8nConfig: (partial) =>
+        set((s) => ({ settings: { ...s.settings, n8n: { ...s.settings.n8n, ...partial } } })),
       updateDashboardWidgets: (widgets) =>
         set((s) => ({ settings: { ...s.settings, dashboardWidgets: widgets } })),
       updateGoogleDriveConfig: (partial) =>

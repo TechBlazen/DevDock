@@ -95,6 +95,55 @@ export const apisApi = {
   proxy: (req: ProxyRequest) => api.post<ProxyResponse>('/apis/proxy', req).then(r => r.data),
 };
 
+// ─── n8n ─────────────────────────────────────────────────────────────────────
+// The user's n8n base URL + API key are sent as headers per request — the
+// server stays stateless about per-user n8n connections (mirrors how AI keys
+// are kept on the client).
+export interface N8nWorkflow {
+  id: string;
+  name: string;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  nodes?: { type: string; webhookId?: string; parameters?: Record<string, unknown> }[];
+  tags?: { id: string; name: string }[];
+}
+export interface N8nExecution {
+  id: string;
+  workflowId: string;
+  finished: boolean;
+  mode: string;
+  startedAt: string;
+  stoppedAt?: string;
+  status?: string;
+}
+
+function n8nHeaders(baseUrl: string, apiKey: string) {
+  return { 'X-N8n-Base-Url': baseUrl, 'X-N8n-Api-Key': apiKey };
+}
+
+export const n8nApi = {
+  health: (baseUrl: string, apiKey: string) =>
+    api.get<{ ok: boolean }>('/n8n/health', { headers: n8nHeaders(baseUrl, apiKey) }).then(r => r.data),
+  listWorkflows: (baseUrl: string, apiKey: string) =>
+    api.get<{ data: N8nWorkflow[] }>('/n8n/workflows', { headers: n8nHeaders(baseUrl, apiKey) }).then(r => r.data),
+  getWorkflow: (baseUrl: string, apiKey: string, id: string) =>
+    api.get<N8nWorkflow>(`/n8n/workflows/${id}`, { headers: n8nHeaders(baseUrl, apiKey) }).then(r => r.data),
+  activate: (baseUrl: string, apiKey: string, id: string) =>
+    api.post<N8nWorkflow>(`/n8n/workflows/${id}/activate`, null, { headers: n8nHeaders(baseUrl, apiKey) }).then(r => r.data),
+  deactivate: (baseUrl: string, apiKey: string, id: string) =>
+    api.post<N8nWorkflow>(`/n8n/workflows/${id}/deactivate`, null, { headers: n8nHeaders(baseUrl, apiKey) }).then(r => r.data),
+  listExecutions: (baseUrl: string, apiKey: string, workflowId?: string) =>
+    api.get<{ data: N8nExecution[] }>('/n8n/executions', {
+      headers: n8nHeaders(baseUrl, apiKey),
+      params: workflowId ? { workflowId } : {},
+    }).then(r => r.data),
+  getExecution: (baseUrl: string, apiKey: string, id: string) =>
+    api.get<N8nExecution & { data?: unknown }>(`/n8n/executions/${id}`, { headers: n8nHeaders(baseUrl, apiKey) }).then(r => r.data),
+  triggerWebhook: (url: string, payload: unknown) =>
+    api.post<{ status: number; body: string; durationMs: number }>('/n8n/webhook-trigger', { url, payload }).then(r => r.data),
+};
+
 // ─── Forum ──────────────────────────────────────────────────────────────────
 // Votes: the client computes the post-toggle votes array locally via applyVote
 // and PUTs the full array. Keeps the server stateless on vote semantics.

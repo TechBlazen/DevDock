@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import {
   Key, Activity, GitFork, GitBranch, Code2, Save, Check, Lock, AlertTriangle, Globe,
   ChevronDown, ChevronRight, LayoutDashboard, Shield, Plus, Trash2, Users, Palette,
-  Languages as LanguagesIcon, Wrench, Bot, Wifi, WifiOff, Loader2,
+  Languages as LanguagesIcon, Wrench, Bot, Wifi, WifiOff, Loader2, Workflow,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { useSettingsStore } from '../store';
@@ -423,6 +423,7 @@ export const SettingsPage = () => {
     updateOTelConfig,
     updateGitHubConfig,
     updateADOConfig,
+    updateN8nConfig,
     updateActiveDirectoryConfig,
     updateBranding,
     updateAIEnabled,
@@ -933,6 +934,44 @@ export const SettingsPage = () => {
             </div>
           </Card>
         </div>
+      </CollapsibleSection>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+           SECTION — n8n Integration
+           ═══════════════════════════════════════════════════════════════════ */}
+      <CollapsibleSection
+        icon={<Workflow size={16} className="text-[#ea4b71]" />}
+        title="n8n Integration"
+        description="Point DevDock at your self-hosted or cloud n8n instance. The Dev Tools → n8n page lists workflows and recent executions, and can trigger workflows that have a Webhook node."
+      >
+        <Card>
+          <CardHeader>
+            <Workflow size={14} className="text-[#ea4b71]" />
+            <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">n8n</span>
+          </CardHeader>
+          <div className="p-5 space-y-4">
+            <Input
+              label="Base URL"
+              value={settings.n8n.baseUrl}
+              onChange={(e) => updateN8nConfig({ baseUrl: e.target.value })}
+              placeholder="https://n8n.example.com"
+            />
+            <div>
+              <label className="text-[12px] font-medium mb-1.5 block" style={{ color: 'var(--text-secondary)' }}>API Key</label>
+              <input
+                type="password"
+                value={settings.n8n.apiKey}
+                onChange={(e) => updateN8nConfig({ apiKey: e.target.value })}
+                placeholder="n8n_api_..."
+                className="w-full rounded-lg px-3 py-2 text-[13px] outline-none"
+                style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
+              />
+              <p className="text-[11px] mt-1" style={{ color: 'var(--text-faint)' }}>
+                Generate from n8n → Settings → API. Sent server-side via the X-N8N-API-KEY header on each request.
+              </p>
+            </div>
+          </div>
+        </Card>
       </CollapsibleSection>
 
       {/* ═══════════════════════════════════════════════════════════════════
