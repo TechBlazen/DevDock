@@ -10,7 +10,7 @@ import {
   Zap, Cloud, Shield, Lock, Bell, Mail,
   Calendar, Clock, Map, Tag, Heart, Flag,
   HardDrive, Upload, Image, Film, FileSpreadsheet,
-  Webhook,
+  Webhook, Type,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -26,7 +26,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Zap, Cloud, Shield, Lock, Bell, Mail,
   Calendar, Clock, Map, Tag, Heart, Flag,
   HardDrive, Upload, Image, Film, FileSpreadsheet,
-  Webhook,
+  Webhook, Type,
   Circle,
 };
 

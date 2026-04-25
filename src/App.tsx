@@ -45,6 +45,7 @@ import {
   CertDecoderPage,
   JwtDecoderPage,
   UuidGeneratorPage,
+  LoremIpsumPage,
   DocsPage,
   GoogleDrivePage,
   GrafanaPage,
@@ -194,6 +195,7 @@ function PluginRoutes({ editMode }: { editMode: boolean }) {
       <Route path="/devtools/cert-decoder" element={<CertDecoderPage />} />
       <Route path="/devtools/jwt"          element={<JwtDecoderPage />} />
       <Route path="/devtools/uuid"         element={<UuidGeneratorPage />} />
+      <Route path="/devtools/lorem"        element={<LoremIpsumPage />} />
       <Route path="/devtools/sql"        element={<SqlToolPage />} />
       <Route path="/devtools/playground" element={<CodePlaygroundPage />} />
       <Route path="/devtools/agent-builder" element={<AgentBuilderPage />} />
