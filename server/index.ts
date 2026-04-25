@@ -1,5 +1,8 @@
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import fastifyStatic from '@fastify/static';
 import { loadConfig } from './config.js';
 import { createProvider } from './db/factory.js';
 import { seed } from './db/sqlite/seed.js';
@@ -14,6 +17,7 @@ import { registerAnalyticsRoutes } from './routes/analytics.js';
 import { registerFederatedSourceRoutes } from './routes/federated-sources.js';
 import { registerForumRoutes } from './routes/forum.js';
 import { registerFeatureRequestRoutes } from './routes/feature-requests.js';
+import { registerApiRoutes } from './routes/apis.js';
 import { registerDirectoryRoutes } from './routes/directory.js';
 import { registerSqlToolRoutes } from './routes/sql-tool.js';
 import { registerCodeRunnerRoutes } from './routes/code-runner.js';
@@ -64,11 +68,29 @@ async function main() {
   registerFederatedSourceRoutes(app, db, config.jwtSecret, vector);
   registerForumRoutes(app, db, config.jwtSecret, vector);
   registerFeatureRequestRoutes(app, db, config.jwtSecret);
+  registerApiRoutes(app, db, config.jwtSecret);
   registerSemanticSearchRoutes(app, config.jwtSecret, vector);
   registerDirectoryRoutes(app, db, config.jwtSecret);
   registerSqlToolRoutes(app, db, config.jwtSecret);
   registerCodeRunnerRoutes(app, db, config.jwtSecret);
   registerAiProxyRoutes(app, db, config.jwtSecret);
+
+  // Serve the built Vite client from the same process when present. In dev,
+  // Vite runs its own server on :5173 and proxies /api to us, so `dist/`
+  // won't exist and we skip this block. In the container, `dist/` is copied
+  // alongside the compiled server, and this is how the SPA is delivered.
+  const clientDir = resolve(process.env.DEVDOCK_CLIENT_DIR ?? process.cwd(), 'dist');
+  const clientIndex = resolve(clientDir, 'index.html');
+  if (existsSync(clientIndex)) {
+    await app.register(fastifyStatic, { root: clientDir, wildcard: false });
+    // SPA fallback: anything that isn't an /api/* route and doesn't match a
+    // static file falls back to index.html so client-side routing works.
+    app.setNotFoundHandler((req, reply) => {
+      if (req.url.startsWith('/api')) return reply.code(404).send({ error: 'Not found' });
+      return reply.sendFile('index.html');
+    });
+    console.log(`Serving client from ${clientDir}`);
+  }
 
   // Graceful shutdown
   const shutdown = async () => {

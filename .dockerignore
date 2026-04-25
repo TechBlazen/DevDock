@@ -1,0 +1,20 @@
+# Keep the build context lean so multi-arch builds ship changes fast.
+node_modules
+dist
+dist-server
+**/*.tsbuildinfo
+.git
+.github
+.vscode
+.idea
+.DS_Store
+.env
+.env.*
+!.env.example
+coverage
+playwright-report
+test-results
+*.log
+npm-debug.log*
+.claude
+.cursor
