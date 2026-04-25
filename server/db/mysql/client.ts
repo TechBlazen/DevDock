@@ -6,7 +6,7 @@ import type {
   DatabaseProvider, UserRow, RepoRow, SettingsRow,
   BookmarkRow, CollectionRow, DocRow, PluginStateRow,
   PageViewRow, ErrorRow, FederatedSourceRow, FederatedDocumentRow,
-  ForumThreadRow, ForumAnswerRow, FeatureRequestRow,
+  ForumThreadRow, ForumAnswerRow, FeatureRequestRow, ApiRow,
 } from '../provider.js';
 import { namedParams, mapRow, mapRows } from './sql.js';
 
@@ -580,5 +580,48 @@ export class MysqlProvider implements DatabaseProvider {
 
   async deleteFeatureRequest(id: string): Promise<void> {
     await this.pool.query('DELETE FROM feature_requests WHERE id = ?', [id]);
+  }
+
+  // ─── APIs ───────────────────────────────────────────────────────────────────
+
+  async getApis(): Promise<ApiRow[]> {
+    const [rows] = await this.pool.query<mysql.RowDataPacket[]>('SELECT * FROM apis ORDER BY created_at DESC');
+    return mapRows<ApiRow>(rows, 'apis');
+  }
+
+  async getApiById(id: string): Promise<ApiRow | null> {
+    const [rows] = await this.pool.query<mysql.RowDataPacket[]>('SELECT * FROM apis WHERE id = ?', [id]);
+    return mapRow<ApiRow>(rows[0], 'apis');
+  }
+
+  async getApisByRepo(repoId: string): Promise<ApiRow[]> {
+    const [rows] = await this.pool.query<mysql.RowDataPacket[]>(
+      'SELECT * FROM apis WHERE source_repo_id = ? ORDER BY created_at DESC',
+      [repoId]
+    );
+    return mapRows<ApiRow>(rows, 'apis');
+  }
+
+  async createApi(api: ApiRow): Promise<ApiRow> {
+    await this.query(
+      `INSERT INTO apis (id, name, description, source_repo_id, source_repo_name, source_url, spec_kind, spec_version, spec_raw, base_url, added_by, created_at, updated_at)
+       VALUES (@id, @name, @description, @source_repo_id, @source_repo_name, @source_url, @spec_kind, @spec_version, @spec_raw, @base_url, @added_by, @created_at, @updated_at)`,
+      api as unknown as Record<string, unknown>
+    );
+    return api;
+  }
+
+  async updateApi(id: string, partial: Partial<ApiRow>): Promise<ApiRow | null> {
+    const existing = await this.getApiById(id);
+    if (!existing) return null;
+    const keys = Object.keys(partial).filter((k) => k !== 'id');
+    if (keys.length === 0) return existing;
+    const sets = keys.map((k) => `${k} = @${k}`).join(', ');
+    await this.query(`UPDATE apis SET ${sets} WHERE id = @id`, { ...partial, id });
+    return { ...existing, ...partial };
+  }
+
+  async deleteApi(id: string): Promise<void> {
+    await this.pool.query('DELETE FROM apis WHERE id = ?', [id]);
   }
 }

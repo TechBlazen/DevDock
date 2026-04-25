@@ -71,6 +71,15 @@ export const settingsApi = {
   update: (data: Record<string, unknown>) => api.put('/settings', data).then(r => r.data),
 };
 
+// ─── APIs (Swagger / OpenAPI specs) ─────────────────────────────────────────
+export const apisApi = {
+  list: (repoId?: string) => api.get('/apis', { params: repoId ? { repoId } : {} }).then(r => r.data),
+  get: (id: string) => api.get(`/apis/${id}`).then(r => r.data),
+  create: (data: Record<string, unknown>) => api.post('/apis', data).then(r => r.data),
+  update: (id: string, data: Record<string, unknown>) => api.put(`/apis/${id}`, data).then(r => r.data),
+  delete: (id: string) => api.delete(`/apis/${id}`).then(r => r.data),
+};
+
 // ─── Forum ──────────────────────────────────────────────────────────────────
 // Votes: the client computes the post-toggle votes array locally via applyVote
 // and PUTs the full array. Keeps the server stateless on vote semantics.

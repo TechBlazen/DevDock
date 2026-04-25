@@ -407,6 +407,71 @@ export async function listADOMarkdownFiles(
     }));
 }
 
+// ─── Spec File Discovery (Swagger / OpenAPI) ─────────────────────────────────
+// Matches filenames like openapi.yaml, openapi-v1.yaml, swagger.json — but
+// NOT package.json or tsconfig.json. The leading filename token must be
+// "openapi" or "swagger" (case-insensitive).
+function isSpecFilename(filename: string): boolean {
+  return /^(openapi|swagger)([.-][\w.-]*)?\.(ya?ml|json)$/i.test(filename);
+}
+
+/** Walk a GitHub repo's tree for OpenAPI / Swagger spec files. */
+export async function listGitHubSpecFiles(
+  owner: string, repo: string, token?: string
+): Promise<{ path: string; name: string; sha: string }[]> {
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const { data: repoData } = await axios.get(
+    `https://api.github.com/repos/${owner}/${repo}`,
+    { headers }
+  );
+  const branch = String(repoData.default_branch ?? 'main');
+
+  const { data: treeData } = await axios.get(
+    `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`,
+    { headers }
+  );
+
+  return (treeData.tree ?? [])
+    .filter((f: Record<string, unknown>) => {
+      if (String(f.type) !== 'blob') return false;
+      const name = String(f.path).split('/').pop() ?? '';
+      return isSpecFilename(name);
+    })
+    .map((f: Record<string, unknown>) => ({
+      path: String(f.path),
+      name: String(f.path).split('/').pop() ?? '',
+      sha: String(f.sha),
+    }));
+}
+
+/** Walk an Azure DevOps repo for OpenAPI / Swagger spec files. */
+export async function listADOSpecFiles(
+  org: string, project: string, repo: string, pat?: string
+): Promise<{ path: string; name: string; objectId: string }[]> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (pat) headers.Authorization = `Basic ${btoa(':' + pat)}`;
+
+  const url = `https://dev.azure.com/${org}/${project}/_apis/git/repositories/${repo}/items?scopePath=/&recursionLevel=Full&api-version=7.1`;
+  const { data } = await axios.get(url, { headers });
+
+  return (data.value ?? [])
+    .filter((f: Record<string, unknown>) => {
+      if (f.isFolder) return false;
+      const name = String(f.path).split('/').pop() ?? '';
+      return isSpecFilename(name);
+    })
+    .map((f: Record<string, unknown>) => ({
+      path: String(f.path),
+      name: String(f.path).split('/').pop() ?? '',
+      objectId: String(f.objectId),
+    }));
+}
+
 export async function fetchADOFile(
   org: string, project: string, repo: string, path: string, pat?: string
 ): Promise<string> {

@@ -6,7 +6,7 @@ import type {
   DatabaseProvider, UserRow, RepoRow, SettingsRow,
   BookmarkRow, CollectionRow, DocRow, PluginStateRow,
   PageViewRow, ErrorRow, FederatedSourceRow, FederatedDocumentRow,
-  ForumThreadRow, ForumAnswerRow, FeatureRequestRow,
+  ForumThreadRow, ForumAnswerRow, FeatureRequestRow, ApiRow,
 } from '../provider.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -384,6 +384,39 @@ export class SqliteProvider implements DatabaseProvider {
 
   async deleteFeatureRequest(id: string): Promise<void> {
     this.db.prepare('DELETE FROM feature_requests WHERE id = ?').run(id);
+  }
+
+  // ─── APIs ───────────────────────────────────────────────────────────────────
+  async getApis(): Promise<ApiRow[]> {
+    return this.db.prepare('SELECT * FROM apis ORDER BY created_at DESC').all() as ApiRow[];
+  }
+
+  async getApiById(id: string): Promise<ApiRow | null> {
+    return (this.db.prepare('SELECT * FROM apis WHERE id = ?').get(id) as ApiRow) ?? null;
+  }
+
+  async getApisByRepo(repoId: string): Promise<ApiRow[]> {
+    return this.db.prepare('SELECT * FROM apis WHERE source_repo_id = ? ORDER BY created_at DESC').all(repoId) as ApiRow[];
+  }
+
+  async createApi(api: ApiRow): Promise<ApiRow> {
+    this.db.prepare(`INSERT INTO apis (id, name, description, source_repo_id, source_repo_name, source_url, spec_kind, spec_version, spec_raw, base_url, added_by, created_at, updated_at)
+      VALUES (@id, @name, @description, @source_repo_id, @source_repo_name, @source_url, @spec_kind, @spec_version, @spec_raw, @base_url, @added_by, @created_at, @updated_at)`).run(nullify(api));
+    return api;
+  }
+
+  async updateApi(id: string, partial: Partial<ApiRow>): Promise<ApiRow | null> {
+    const existing = await this.getApiById(id);
+    if (!existing) return null;
+    const keys = Object.keys(partial).filter((k) => k !== 'id');
+    if (keys.length === 0) return existing;
+    const sets = keys.map((k) => `${k} = @${k}`).join(', ');
+    this.db.prepare(`UPDATE apis SET ${sets} WHERE id = @id`).run(nullify({ ...partial, id }));
+    return { ...existing, ...partial };
+  }
+
+  async deleteApi(id: string): Promise<void> {
+    this.db.prepare('DELETE FROM apis WHERE id = ?').run(id);
   }
 }
 

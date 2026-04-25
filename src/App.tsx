@@ -4,6 +4,7 @@ import { Shell } from './components/layout/Shell'
 import { initOTel } from './otel'
 import { useSettingsStore, useAuthStore, usePluginStore, useUserAccountsStore, useRepoStore } from './store'
 import { useForumStore } from './store/forum-store'
+import { useApiStore } from './store/api-store'
 import { changeLanguage } from './i18n'
 import { BUILT_IN_PLUGINS, usePluginExtensions } from './lib/plugins'
 import { LoginPage } from './pages/LoginPage'
@@ -22,6 +23,7 @@ import {
   ADOPage,
   MCPPage,
   TelemetryPageRoute,
+  ApisPage,
   CatalogPage,
   ScaffoldPage,
   DevToolsPage,
@@ -99,6 +101,8 @@ export default function App() {
       // them the same way on sign-in so every user sees the shared list.
       useForumStore.getState().loadThreads()
       useForumStore.getState().loadFeatureRequests()
+      // APIs are first-class shared entities like repos — hydrate from server.
+      useApiStore.getState().loadApis()
     }
   }, [authStatus])
 
@@ -165,6 +169,7 @@ function PluginRoutes({ editMode }: { editMode: boolean }) {
       <Route path="/"          element={<DashboardPage editMode={editMode} />} />
       <Route path="/github"    element={<GitHubPage />} />
       <Route path="/ado"       element={<ADOPage />} />
+      <Route path="/apis"      element={<ApisPage />} />
       <Route path="/mcp"       element={<MCPPage />} />
       <Route path="/telemetry" element={<TelemetryPageRoute />} />
       <Route path="/grafana"   element={<GrafanaPage />} />
