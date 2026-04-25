@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import { Search, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Search, RefreshCw, AlertTriangle, Repeat } from 'lucide-react';
 import { useApiStore, type ApiSpec } from '../store/api-store';
 import { ApiCard } from '../components/apis/ApiCard';
 import { RegisterApi } from '../components/apis/RegisterApi';
 import { ApiDetailPanel } from '../components/apis/ApiDetailPanel';
+import { ApiConverter } from '../components/apis/ApiConverter';
 import { EmptyState, SectionTitle, Spinner } from '../components/ui';
 
 export const ApisPage = () => {
@@ -12,6 +13,7 @@ export const ApisPage = () => {
   const [kindFilter, setKindFilter] = useState<'' | 'openapi' | 'swagger'>('');
   const [refreshing, setRefreshing] = useState(false);
   const [selected, setSelected] = useState<ApiSpec | null>(null);
+  const [showConverter, setShowConverter] = useState(false);
 
   const filtered = useMemo(() => {
     return apis.filter((a) => {
@@ -60,6 +62,21 @@ export const ApisPage = () => {
             <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
           </button>
 
+          <button
+            onClick={() => setShowConverter(!showConverter)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors"
+            style={{
+              background: showConverter ? 'var(--accent)' : 'var(--bg-inset)',
+              color: showConverter ? 'white' : 'var(--text-primary)',
+              border: `1px solid ${showConverter ? 'var(--accent)' : 'var(--border-subtle)'}`,
+              cursor: 'pointer',
+            }}
+            title="Toggle API Converter"
+          >
+            <Repeat size={14} />
+            Converter
+          </button>
+
           <RegisterApi />
 
           <span className="text-xs font-mono ml-auto" style={{ color: 'var(--text-muted)' }}>
@@ -67,7 +84,9 @@ export const ApisPage = () => {
           </span>
         </div>
 
-        {loadingApis || refreshing ? (
+        {showConverter ? (
+          <ApiConverter />
+        ) : loadingApis || refreshing ? (
           <div className="flex justify-center py-8"><Spinner size={24} /></div>
         ) : filtered.length === 0 ? (
           <EmptyState
