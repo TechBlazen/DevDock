@@ -7,6 +7,7 @@ import type {
   BookmarkRow, CollectionRow, DocRow, PluginStateRow,
   PageViewRow, ErrorRow, FederatedSourceRow, FederatedDocumentRow,
   ForumThreadRow, ForumAnswerRow, FeatureRequestRow, ApiRow,
+  McpServerRow, McpToolRow,
 } from '../provider.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -417,6 +418,65 @@ export class SqliteProvider implements DatabaseProvider {
 
   async deleteApi(id: string): Promise<void> {
     this.db.prepare('DELETE FROM apis WHERE id = ?').run(id);
+  }
+
+  // ─── MCP Servers ──────────────────────────────────────────────────────────────
+  async getMcpServers(): Promise<McpServerRow[]> {
+    return this.db.prepare('SELECT * FROM mcp_servers ORDER BY created_at ASC').all() as McpServerRow[];
+  }
+
+  async getMcpServerById(id: string): Promise<McpServerRow | null> {
+    return (this.db.prepare('SELECT * FROM mcp_servers WHERE id = ?').get(id) as McpServerRow) ?? null;
+  }
+
+  async createMcpServer(server: McpServerRow): Promise<McpServerRow> {
+    this.db.prepare(`INSERT INTO mcp_servers (id, name, description, transport, command, args, env, url, port, status, auto_start, session_strategy, call_count, capabilities, last_used, last_error, added_by, created_at, updated_at)
+      VALUES (@id, @name, @description, @transport, @command, @args, @env, @url, @port, @status, @auto_start, @session_strategy, @call_count, @capabilities, @last_used, @last_error, @added_by, @created_at, @updated_at)`).run(nullify(server));
+    return server;
+  }
+
+  async updateMcpServer(id: string, partial: Partial<McpServerRow>): Promise<McpServerRow | null> {
+    const existing = await this.getMcpServerById(id);
+    if (!existing) return null;
+    const keys = Object.keys(partial).filter((k) => k !== 'id');
+    if (keys.length === 0) return existing;
+    const sets = keys.map((k) => `${k} = @${k}`).join(', ');
+    this.db.prepare(`UPDATE mcp_servers SET ${sets} WHERE id = @id`).run(nullify({ ...partial, id }));
+    return { ...existing, ...partial };
+  }
+
+  async deleteMcpServer(id: string): Promise<void> {
+    const tx = this.db.transaction(() => {
+      this.db.prepare('DELETE FROM mcp_tools WHERE server_id = ?').run(id);
+      this.db.prepare('DELETE FROM mcp_servers WHERE id = ?').run(id);
+    });
+    tx();
+  }
+
+  // ─── MCP Tools ────────────────────────────────────────────────────────────────
+  async getMcpTools(serverId?: string): Promise<McpToolRow[]> {
+    if (serverId) {
+      return this.db.prepare('SELECT * FROM mcp_tools WHERE server_id = ? ORDER BY name ASC').all(serverId) as McpToolRow[];
+    }
+    return this.db.prepare('SELECT * FROM mcp_tools ORDER BY name ASC').all() as McpToolRow[];
+  }
+
+  async getMcpToolByName(name: string): Promise<McpToolRow | null> {
+    return (this.db.prepare('SELECT * FROM mcp_tools WHERE name = ? ORDER BY created_at ASC').get(name) as McpToolRow) ?? null;
+  }
+
+  async replaceMcpTools(serverId: string, tools: McpToolRow[]): Promise<void> {
+    const tx = this.db.transaction(() => {
+      this.db.prepare('DELETE FROM mcp_tools WHERE server_id = ?').run(serverId);
+      const insert = this.db.prepare(`INSERT INTO mcp_tools (id, server_id, name, description, input_schema, call_count, created_at, updated_at)
+        VALUES (@id, @server_id, @name, @description, @input_schema, @call_count, @created_at, @updated_at)`);
+      for (const tool of tools) { insert.run(nullify(tool)); }
+    });
+    tx();
+  }
+
+  async deleteMcpToolsByServer(serverId: string): Promise<void> {
+    this.db.prepare('DELETE FROM mcp_tools WHERE server_id = ?').run(serverId);
   }
 }
 

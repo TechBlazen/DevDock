@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useState, type ReactNode } from 'react';
-import { Bot, Copy, Check, Shield, Loader2, Sparkles, FileText, ExternalLink } from 'lucide-react';
+import { Bot, Copy, Check, Shield, Loader2, Sparkles, FileText, ExternalLink, Wrench } from 'lucide-react';
 import type { AIProvider, ChatMessage, OverwatchToolCall } from '../../types';
 
 // ─── Provider config ──────────────────────────────────────────────────────────────────
@@ -219,6 +219,30 @@ export const MessageBubble = ({
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {msg.mcpToolCalls && msg.mcpToolCalls.length > 0 && (
+              <div className="mt-2 pt-2" style={{ borderTop: '1px dashed var(--border-subtle)' }}>
+                <div className="flex items-center gap-1 text-[10px] font-semibold mb-1" style={{ color: accent }}>
+                  <Wrench size={10} />
+                  Called {msg.mcpToolCalls.length} MCP tool{msg.mcpToolCalls.length === 1 ? '' : 's'}
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {msg.mcpToolCalls.map((tc, i) => (
+                    <span
+                      key={`${tc.name}-${i}`}
+                      className="inline-flex items-center gap-1 text-[10px] font-mono rounded px-1.5 py-0.5"
+                      style={{
+                        background: tc.ok ? 'rgba(46,125,50,0.1)' : 'rgba(211,47,47,0.1)',
+                        color: tc.ok ? '#2e7d32' : '#d32f2f',
+                      }}
+                      title={tc.error ? `${tc.name}: ${tc.error}` : `${tc.name}${tc.serverId ? ` · ${tc.serverId}` : ''}`}
+                    >
+                      {tc.ok ? '✓' : '✗'} {tc.name}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
 

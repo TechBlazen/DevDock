@@ -25,6 +25,8 @@ import { registerCodeRunnerRoutes } from './routes/code-runner.js';
 import { registerAiProxyRoutes } from './routes/ai-proxy.js';
 import { registerSemanticSearchRoutes } from './routes/semantic-search.js';
 import { registerApiConverterRoutes } from './routes/api-converter.js';
+import { registerMcpRoutes } from './routes/mcp.js';
+import { McpManager } from './services/mcp-manager.js';
 import { createVectorRuntime } from './vector/runtime.js';
 
 async function main() {
@@ -41,6 +43,12 @@ async function main() {
   await db.migrate();
   await seed(db);
   console.log(`Database ready (${config.db.provider})`);
+
+  // MCP Register runtime — reconciles persisted servers to 'stopped' and
+  // auto-starts any opted in. Owns live status, logs, and JSON-RPC connections.
+  const mcpManager = new McpManager(db);
+  await mcpManager.init();
+  console.log('MCP Register ready');
 
   // Vector / semantic search (no-op if GEMINI_API_KEY is unset).
   const vector = createVectorRuntime(config.vector);
@@ -76,8 +84,9 @@ async function main() {
   registerDirectoryRoutes(app, db, config.jwtSecret);
   registerSqlToolRoutes(app, db, config.jwtSecret);
   registerCodeRunnerRoutes(app, db, config.jwtSecret);
-  registerAiProxyRoutes(app, db, config.jwtSecret);
+  registerAiProxyRoutes(app, db, config.jwtSecret, mcpManager);
   registerApiConverterRoutes(app, config.jwtSecret);
+  registerMcpRoutes(app, db, config.jwtSecret, mcpManager);
 
   // Serve the built Vite client from the same process when present. In dev,
   // Vite runs its own server on :5173 and proxies /api to us, so `dist/`
@@ -100,6 +109,7 @@ async function main() {
   const shutdown = async () => {
     console.log('Shutting down...');
     await app.close();
+    await mcpManager.shutdown();
     await db.disconnect();
     process.exit(0);
   };
