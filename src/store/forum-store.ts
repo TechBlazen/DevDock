@@ -112,6 +112,8 @@ export const useForumStore = create<ForumStore>((set, get) => ({
         repoId: thread.repoId,
         repoName: thread.repoName,
         repoSource: thread.repoSource,
+        mcpServerId: thread.mcpServerId,
+        mcpServerName: thread.mcpServerName,
       })) as ForumThread;
       set((s) => ({ threads: [created, ...s.threads] }));
       return created.id;

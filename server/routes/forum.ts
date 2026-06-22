@@ -65,6 +65,8 @@ export function registerForumRoutes(
       repo_id: body.repoId as string | undefined,
       repo_name: body.repoName as string | undefined,
       repo_source: body.repoSource as string | undefined,
+      mcp_server_id: body.mcpServerId as string | undefined,
+      mcp_server_name: body.mcpServerName as string | undefined,
       created_at: now,
       updated_at: now,
     };
@@ -195,6 +197,8 @@ function deserializeThread(row: ForumThreadRow, answerRows: ForumAnswerRow[]) {
     repoId: row.repo_id,
     repoName: row.repo_name,
     repoSource: row.repo_source,
+    mcpServerId: row.mcp_server_id,
+    mcpServerName: row.mcp_server_name,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -237,6 +241,8 @@ export function enqueueThreadIndex(vector: VectorRuntime | undefined, thread: Fo
       author_name: thread.author_name,
       repo_id: thread.repo_id ?? '',
       repo_name: thread.repo_name ?? '',
+      mcp_server_id: thread.mcp_server_id ?? '',
+      mcp_server_name: thread.mcp_server_name ?? '',
       created_at: thread.created_at,
       updated_at: thread.updated_at,
     },

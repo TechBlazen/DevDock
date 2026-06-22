@@ -1,0 +1,611 @@
+import { useState, useMemo, useCallback } from 'react';
+import { MessageSquare, Send, Reply, Server, Lock, Pencil } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { useAuthStore } from '../../store';
+import { useForumStore } from '../../store/forum-store';
+import { ForumMarkdownEditor } from '../forum/ForumMarkdownEditor';
+import { ForumMarkdownBody } from '../forum/ForumMarkdownBody';
+import { Button, Pill } from '../ui';
+import type { MCPServer, ForumAnswer } from '../../types';
+
+// Discussion/comments for a single MCP server. This mirrors RepoCommentSection:
+// the first comment lazily creates a forum thread tagged 'mcp-comment' and
+// linked to the server via mcpServerId; subsequent comments become answers.
+// The thread surfaces in the Community Forum like any other, so MCP Q&A and
+// the forum stay in sync. Unlike repos we don't store a back-reference on the
+// server (the MCP store has no persisted meta field) — the thread is found by
+// its mcpServerId, which is sufficient.
+
+const ACCENT = '#00b478';
+
+interface McpServerCommentSectionProps {
+  server: MCPServer;
+}
+
+// ─── Tree helpers ───────────────────────────────────────────────────────────
+/** Build a map of parentAnswerId → child answers */
+function buildChildMap(answers: ForumAnswer[]): Map<string | undefined, ForumAnswer[]> {
+  const map = new Map<string | undefined, ForumAnswer[]>();
+  for (const a of answers) {
+    const key = a.parentAnswerId ?? undefined;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(a);
+  }
+  return map;
+}
+
+// ─── Single comment node (recursive) ────────────────────────────────────────
+interface CommentNodeProps {
+  answer: ForumAnswer;
+  threadId: string;
+  childMap: Map<string | undefined, ForumAnswer[]>;
+  depth: number;
+  isLast: boolean;
+  isLocked: boolean;
+  isAdmin: boolean;
+  onReply: (answerId: string) => void;
+  replyTarget: string | null;
+  replyText: string;
+  setReplyText: (v: string) => void;
+  onSubmitReply: () => void;
+  onCancelReply: () => void;
+  editingAnswerId: string | null;
+  editAnswerDraft: string;
+  setEditAnswerDraft: (v: string) => void;
+  onStartEdit: (answerId: string, body: string) => void;
+  onSubmitEdit: () => void;
+  onCancelEdit: () => void;
+}
+
+const CommentNode = ({
+  answer, threadId, childMap, depth, isLast, isLocked, isAdmin,
+  onReply, replyTarget, replyText, setReplyText, onSubmitReply, onCancelReply,
+  editingAnswerId, editAnswerDraft, setEditAnswerDraft, onStartEdit, onSubmitEdit, onCancelEdit,
+}: CommentNodeProps) => {
+  const user = useAuthStore((s) => s.user);
+  const { voteAnswer } = useForumStore();
+  const children = childMap.get(answer.id) ?? [];
+
+  const score = answer.votes.reduce((sum, v) => sum + v.value, 0);
+  const isReplying = replyTarget === answer.id;
+  const isEditingThis = editingAnswerId === answer.id;
+  const isAnswerAuthor = user?.id === answer.authorId;
+  const canEdit = (isAnswerAuthor && (!isLocked || isAdmin)) || isAdmin;
+  const canReply = !isLocked || isAdmin;
+  const canVote = !isLocked || isAdmin;
+
+  return (
+    <div className="relative" style={{ paddingLeft: depth > 0 ? 24 : 0 }}>
+      {/* Vertical tree line from parent */}
+      {depth > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            left: 8,
+            top: 0,
+            bottom: isLast && children.length === 0 ? 'calc(100% - 18px)' : 0,
+            width: 2,
+            background: 'var(--border-subtle)',
+          }}
+        />
+      )}
+
+      {/* Horizontal branch connector */}
+      {depth > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            left: 8,
+            top: 18,
+            width: 14,
+            height: 2,
+            background: 'var(--border-subtle)',
+          }}
+        />
+      )}
+
+      {/* Comment content */}
+      <div
+        className="relative py-2 group"
+        style={{
+          borderBottom: depth === 0 ? '1px solid var(--border-subtle)' : 'none',
+        }}
+      >
+        <div className="flex items-start gap-2.5">
+          {/* Compact inline vote */}
+          <div className="flex items-center gap-1 flex-shrink-0 mt-0.5">
+            <button
+              onClick={(e) => { e.stopPropagation(); if (canVote) voteAnswer(threadId, answer.id, user?.id ?? '', 1); }}
+              disabled={!canVote}
+              className="w-5 h-5 flex items-center justify-center rounded transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+              style={{
+                color: answer.votes.find(v => v.userId === user?.id)?.value === 1 ? ACCENT : 'var(--text-faint)',
+                background: 'transparent',
+                border: 'none',
+              }}
+              title={canVote ? 'Upvote' : 'Topic locked'}
+            >
+              ▲
+            </button>
+            <span
+              className="text-[10px] font-bold tabular-nums"
+              style={{
+                color: score > 0 ? '#22c55e' : score < 0 ? '#ef4444' : 'var(--text-faint)',
+                minWidth: 14,
+                textAlign: 'center',
+              }}
+            >
+              {score}
+            </span>
+            <button
+              onClick={(e) => { e.stopPropagation(); if (canVote) voteAnswer(threadId, answer.id, user?.id ?? '', -1); }}
+              disabled={!canVote}
+              className="w-5 h-5 flex items-center justify-center rounded transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+              style={{
+                color: answer.votes.find(v => v.userId === user?.id)?.value === -1 ? '#ef4444' : 'var(--text-faint)',
+                background: 'transparent',
+                border: 'none',
+              }}
+              title={canVote ? 'Downvote' : 'Topic locked'}
+            >
+              ▼
+            </button>
+          </div>
+
+          {/* Avatar */}
+          <div
+            className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0"
+            style={{ background: depth === 0 ? ACCENT : 'var(--accent)' }}
+          >
+            {answer.authorName.charAt(0).toUpperCase()}
+          </div>
+
+          {/* Body */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-[11px] font-semibold" style={{ color: 'var(--text-primary)' }}>
+                {answer.authorName}
+              </span>
+              <span className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
+                {formatDistanceToNow(new Date(answer.createdAt), { addSuffix: true })}
+              </span>
+              {answer.updatedAt !== answer.createdAt && (
+                <span className="text-[9px] italic" style={{ color: 'var(--text-faint)' }}>(edited)</span>
+              )}
+              {canEdit && !isEditingThis && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onStartEdit(answer.id, answer.body); }}
+                  className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors hover:opacity-80 cursor-pointer"
+                  style={{ color: 'var(--text-muted)', background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}
+                >
+                  <Pencil size={9} /> Edit
+                </button>
+              )}
+            </div>
+            {isEditingThis ? (
+              <div className="flex flex-col gap-2">
+                <ForumMarkdownEditor
+                  value={editAnswerDraft}
+                  onChange={setEditAnswerDraft}
+                  placeholder="Edit your reply..."
+                  minHeight={80}
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button variant="ghost" size="sm" onClick={onCancelEdit}>Cancel</Button>
+                  <Button variant="primary" size="sm" onClick={onSubmitEdit} disabled={!editAnswerDraft.trim()}>Save</Button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                <ForumMarkdownBody content={answer.body} />
+              </div>
+            )}
+
+            {/* Reply button */}
+            {canReply && !isEditingThis && (
+              <button
+                className="flex items-center gap-1 mt-1 text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                style={{ color: ACCENT, background: 'none', border: 'none', padding: 0 }}
+                onClick={(e) => { e.stopPropagation(); onReply(answer.id); }}
+              >
+                <Reply size={10} /> Reply
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Inline reply form */}
+        {isReplying && (
+          <div className="mt-2 ml-[52px]" style={{ borderLeft: `2px solid ${ACCENT}`, paddingLeft: 12 }}>
+            <ForumMarkdownEditor
+              value={replyText}
+              onChange={setReplyText}
+              placeholder="Write a reply..."
+              minHeight={60}
+            />
+            <div className="flex gap-2 mt-2">
+              <Button variant="primary" size="sm" onClick={onSubmitReply} disabled={!replyText.trim()}>
+                <Send size={10} /> Reply
+              </Button>
+              <Button variant="ghost" size="sm" onClick={onCancelReply}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Render children recursively */}
+      {children.length > 0 && (
+        <div className="relative">
+          {children.map((child, idx) => (
+            <CommentNode
+              key={child.id}
+              answer={child}
+              threadId={threadId}
+              childMap={childMap}
+              depth={depth + 1}
+              isLast={idx === children.length - 1}
+              isLocked={isLocked}
+              isAdmin={isAdmin}
+              onReply={onReply}
+              replyTarget={replyTarget}
+              replyText={replyText}
+              setReplyText={setReplyText}
+              onSubmitReply={onSubmitReply}
+              onCancelReply={onCancelReply}
+              editingAnswerId={editingAnswerId}
+              editAnswerDraft={editAnswerDraft}
+              setEditAnswerDraft={setEditAnswerDraft}
+              onStartEdit={onStartEdit}
+              onSubmitEdit={onSubmitEdit}
+              onCancelEdit={onCancelEdit}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Main component ─────────────────────────────────────────────────────────
+export const McpServerCommentSection = ({ server }: McpServerCommentSectionProps) => {
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === 'admin';
+  const { threads, addThread, addAnswer, addReplyToAnswer, voteThread, updateThread, updateAnswer } = useForumStore();
+
+  const [comment, setComment] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [replyTarget, setReplyTarget] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+
+  // Inline editing state
+  const [editingThreadBody, setEditingThreadBody] = useState(false);
+  const [editThreadBodyDraft, setEditThreadBodyDraft] = useState('');
+  const [editingAnswerId, setEditingAnswerId] = useState<string | null>(null);
+  const [editAnswerDraft, setEditAnswerDraft] = useState('');
+
+  // Find the linked forum thread for this MCP server
+  const thread = useMemo(() => {
+    return threads.find((t) => t.mcpServerId === server.id) ?? null;
+  }, [threads, server.id]);
+
+  // Build tree structure from flat answers
+  const childMap = useMemo(() => {
+    if (!thread) return new Map<string | undefined, ForumAnswer[]>();
+    return buildChildMap(thread.answers);
+  }, [thread]);
+
+  // Top-level answers (no parent)
+  const topLevelAnswers = useMemo(() => {
+    return childMap.get(undefined) ?? [];
+  }, [childMap]);
+
+  const commentCount = thread ? thread.answers.length + 1 : 0;
+  const isLocked = !!thread?.acceptedAnswerId;
+  const canVoteThread = !isLocked || isAdmin;
+
+  const handlePostComment = useCallback(async () => {
+    if (!comment.trim() || !user) return;
+
+    if (!thread) {
+      await addThread({
+        title: `Discussion: ${server.name}`,
+        body: comment.trim(),
+        category: 'mcp-comment',
+        tags: ['MCP', server.transport, server.name].filter(Boolean) as string[],
+        authorId: user.id,
+        authorName: user.displayName,
+        authorAvatarUrl: user.avatarUrl,
+        mcpServerId: server.id,
+        mcpServerName: server.name,
+      });
+    } else {
+      await addAnswer(thread.id, {
+        authorId: user.id,
+        authorName: user.displayName,
+        authorAvatarUrl: user.avatarUrl,
+        body: comment.trim(),
+      });
+    }
+
+    setComment('');
+    setShowForm(false);
+  }, [comment, user, thread, server, addThread, addAnswer]);
+
+  const handleReply = useCallback((answerId: string) => {
+    setReplyTarget(answerId);
+    setReplyText('');
+  }, []);
+
+  const handleSubmitReply = useCallback(() => {
+    if (!replyText.trim() || !user || !thread || !replyTarget) return;
+    addReplyToAnswer(thread.id, replyTarget, {
+      authorId: user.id,
+      authorName: user.displayName,
+      authorAvatarUrl: user.avatarUrl,
+      body: replyText.trim(),
+    });
+    setReplyTarget(null);
+    setReplyText('');
+  }, [replyText, user, thread, replyTarget, addReplyToAnswer]);
+
+  const handleCancelReply = useCallback(() => {
+    setReplyTarget(null);
+    setReplyText('');
+  }, []);
+
+  const handleStartEditAnswer = useCallback((answerId: string, body: string) => {
+    setEditingAnswerId(answerId);
+    setEditAnswerDraft(body);
+  }, []);
+
+  const handleSubmitEditAnswer = useCallback(() => {
+    if (!editAnswerDraft.trim() || !thread || !editingAnswerId) return;
+    updateAnswer(thread.id, editingAnswerId, editAnswerDraft.trim());
+    setEditingAnswerId(null);
+    setEditAnswerDraft('');
+  }, [editAnswerDraft, thread, editingAnswerId, updateAnswer]);
+
+  const handleCancelEditAnswer = useCallback(() => {
+    setEditingAnswerId(null);
+    setEditAnswerDraft('');
+  }, []);
+
+  const threadScore = thread ? thread.votes.reduce((sum, v) => sum + v.value, 0) : 0;
+  const canEditThreadBody = !!thread && user?.id === thread.authorId && (!isLocked || isAdmin);
+
+  return (
+    <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--border-subtle)' }} onClick={(e) => e.stopPropagation()}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <MessageSquare size={14} style={{ color: ACCENT }} />
+          <span className="text-[12px] font-bold" style={{ color: 'var(--text-primary)' }}>
+            Comments
+          </span>
+          {commentCount > 0 && (
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${ACCENT}15`, color: ACCENT }}>
+              {commentCount}
+            </span>
+          )}
+          {isLocked && (
+            <span className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: '#f59e0b15', color: '#b45309', border: '1px solid #f59e0b30' }}>
+              <Lock size={10} /> Locked
+            </span>
+          )}
+        </div>
+        {!showForm && (!isLocked || isAdmin) && (
+          <Button variant="ghost" size="sm" onClick={() => setShowForm(true)}>
+            <MessageSquare size={11} /> Add Comment
+          </Button>
+        )}
+      </div>
+
+      {/* Threaded comment tree */}
+      {thread && (
+        <div className="mb-3">
+          {/* Original thread body as root comment */}
+          <div className="relative py-2 group" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+            <div className="flex items-start gap-2.5">
+              {/* Compact inline vote for thread */}
+              <div className="flex items-center gap-1 flex-shrink-0 mt-0.5">
+                <button
+                  onClick={(e) => { e.stopPropagation(); if (canVoteThread) voteThread(thread.id, user?.id ?? '', 1); }}
+                  disabled={!canVoteThread}
+                  className="w-5 h-5 flex items-center justify-center rounded transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+                  style={{
+                    color: thread.votes.find(v => v.userId === user?.id)?.value === 1 ? ACCENT : 'var(--text-faint)',
+                    background: 'transparent',
+                    border: 'none',
+                  }}
+                  title={canVoteThread ? 'Upvote' : 'Topic locked'}
+                >
+                  ▲
+                </button>
+                <span
+                  className="text-[10px] font-bold tabular-nums"
+                  style={{
+                    color: threadScore > 0 ? '#22c55e' : threadScore < 0 ? '#ef4444' : 'var(--text-faint)',
+                    minWidth: 14,
+                    textAlign: 'center',
+                  }}
+                >
+                  {threadScore}
+                </span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); if (canVoteThread) voteThread(thread.id, user?.id ?? '', -1); }}
+                  disabled={!canVoteThread}
+                  className="w-5 h-5 flex items-center justify-center rounded transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+                  style={{
+                    color: thread.votes.find(v => v.userId === user?.id)?.value === -1 ? '#ef4444' : 'var(--text-faint)',
+                    background: 'transparent',
+                    border: 'none',
+                  }}
+                  title={canVoteThread ? 'Downvote' : 'Topic locked'}
+                >
+                  ▼
+                </button>
+              </div>
+
+              {/* Avatar */}
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0"
+                style={{ background: ACCENT }}
+              >
+                {thread.authorName.charAt(0).toUpperCase()}
+              </div>
+
+              {/* Body */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-[11px] font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    {thread.authorName}
+                  </span>
+                  <span className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
+                    {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}
+                  </span>
+                  {thread.updatedAt !== thread.createdAt && (
+                    <span className="text-[9px] italic" style={{ color: 'var(--text-faint)' }}>(edited)</span>
+                  )}
+                  {canEditThreadBody && !editingThreadBody && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setEditingThreadBody(true); setEditThreadBodyDraft(thread.body); }}
+                      className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors hover:opacity-80 cursor-pointer"
+                      style={{ color: 'var(--text-muted)', background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)' }}
+                    >
+                      <Pencil size={9} /> Edit
+                    </button>
+                  )}
+                </div>
+                {editingThreadBody ? (
+                  <div className="flex flex-col gap-2">
+                    <ForumMarkdownEditor
+                      value={editThreadBodyDraft}
+                      onChange={setEditThreadBodyDraft}
+                      placeholder="Edit your comment..."
+                      minHeight={80}
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <Button variant="ghost" size="sm" onClick={() => setEditingThreadBody(false)}>Cancel</Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => {
+                          if (editThreadBodyDraft.trim()) {
+                            updateThread(thread.id, { body: editThreadBodyDraft.trim() });
+                            setEditingThreadBody(false);
+                          }
+                        }}
+                        disabled={!editThreadBodyDraft.trim()}
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                    <ForumMarkdownBody content={thread.body} />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Replies tree */}
+          {topLevelAnswers.length > 0 && (
+            <div className="relative mt-1">
+              {/* Continuous vertical trunk line */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 8,
+                  top: 0,
+                  bottom: 0,
+                  width: 2,
+                  background: 'var(--border-subtle)',
+                }}
+              />
+              {topLevelAnswers.map((answer, idx) => (
+                <CommentNode
+                  key={answer.id}
+                  answer={answer}
+                  threadId={thread.id}
+                  childMap={childMap}
+                  depth={1}
+                  isLast={idx === topLevelAnswers.length - 1}
+                  isLocked={isLocked}
+                  isAdmin={isAdmin}
+                  onReply={handleReply}
+                  replyTarget={replyTarget}
+                  replyText={replyText}
+                  setReplyText={setReplyText}
+                  onSubmitReply={handleSubmitReply}
+                  onCancelReply={handleCancelReply}
+                  editingAnswerId={editingAnswerId}
+                  editAnswerDraft={editAnswerDraft}
+                  setEditAnswerDraft={setEditAnswerDraft}
+                  onStartEdit={handleStartEditAnswer}
+                  onSubmitEdit={handleSubmitEditAnswer}
+                  onCancelEdit={handleCancelEditAnswer}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Comment form */}
+      {showForm && (
+        <div className="rounded-lg" style={{ padding: '16px', border: '1px solid var(--border-subtle)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            {user && (
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0" style={{ background: ACCENT }}>
+                {user.displayName.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <span className="text-[12px] font-semibold" style={{ color: 'var(--text-primary)' }}>Add a comment</span>
+            <Pill color={ACCENT}>
+              <Server size={8} className="inline mr-0.5" />
+              {server.name}
+            </Pill>
+          </div>
+
+          <ForumMarkdownEditor
+            value={comment}
+            onChange={setComment}
+            placeholder="Add your comment here... Markdown is supported."
+            minHeight={100}
+          />
+
+          <div className="flex items-center justify-between mt-3">
+            <span className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
+              Comments are visible in the Community Forum
+            </span>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="sm" onClick={() => { setShowForm(false); setComment(''); }}>
+                Cancel
+              </Button>
+              <Button variant="primary" size="sm" onClick={handlePostComment} disabled={!comment.trim()}>
+                <Send size={11} /> Comment
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Link to full thread in forum */}
+      {thread && !showForm && (
+        <a
+          href={`#/forum/thread/${thread.id}`}
+          className="flex items-center gap-1.5 text-[10px] font-medium mt-2 transition-opacity hover:opacity-80"
+          style={{ color: ACCENT, textDecoration: 'none' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <MessageSquare size={10} />
+          View full discussion in Community Forum
+        </a>
+      )}
+    </div>
+  );
+};

@@ -6,6 +6,7 @@ export const FORUM_CATEGORIES: { value: ForumCategory; label: string; color: str
   { value: 'discussion',   label: 'Discussion',   color: '#2e7d32' },
   { value: 'how-to',       label: 'How-To',       color: '#ed6c02' },
   { value: 'repo-comment', label: 'Repo Comment', color: '#7c3aed' },
+  { value: 'mcp-comment',  label: 'MCP Comment',  color: '#00b478' },
 ];
 
 export const DEPARTMENTS: ForumDepartment[] = ['Engineering', 'DevOps', 'Platform', 'Security', 'Data'];
