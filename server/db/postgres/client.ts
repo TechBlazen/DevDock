@@ -7,6 +7,7 @@ import type {
   BookmarkRow, CollectionRow, DocRow, PluginStateRow,
   PageViewRow, ErrorRow, FederatedSourceRow, FederatedDocumentRow,
   ForumThreadRow, ForumAnswerRow, FeatureRequestRow, ApiRow,
+  McpServerRow, McpToolRow,
 } from '../provider.js';
 import { namedParams, mapRow, mapRows } from './sql.js';
 
@@ -603,5 +604,89 @@ export class PostgresProvider implements DatabaseProvider {
 
   async deleteApi(id: string): Promise<void> {
     await this.pool.query('DELETE FROM apis WHERE id = $1', [id]);
+  }
+
+  // ─── MCP Servers ──────────────────────────────────────────────────────────────
+  async getMcpServers(): Promise<McpServerRow[]> {
+    const { rows } = await this.pool.query('SELECT * FROM mcp_servers ORDER BY created_at ASC');
+    return mapRows<McpServerRow>(rows, 'mcp_servers');
+  }
+
+  async getMcpServerById(id: string): Promise<McpServerRow | null> {
+    const { rows } = await this.pool.query('SELECT * FROM mcp_servers WHERE id = $1', [id]);
+    return mapRow<McpServerRow>(rows[0], 'mcp_servers');
+  }
+
+  async createMcpServer(server: McpServerRow): Promise<McpServerRow> {
+    await this.query(
+      `INSERT INTO mcp_servers (id, name, description, transport, command, args, env, url, port, status, auto_start, session_strategy, call_count, capabilities, last_used, last_error, added_by, created_at, updated_at)
+       VALUES (@id, @name, @description, @transport, @command, @args, @env, @url, @port, @status, @auto_start, @session_strategy, @call_count, @capabilities, @last_used, @last_error, @added_by, @created_at, @updated_at)`,
+      server as unknown as Record<string, unknown>
+    );
+    return server;
+  }
+
+  async updateMcpServer(id: string, partial: Partial<McpServerRow>): Promise<McpServerRow | null> {
+    const existing = await this.getMcpServerById(id);
+    if (!existing) return null;
+    const keys = Object.keys(partial).filter((k) => k !== 'id');
+    if (keys.length === 0) return existing;
+    const sets = keys.map((k) => `${k} = @${k}`).join(', ');
+    await this.query(`UPDATE mcp_servers SET ${sets} WHERE id = @id`, { ...partial, id });
+    return { ...existing, ...partial };
+  }
+
+  async deleteMcpServer(id: string): Promise<void> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query('DELETE FROM mcp_tools WHERE server_id = $1', [id]);
+      await client.query('DELETE FROM mcp_servers WHERE id = $1', [id]);
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  }
+
+  // ─── MCP Tools ────────────────────────────────────────────────────────────────
+  async getMcpTools(serverId?: string): Promise<McpToolRow[]> {
+    const { rows } = serverId
+      ? await this.pool.query('SELECT * FROM mcp_tools WHERE server_id = $1 ORDER BY name ASC', [serverId])
+      : await this.pool.query('SELECT * FROM mcp_tools ORDER BY name ASC');
+    return mapRows<McpToolRow>(rows, 'mcp_tools');
+  }
+
+  async getMcpToolByName(name: string): Promise<McpToolRow | null> {
+    const { rows } = await this.pool.query('SELECT * FROM mcp_tools WHERE name = $1 ORDER BY created_at ASC LIMIT 1', [name]);
+    return mapRow<McpToolRow>(rows[0], 'mcp_tools');
+  }
+
+  async replaceMcpTools(serverId: string, tools: McpToolRow[]): Promise<void> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query('DELETE FROM mcp_tools WHERE server_id = $1', [serverId]);
+      for (const tool of tools) {
+        const { text, values } = namedParams(
+          `INSERT INTO mcp_tools (id, server_id, name, description, input_schema, call_count, created_at, updated_at)
+           VALUES (@id, @server_id, @name, @description, @input_schema, @call_count, @created_at, @updated_at)`,
+          tool as unknown as Record<string, unknown>
+        );
+        await client.query(text, values);
+      }
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  }
+
+  async deleteMcpToolsByServer(serverId: string): Promise<void> {
+    await this.pool.query('DELETE FROM mcp_tools WHERE server_id = $1', [serverId]);
   }
 }

@@ -70,18 +70,44 @@ export interface RepoBuild {
 // ─── MCP Types ────────────────────────────────────────────────────────────────
 export type MCPStatus = 'running' | 'idle' | 'stopped' | 'error';
 
+export type MCPTransport = 'stdio' | 'sse' | 'websocket';
+export type MCPSessionStrategy = 'sticky' | 'stateless';
+
 export interface MCPServer {
   id: string;
   name: string;
   description: string;
-  port: number;
+  port?: number;
   status: MCPStatus;
   callCount: number;
-  transport: 'stdio' | 'sse' | 'websocket';
+  transport: MCPTransport;
   command?: string;
+  args?: string[];
+  url?: string;
   env?: Record<string, string>;
+  autoStart?: boolean;
+  sessionStrategy?: MCPSessionStrategy;
   lastUsed?: string;
+  lastError?: string;
   capabilities?: string[];
+  /** Number of tools discovered from this server via tools/list. */
+  toolCount?: number;
+  /** Last-persisted status (the column value); `status` is the live value. */
+  storedStatus?: MCPStatus;
+  addedBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// A tool exposed by an MCP server, discovered through the JSON-RPC tools/list
+// handshake. Mirrors the server-side McpToolRow (camelCased).
+export interface MCPTool {
+  id: string;
+  serverId: string;
+  name: string;
+  description: string;
+  inputSchema: unknown;
+  callCount: number;
 }
 
 // ─── AI Provider Types ────────────────────────────────────────────────────────
@@ -109,6 +135,19 @@ export interface ChatMessage {
    * context. Rendered under the reply so users can audit what RAG pulled in.
    */
   ragCitations?: RagCitation[];
+  /**
+   * For assistant messages only: MCP tools the model invoked while producing
+   * this reply, dispatched through the Tool Gateway Router.
+   */
+  mcpToolCalls?: McpToolCall[];
+}
+
+// One MCP tool invocation made by the AI during a turn (for chat display).
+export interface McpToolCall {
+  name: string;
+  serverId: string;
+  ok: boolean;
+  error?: string;
 }
 
 export interface AIConfig {

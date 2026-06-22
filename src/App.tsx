@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Shell } from './components/layout/Shell'
 import { initOTel } from './otel'
-import { useSettingsStore, useAuthStore, usePluginStore, useUserAccountsStore, useRepoStore } from './store'
+import { useSettingsStore, useAuthStore, usePluginStore, useUserAccountsStore, useRepoStore, useMCPStore } from './store'
 import { useForumStore } from './store/forum-store'
 import { useApiStore } from './store/api-store'
 import { changeLanguage } from './i18n'
@@ -105,6 +105,8 @@ export default function App() {
       useForumStore.getState().loadFeatureRequests()
       // APIs are first-class shared entities like repos — hydrate from server.
       useApiStore.getState().loadApis()
+      // MCP Register — hydrate the persisted servers + live status from server.
+      useMCPStore.getState().loadServers()
     }
   }, [authStatus])
 

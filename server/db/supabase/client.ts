@@ -1,7 +1,7 @@
 import type {
   DatabaseProvider, UserRow, RepoRow, SettingsRow,
   BookmarkRow, CollectionRow, DocRow, PluginStateRow,
-  PageViewRow, ErrorRow,
+  PageViewRow, ErrorRow, McpServerRow, McpToolRow,
 } from '../provider.js';
 
 // Supabase provider — requires '@supabase/supabase-js' package
@@ -77,6 +77,17 @@ export class SupabaseProvider implements DatabaseProvider {
   async trackError(_error: ErrorRow): Promise<void> { throw notImpl(); }
   async getPageViews(_limit?: number): Promise<PageViewRow[]> { throw notImpl(); }
   async getErrors(_limit?: number): Promise<ErrorRow[]> { throw notImpl(); }
+
+  async getMcpServers(): Promise<McpServerRow[]> { throw notImpl(); }
+  async getMcpServerById(_id: string): Promise<McpServerRow | null> { throw notImpl(); }
+  async createMcpServer(_server: McpServerRow): Promise<McpServerRow> { throw notImpl(); }
+  async updateMcpServer(_id: string, _partial: Partial<McpServerRow>): Promise<McpServerRow | null> { throw notImpl(); }
+  async deleteMcpServer(_id: string): Promise<void> { throw notImpl(); }
+
+  async getMcpTools(_serverId?: string): Promise<McpToolRow[]> { throw notImpl(); }
+  async getMcpToolByName(_name: string): Promise<McpToolRow | null> { throw notImpl(); }
+  async replaceMcpTools(_serverId: string, _tools: McpToolRow[]): Promise<void> { throw notImpl(); }
+  async deleteMcpToolsByServer(_serverId: string): Promise<void> { throw notImpl(); }
 }
 
 function notImpl() {

@@ -1,4 +1,4 @@
-import type { DatabaseProvider, UserRow, RepoRow, SettingsRow, DocRow } from '../provider.js';
+import type { DatabaseProvider, UserRow, RepoRow, SettingsRow, DocRow, McpServerRow } from '../provider.js';
 
 // Simple hash matching the frontend's hashPassword in src/lib/rbac.ts
 function hashPassword(password: string): string {
@@ -121,7 +121,54 @@ const SEED_DOCS: DocRow[] = [
   },
 ];
 
+// Default MCP servers — the demo registry. stdio entries carry real npx
+// commands so "Start" can actually launch them when node/npx is available;
+// they all begin 'stopped' and the McpManager reconciles live status on boot.
+// call_count holds illustrative historical figures for the dashboard.
+function mcpServer(partial: Partial<McpServerRow> & Pick<McpServerRow, 'id' | 'name'>): McpServerRow {
+  return {
+    description: '',
+    transport: 'stdio',
+    command: undefined,
+    args: undefined,
+    env: undefined,
+    url: undefined,
+    port: undefined,
+    status: 'stopped',
+    auto_start: 0,
+    session_strategy: 'sticky',
+    call_count: 0,
+    capabilities: undefined,
+    last_used: undefined,
+    last_error: undefined,
+    added_by: 'admin-001',
+    created_at: now,
+    updated_at: now,
+    ...partial,
+  };
+}
+
+const SEED_MCP_SERVERS: McpServerRow[] = [
+  mcpServer({ id: 'fs', name: 'filesystem', description: 'Local file system access', port: 3001, call_count: 142, transport: 'stdio', command: 'npx', args: JSON.stringify(['-y', '@modelcontextprotocol/server-filesystem', '.']), capabilities: JSON.stringify(['read', 'write', 'list']) }),
+  mcpServer({ id: 'gh', name: 'github', description: 'GitHub API integration', port: 3002, call_count: 89, transport: 'stdio', command: 'npx', args: JSON.stringify(['-y', '@modelcontextprotocol/server-github']), env: JSON.stringify({ GITHUB_PERSONAL_ACCESS_TOKEN: '' }), capabilities: JSON.stringify(['repos', 'issues', 'prs']) }),
+  mcpServer({ id: 'fetch', name: 'fetch', description: 'HTTP fetch capability', port: 3003, call_count: 34, transport: 'stdio', command: 'npx', args: JSON.stringify(['-y', '@modelcontextprotocol/server-fetch']), capabilities: JSON.stringify(['get', 'post']) }),
+  mcpServer({ id: 'mem', name: 'memory', description: 'Persistent memory store', port: 3004, call_count: 7, transport: 'stdio', command: 'npx', args: JSON.stringify(['-y', '@modelcontextprotocol/server-memory']), capabilities: JSON.stringify(['remember', 'recall']) }),
+  mcpServer({ id: 'pg', name: 'postgres', description: 'PostgreSQL query tool', port: 3005, call_count: 0, transport: 'stdio', command: 'npx', args: JSON.stringify(['-y', '@modelcontextprotocol/server-postgres']), capabilities: JSON.stringify(['query', 'schema']) }),
+  mcpServer({ id: 'seq', name: 'sequential-thinking', description: 'Chain-of-thought reasoning', port: 3006, call_count: 211, transport: 'stdio', command: 'npx', args: JSON.stringify(['-y', '@modelcontextprotocol/server-sequential-thinking']), capabilities: JSON.stringify(['think', 'plan']) }),
+  mcpServer({ id: 'playwright', name: 'playwright', description: 'Browser automation and testing via Playwright', port: 3007, call_count: 0, transport: 'stdio', command: 'npx', args: JSON.stringify(['-y', '@playwright/mcp@latest']), capabilities: JSON.stringify(['navigate', 'screenshot', 'click', 'fill', 'evaluate', 'pdf']) }),
+];
+
 export async function seed(db: DatabaseProvider): Promise<void> {
+  // MCP servers seed independently of the core data so existing installs (which
+  // were seeded before the MCP Register shipped) still get the demo registry.
+  const existingMcp = await db.getMcpServers();
+  if (existingMcp.length === 0) {
+    for (const server of SEED_MCP_SERVERS) {
+      await db.createMcpServer(server);
+    }
+    console.log(`  Seeded: ${SEED_MCP_SERVERS.length} MCP servers`);
+  }
+
   const existingUsers = await db.getUsers();
   if (existingUsers.length > 0) {
     console.log('  Database already seeded, skipping');

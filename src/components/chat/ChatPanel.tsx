@@ -26,6 +26,8 @@ export const ChatPanel = () => {
   const [modeDropdownOpen, setModeDropdownOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  // Stable id for this chat session — keeps MCP tool routing sticky across turns.
+  const sessionIdRef = useRef(nanoid());
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -95,7 +97,7 @@ export const ChatPanel = () => {
 
       await sendChatMessage([...messages, userMsg], settings.ai, {
         onToken: () => {},
-        onDone: (fullText, traceId) => {
+        onDone: (fullText, traceId, meta) => {
           addMessage({
             id: nanoid(),
             role: 'assistant',
@@ -105,6 +107,7 @@ export const ChatPanel = () => {
             chatMode: 'devdock',
             traceId,
             ragCitations: citations,
+            mcpToolCalls: meta?.mcpToolCalls,
           });
           setLoading(false);
         },
@@ -118,7 +121,7 @@ export const ChatPanel = () => {
           });
           setLoading(false);
         },
-      }, systemPrompt);
+      }, systemPrompt, { enableTools: runningMCP > 0, sessionId: sessionIdRef.current });
     }
   };
 

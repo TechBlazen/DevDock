@@ -32,7 +32,7 @@ import { defaultNavigation } from '../lib/default-navigation';
 import { nanoid } from 'nanoid';
 import { createGuestUser } from '../lib/auth';
 import { SEED_ACCOUNTS, ROLE_PERMISSIONS, hashPassword, verifyPassword } from '../lib/rbac';
-import { reposApi } from '../lib/api';
+import { reposApi, mcpApi } from '../lib/api';
 
 // ─── User Preferences Defaults ───────────────────────────────────────────────
 export const DEFAULT_PREFERENCES: UserPreferences = {
@@ -345,8 +345,45 @@ export const useSettingsStore = create<SettingsStore>()(
 );
 
 // ─── MCP Store ────────────────────────────────────────────────────────────────
+// Backed by the MCP Register API (server CRUD + real lifecycle). Reads run over
+// the local cache; mutations are optimistic with best-effort server sync — the
+// same posture as useRepoStore/useApiStore. The legacy synchronous mutators
+// (addServer/removeServer/updateServer/setStatus) are kept so the search index,
+// dashboard widget, and offline demo keep working when the API is unreachable.
+
+/** Fields accepted when registering a server through the API. */
+export interface NewMCPServerInput {
+  name: string;
+  description?: string;
+  transport: MCPServer['transport'];
+  command?: string;
+  args?: string[];
+  url?: string;
+  env?: Record<string, string>;
+  port?: number;
+  autoStart?: boolean;
+  sessionStrategy?: MCPServer['sessionStrategy'];
+  capabilities?: string[];
+}
+
 interface MCPStore {
   servers: MCPServer[];
+  loading: boolean;
+  syncError: string | null;
+
+  /** Hydrate from the API (called on sign-in). Falls back to the demo seed. */
+  loadServers: () => Promise<void>;
+  /** Register a new server via the API and prepend it. */
+  createServer: (input: NewMCPServerInput) => Promise<MCPServer | null>;
+  /** Persist field edits via the API. */
+  saveServer: (id: string, input: Partial<NewMCPServerInput>) => Promise<void>;
+  /** Real lifecycle — actually starts/stops the backend connection. */
+  startServer: (id: string) => Promise<void>;
+  stopServer: (id: string) => Promise<void>;
+  /** Re-pull live status for all servers. */
+  refreshStatuses: () => Promise<void>;
+
+  // Optimistic/local (back-compat + offline + tests)
   addServer: (server: MCPServer) => void;
   removeServer: (id: string) => void;
   updateServer: (id: string, partial: Partial<MCPServer>) => void;
@@ -354,19 +391,86 @@ interface MCPStore {
 }
 
 const defaultServers: MCPServer[] = [
-  { id: 'fs', name: 'filesystem', description: 'Local file system access', port: 3001, status: 'running', callCount: 142, transport: 'stdio', command: 'npx', capabilities: ['read', 'write', 'list'] },
-  { id: 'gh', name: 'github', description: 'GitHub API integration', port: 3002, status: 'running', callCount: 89, transport: 'sse', capabilities: ['repos', 'issues', 'prs'] },
-  { id: 'fetch', name: 'fetch', description: 'HTTP fetch capability', port: 3003, status: 'running', callCount: 34, transport: 'stdio', capabilities: ['get', 'post'] },
-  { id: 'mem', name: 'memory', description: 'Persistent memory store', port: 3004, status: 'idle', callCount: 7, transport: 'stdio', capabilities: ['remember', 'recall'] },
+  { id: 'fs', name: 'filesystem', description: 'Local file system access', port: 3001, status: 'stopped', callCount: 142, transport: 'stdio', command: 'npx', capabilities: ['read', 'write', 'list'] },
+  { id: 'gh', name: 'github', description: 'GitHub API integration', port: 3002, status: 'stopped', callCount: 89, transport: 'stdio', command: 'npx', capabilities: ['repos', 'issues', 'prs'] },
+  { id: 'fetch', name: 'fetch', description: 'HTTP fetch capability', port: 3003, status: 'stopped', callCount: 34, transport: 'stdio', command: 'npx', capabilities: ['get', 'post'] },
+  { id: 'mem', name: 'memory', description: 'Persistent memory store', port: 3004, status: 'stopped', callCount: 7, transport: 'stdio', command: 'npx', capabilities: ['remember', 'recall'] },
   { id: 'pg', name: 'postgres', description: 'PostgreSQL query tool', port: 3005, status: 'stopped', callCount: 0, transport: 'stdio', command: 'npx', capabilities: ['query', 'schema'] },
-  { id: 'seq', name: 'sequential-thinking', description: 'Chain-of-thought reasoning', port: 3006, status: 'running', callCount: 211, transport: 'stdio', capabilities: ['think', 'plan'] },
+  { id: 'seq', name: 'sequential-thinking', description: 'Chain-of-thought reasoning', port: 3006, status: 'stopped', callCount: 211, transport: 'stdio', command: 'npx', capabilities: ['think', 'plan'] },
   { id: 'playwright', name: 'playwright', description: 'Browser automation and testing via Playwright', port: 3007, status: 'stopped', callCount: 0, transport: 'stdio', command: 'npx', capabilities: ['navigate', 'screenshot', 'click', 'fill', 'evaluate', 'pdf'] },
 ];
 
 export const useMCPStore = create<MCPStore>()((set) => ({
   servers: defaultServers,
+  loading: false,
+  syncError: null,
+
+  loadServers: async () => {
+    set({ loading: true, syncError: null });
+    try {
+      const servers = (await mcpApi.list()) as MCPServer[];
+      set({ servers, loading: false });
+    } catch (e) {
+      // Keep whatever is cached (demo seed on first load) when the API is down.
+      set({ loading: false, syncError: e instanceof Error ? e.message : String(e) });
+    }
+  },
+
+  createServer: async (input) => {
+    try {
+      const created = (await mcpApi.create(input as unknown as Record<string, unknown>)) as MCPServer;
+      set((s) => ({ servers: [created, ...s.servers] }));
+      return created;
+    } catch (e) {
+      set({ syncError: e instanceof Error ? e.message : String(e) });
+      return null;
+    }
+  },
+
+  saveServer: async (id, input) => {
+    try {
+      const updated = (await mcpApi.update(id, input as unknown as Record<string, unknown>)) as MCPServer;
+      set((s) => ({ servers: s.servers.map((srv) => (srv.id === id ? { ...srv, ...updated } : srv)) }));
+    } catch (e) {
+      set({ syncError: e instanceof Error ? e.message : String(e) });
+    }
+  },
+
+  startServer: async (id) => {
+    // Optimistic flip to a transient 'idle' while the handshake runs.
+    set((s) => ({ servers: s.servers.map((srv) => (srv.id === id ? { ...srv, status: 'idle' } : srv)) }));
+    try {
+      const res = (await mcpApi.start(id)) as { status: MCPServer['status']; lastError?: string };
+      set((s) => ({ servers: s.servers.map((srv) => (srv.id === id ? { ...srv, status: res.status, lastError: res.lastError } : srv)) }));
+    } catch (e) {
+      set((s) => ({
+        servers: s.servers.map((srv) => (srv.id === id ? { ...srv, status: 'error' } : srv)),
+        syncError: e instanceof Error ? e.message : String(e),
+      }));
+    }
+  },
+
+  stopServer: async (id) => {
+    set((s) => ({ servers: s.servers.map((srv) => (srv.id === id ? { ...srv, status: 'stopped' } : srv)) }));
+    try {
+      await mcpApi.stop(id);
+    } catch (e) {
+      set({ syncError: e instanceof Error ? e.message : String(e) });
+    }
+  },
+
+  refreshStatuses: async () => {
+    try {
+      const servers = (await mcpApi.list()) as MCPServer[];
+      set({ servers });
+    } catch { /* leave cache as-is */ }
+  },
+
   addServer: (server) => set((s) => ({ servers: [...s.servers, server] })),
-  removeServer: (id) => set((s) => ({ servers: s.servers.filter((srv) => srv.id !== id) })),
+  removeServer: (id) => {
+    set((s) => ({ servers: s.servers.filter((srv) => srv.id !== id) }));
+    mcpApi.remove(id).catch(() => { /* best-effort; offline demo just removes locally */ });
+  },
   updateServer: (id, partial) =>
     set((s) => ({ servers: s.servers.map((srv) => (srv.id === id ? { ...srv, ...partial } : srv)) })),
   setStatus: (id, status) =>

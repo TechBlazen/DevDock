@@ -96,6 +96,19 @@ export interface DatabaseProvider {
   createApi(api: ApiRow): Promise<ApiRow>;
   updateApi(id: string, partial: Partial<ApiRow>): Promise<ApiRow | null>;
   deleteApi(id: string): Promise<void>;
+
+  // ─── MCP Servers (the "MCP Register" / adapters) ────────────────────────────
+  getMcpServers(): Promise<McpServerRow[]>;
+  getMcpServerById(id: string): Promise<McpServerRow | null>;
+  createMcpServer(server: McpServerRow): Promise<McpServerRow>;
+  updateMcpServer(id: string, partial: Partial<McpServerRow>): Promise<McpServerRow | null>;
+  deleteMcpServer(id: string): Promise<void>;
+
+  // ─── MCP Tools (discovered via tools/list — Tool Gateway Router registry) ────
+  getMcpTools(serverId?: string): Promise<McpToolRow[]>;
+  getMcpToolByName(name: string): Promise<McpToolRow | null>;
+  replaceMcpTools(serverId: string, tools: McpToolRow[]): Promise<void>;
+  deleteMcpToolsByServer(serverId: string): Promise<void>;
 }
 
 // ─── Row types (flat, JSON-serialized for complex fields) ───────────────────
@@ -309,6 +322,46 @@ export interface ApiRow {
   spec_raw: string;            // original YAML or JSON
   base_url?: string;           // first servers[].url (OpenAPI 3) or host+basePath (Swagger 2)
   added_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// A registered MCP server ("adapter" in mcp-gateway terms). Connection details
+// vary by transport: stdio uses command+args+env; sse/websocket use url. The
+// `status`/`last_error` columns are the last-known runtime state — the live
+// value is owned by the in-process McpManager and reconciled on boot.
+export interface McpServerRow {
+  id: string;
+  name: string;
+  description: string;
+  transport: string;           // 'stdio' | 'sse' | 'websocket'
+  command?: string;            // stdio executable
+  args?: string;               // JSON array<string>
+  env?: string;                // JSON object<string,string>
+  url?: string;                // sse/websocket endpoint
+  port?: number;
+  status: string;              // 'running' | 'idle' | 'stopped' | 'error'
+  auto_start: number;          // 0 or 1 for SQLite compat
+  session_strategy: string;    // 'sticky' | 'stateless'
+  call_count: number;
+  capabilities?: string;       // JSON array<string>
+  last_used?: string;
+  last_error?: string;
+  added_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// A tool exposed by an MCP server, discovered via the JSON-RPC `tools/list`
+// call. input_schema is the tool's JSON Schema (opaque to the server, used by
+// the client + tool router to validate/dispatch arguments).
+export interface McpToolRow {
+  id: string;
+  server_id: string;
+  name: string;
+  description: string;
+  input_schema?: string;       // JSON
+  call_count: number;
   created_at: string;
   updated_at: string;
 }

@@ -1,5 +1,5 @@
 import { traceAICall } from '../otel';
-import type { AIConfig, ChatMessage, AIProvider } from '../types';
+import type { AIConfig, ChatMessage, AIProvider, McpToolCall } from '../types';
 
 const MODELS: Record<AIProvider, string> = {
   anthropic: 'claude-sonnet-4-20250514',
@@ -29,10 +29,21 @@ Be concise, technical, and insightful. Use markdown and code blocks liberally.
 When discussing repos, mention you can help open them in VS Code or the browser.
 When discussing MCP servers, offer to help configure or debug them.`;
 
+export interface ChatResultMeta {
+  /** MCP tools the model invoked while producing this reply. */
+  mcpToolCalls?: McpToolCall[];
+}
+
 export interface StreamCallback {
   onToken: (token: string) => void;
-  onDone: (fullText: string, traceId?: string) => void;
+  onDone: (fullText: string, traceId?: string, meta?: ChatResultMeta) => void;
   onError: (error: string) => void;
+}
+
+/** Per-send options. Tools are only available through the server proxy. */
+export interface ChatOptions {
+  enableTools?: boolean;
+  sessionId?: string;
 }
 
 async function callAnthropic(
@@ -164,7 +175,8 @@ async function callViaProxy(
   messages: ChatMessage[],
   config: AIConfig,
   callbacks: StreamCallback,
-  systemPrompt?: string
+  systemPrompt?: string,
+  options?: ChatOptions
 ): Promise<boolean> {
   const tracer = traceAICall(config.provider, config.model || MODELS[config.provider]);
   try {
@@ -178,6 +190,8 @@ async function callViaProxy(
         maxTokens: config.maxTokens,
         systemPrompt: systemPrompt ?? SYSTEM_PROMPT,
         messages: messages.filter((m) => m.role !== 'system').map((m) => ({ role: m.role, content: m.content })),
+        enableTools: options?.enableTools ?? false,
+        sessionId: options?.sessionId,
       }),
     });
 
@@ -188,7 +202,8 @@ async function callViaProxy(
 
     const data = await res.json();
     const traceId = tracer.end('ok');
-    callbacks.onDone(data.content ?? '', traceId);
+    const mcpToolCalls: McpToolCall[] | undefined = Array.isArray(data.toolCalls) && data.toolCalls.length ? data.toolCalls : undefined;
+    callbacks.onDone(data.content ?? '', traceId, { mcpToolCalls });
     return true;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -207,13 +222,20 @@ export async function sendChatMessage(
   messages: ChatMessage[],
   config: AIConfig,
   callbacks: StreamCallback,
-  systemPrompt?: string
+  systemPrompt?: string,
+  options?: ChatOptions
 ): Promise<void> {
-  // Try server-side proxy first (avoids CORS issues)
-  const handled = await callViaProxy(messages, config, callbacks, systemPrompt);
+  // Try server-side proxy first (avoids CORS issues, and is the only path with
+  // MCP tool access — the manager lives on the server).
+  const handled = await callViaProxy(messages, config, callbacks, systemPrompt, options);
   if (handled) return;
 
-  // Fallback to direct browser calls (works for local/Ollama, may fail with CORS for cloud providers)
+  // Fallback to direct browser calls (works for local/Ollama, may fail with CORS
+  // for cloud providers). No MCP tools here — the server proxy was unreachable.
+  if (options?.enableTools) {
+    // Tools were requested but the server is down; proceed tool-less rather than fail.
+    console.warn('MCP tools unavailable — server proxy unreachable, continuing without tools');
+  }
   switch (config.provider) {
     case 'anthropic':
       return callAnthropic(messages, config, callbacks, systemPrompt);

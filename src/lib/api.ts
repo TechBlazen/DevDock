@@ -95,6 +95,32 @@ export const apisApi = {
   proxy: (req: ProxyRequest) => api.post<ProxyResponse>('/apis/proxy', req).then(r => r.data),
 };
 
+// ─── MCP Register ─────────────────────────────────────────────────────────────
+// Control plane (server CRUD + lifecycle) and data plane (session-aware RPC +
+// the tool router). Server lifecycle is real: start/stop spawn or tear down
+// the underlying MCP connection on the backend.
+export const mcpApi = {
+  list: () => api.get('/mcp/servers').then(r => r.data),
+  get: (id: string) => api.get(`/mcp/servers/${id}`).then(r => r.data),
+  create: (data: Record<string, unknown>) => api.post('/mcp/servers', data).then(r => r.data),
+  update: (id: string, data: Record<string, unknown>) => api.patch(`/mcp/servers/${id}`, data).then(r => r.data),
+  remove: (id: string) => api.delete(`/mcp/servers/${id}`).then(r => r.data),
+
+  start: (id: string) => api.post(`/mcp/servers/${id}/start`).then(r => r.data),
+  stop: (id: string) => api.post(`/mcp/servers/${id}/stop`).then(r => r.data),
+  status: (id: string) => api.get(`/mcp/servers/${id}/status`).then(r => r.data),
+  logs: (id: string) => api.get<{ id: string; logs: string[] }>(`/mcp/servers/${id}/logs`).then(r => r.data),
+  serverTools: (id: string) => api.get(`/mcp/servers/${id}/tools`).then(r => r.data),
+
+  listTools: () => api.get('/mcp/tools').then(r => r.data),
+  callTool: (id: string, tool: string, args: unknown, sessionId?: string) =>
+    api.post(`/mcp/servers/${id}/tools/${tool}/call`, { arguments: args, sessionId }).then(r => r.data),
+  routeTool: (tool: string, args: unknown, sessionId?: string) =>
+    api.post(`/mcp/tools/${tool}/call`, { arguments: args, sessionId }).then(r => r.data),
+  rpc: (id: string, method: string, params: unknown, sessionId?: string) =>
+    api.post(`/mcp/servers/${id}/rpc`, { method, params, sessionId }).then(r => r.data),
+};
+
 // ─── n8n ─────────────────────────────────────────────────────────────────────
 // The user's n8n base URL + API key are sent as headers per request — the
 // server stays stateless about per-user n8n connections (mirrors how AI keys
