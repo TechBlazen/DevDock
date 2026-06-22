@@ -221,12 +221,15 @@ To switch providers, edit `devdock.config.json`:
     "provider": "sqlite",
     "sqlite": { "path": "./data/devdock.db" },
     "postgres": { "connectionString": "postgresql://user:pass@localhost:5432/devdock" },
+    "mysql": { "connectionString": "mysql://user:pass@localhost:3306/devdock" },
     "supabase": { "url": "https://your-project.supabase.co", "anonKey": "your-key" }
   }
 }
 ```
 
-Or use environment variables: `DEVDOCK_DB_PROVIDER`, `DEVDOCK_SQLITE_PATH`, `DEVDOCK_POSTGRES_URL`, `DEVDOCK_SUPABASE_URL`.
+Supported providers: `sqlite` (default), `postgres`, `mysql`, and `supabase`.
+
+Or use environment variables: `DEVDOCK_DB_PROVIDER`, `DEVDOCK_SQLITE_PATH`, `DEVDOCK_POSTGRES_URL`, `DEVDOCK_MYSQL_URL`, `DEVDOCK_SUPABASE_URL`.
 
 ---
 
@@ -288,7 +291,7 @@ Supports both Azure AD (cloud) and on-premises AD (LDAP/LDAPS):
 | Layer | Technology |
 |---|---|
 | Frontend | Vite 8, React 19, TypeScript, Tailwind CSS v4, Zustand, React Router v7 |
-| Backend | Fastify 5, better-sqlite3, JWT (jsonwebtoken), ldapjs |
+| Backend | Fastify 5, better-sqlite3 / pg / mysql2 (SQLite, PostgreSQL, MySQL), JWT (jsonwebtoken), ldapjs |
 | Observability | OpenTelemetry Web SDK, OTLP HTTP exporters |
 | AI Providers | Anthropic, OpenAI, Google Gemini, Ollama |
 | Icons | Lucide React |
