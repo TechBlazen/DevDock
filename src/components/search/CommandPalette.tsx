@@ -14,6 +14,7 @@ const CATEGORIES: { value: SearchCategory | null; label: string }[] = [
   { value: 'doc', label: 'Docs' },
   { value: 'plugin', label: 'Plugins' },
   { value: 'scaffold-agent', label: 'Scaffold' },
+  { value: 'gallery', label: 'Agents & Skills' },
   { value: 'telemetry', label: 'Telemetry' },
   { value: 'activity', label: 'Activity' },
   { value: 'forum', label: 'Forum' },

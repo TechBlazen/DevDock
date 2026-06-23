@@ -3,6 +3,7 @@ export { GitHubPage, ADOPage, MCPPage, TelemetryPageRoute } from './RepoPages';
 export { ApisPage } from './ApisPage';
 export { CatalogPage } from './CatalogPage';
 export { ScaffoldPage } from './ScaffoldPage';
+export { AgentGalleryPage } from './AgentGalleryPage';
 export {
   DevToolsPage, JsonValidatorPage, ApiTesterPage,
   DnsLookupPage, PingToolPage, WhoisLookupPage, SslCheckerPage,
