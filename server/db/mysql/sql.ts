@@ -28,6 +28,7 @@ export const JSON_COLUMNS: Record<string, readonly string[]> = {
   feature_requests: ['tags', 'votes', 'attachments'],
   mcp_servers: ['args', 'env', 'capabilities'],
   mcp_tools: ['input_schema'],
+  registry_items: ['tags', 'capabilities', 'votes'],
 } as const;
 
 /**

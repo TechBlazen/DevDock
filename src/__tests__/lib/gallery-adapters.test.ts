@@ -20,19 +20,19 @@ const builderItem = (over: Partial<BuilderItem> = {}): BuilderItem => ({
 
 describe('gallery-adapters / aggregateGalleryItems', () => {
   it('combines seed + scaffold + builder items', () => {
-    const items = aggregateGalleryItems([builderItem()], 'u1');
+    const items = aggregateGalleryItems([builderItem()], [], 'u1');
     expect(items.length).toBe(REGISTRY_SEED.length + SCAFFOLD_AGENTS.length + 1);
   });
 
   it('marks the current user’s builder items as "mine" and others as "org"', () => {
-    const mine = aggregateGalleryItems([builderItem({ id: 'a', userId: 'u1' })], 'u1').find((i) => i.id === 'builder:a');
-    const theirs = aggregateGalleryItems([builderItem({ id: 'b', userId: 'u2' })], 'u1').find((i) => i.id === 'builder:b');
+    const mine = aggregateGalleryItems([builderItem({ id: 'a', userId: 'u1' })], [], 'u1').find((i) => i.id === 'builder:a');
+    const theirs = aggregateGalleryItems([builderItem({ id: 'b', userId: 'u2' })], [], 'u1').find((i) => i.id === 'builder:b');
     expect(mine?.source).toBe('mine');
     expect(theirs?.source).toBe('org');
   });
 
   it('maps builder type to gallery kind', () => {
-    const agent = aggregateGalleryItems([builderItem({ id: 'c', type: 'agent' })], 'u1').find((i) => i.id === 'builder:c');
+    const agent = aggregateGalleryItems([builderItem({ id: 'c', type: 'agent' })], [], 'u1').find((i) => i.id === 'builder:c');
     expect(agent?.kind).toBe('agent');
   });
 });

@@ -29,11 +29,14 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission> = {
     canEditDocs: true,
     canAccessTerminal: true,
     canAccessNetwork: true,
+    canSubmitRegistry: true,
+    canApproveRegistry: true,
+    canInstallRegistry: true,
   },
   editor: {
     pages: [
       '/', '/github', '/ado', '/mcp', '/telemetry', '/catalog',
-      '/scaffold', '/docs', '/network', '/plugins',
+      '/scaffold', '/gallery', '/docs', '/network', '/plugins',
     ],
     widgets: ['*'],
     plugins: ['*'],
@@ -42,10 +45,13 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission> = {
     canEditDocs: true,
     canAccessTerminal: true,
     canAccessNetwork: true,
+    canSubmitRegistry: true,   // Contributors can publish to the Gallery
+    canApproveRegistry: false, // ...but not approve (admins only)
+    canInstallRegistry: true,
   },
   viewer: {
     pages: [
-      '/', '/github', '/ado', '/telemetry', '/catalog', '/docs',
+      '/', '/github', '/ado', '/telemetry', '/catalog', '/gallery', '/docs',
     ],
     widgets: ['repos_github', 'repos_ado', 'telemetry', 'activity_feed'],
     plugins: ['*'],
@@ -54,6 +60,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission> = {
     canEditDocs: false,
     canAccessTerminal: false,
     canAccessNetwork: false,
+    canSubmitRegistry: false,  // Readers browse & install only
+    canApproveRegistry: false,
+    canInstallRegistry: true,
   },
 };
 

@@ -1,4 +1,4 @@
-import type { DatabaseProvider, UserRow, RepoRow, SettingsRow, DocRow, McpServerRow } from '../provider.js';
+import type { DatabaseProvider, UserRow, RepoRow, SettingsRow, DocRow, McpServerRow, RegistryItemRow } from '../provider.js';
 
 // Simple hash matching the frontend's hashPassword in src/lib/rbac.ts
 function hashPassword(password: string): string {
@@ -158,6 +158,68 @@ const SEED_MCP_SERVERS: McpServerRow[] = [
   mcpServer({ id: 'playwright', name: 'playwright', description: 'Browser automation and testing via Playwright', port: 3007, call_count: 0, transport: 'stdio', command: 'npx', args: JSON.stringify(['-y', '@playwright/mcp@latest']), capabilities: JSON.stringify(['navigate', 'screenshot', 'click', 'fill', 'evaluate', 'pdf']) }),
 ];
 
+// ─── Registry seed (official, approved agents & skills) ─────────────────────
+function registryItem(over: Partial<RegistryItemRow> & Pick<RegistryItemRow, 'id' | 'kind' | 'name' | 'slug' | 'description' | 'content'>): RegistryItemRow {
+  const now = new Date().toISOString();
+  return {
+    author_id: 'system',
+    author_name: 'DevDock',
+    source: 'official',
+    verified: 1,
+    visibility: 'public',
+    category: undefined,
+    tags: '[]',
+    capabilities: '[]',
+    compatibility: undefined,
+    status: 'approved',
+    votes: '[]',
+    install_count: 0,
+    latest_version: '1.0.0',
+    reviewed_by: 'system',
+    rejection_reason: undefined,
+    created_at: now,
+    updated_at: now,
+    ...over,
+  };
+}
+
+const skillMd = (name: string, description: string, body: string) =>
+  `---\nname: ${name}\ndescription: ${description}\nlicense: MIT\n---\n\n${body}`;
+
+const SEED_REGISTRY_ITEMS: RegistryItemRow[] = [
+  registryItem({
+    id: 'reg-pr-reviewer', kind: 'skill', name: 'pr-reviewer', slug: 'pr-reviewer',
+    description: 'Review a pull request diff for correctness bugs and reuse/simplification cleanups.',
+    category: 'Code Quality', tags: JSON.stringify(['review', 'git', 'quality']),
+    capabilities: JSON.stringify(['read-diff', 'comment']), compatibility: 'Claude Code, Cursor, Gemini CLI',
+    install_count: 312,
+    content: skillMd('pr-reviewer', 'Review a PR diff for correctness bugs and cleanups. Use when asked to review a PR.', '# PR Reviewer\n\nRead the full diff, flag correctness bugs first, then high-confidence cleanups. Reference `file:line`.'),
+  }),
+  registryItem({
+    id: 'reg-k8s-debugger', kind: 'agent', name: 'k8s-debugger', slug: 'k8s-debugger',
+    description: 'Diagnose failing Kubernetes workloads — pods, rollouts, ingress, and resource pressure.',
+    category: 'Infrastructure', tags: JSON.stringify(['Kubernetes', 'GKE', 'SRE']),
+    capabilities: JSON.stringify(['kubectl', 'logs', 'events']), compatibility: 'Any MCP-enabled runtime',
+    install_count: 198,
+    content: skillMd('k8s-debugger', 'Diagnose failing Kubernetes workloads. Use when a pod is CrashLooping or a rollout is stuck.', '# Kubernetes Debugger\n\nIdentify the failing object, pull describe + events + logs, correlate to a root cause, propose the minimal fix.'),
+  }),
+  registryItem({
+    id: 'reg-openapi-author', kind: 'skill', name: 'openapi-author', slug: 'openapi-author',
+    description: 'Draft and refine OpenAPI 3 specs from a plain-language description of an endpoint.',
+    category: 'API', tags: JSON.stringify(['OpenAPI', 'Swagger', 'API design']),
+    capabilities: JSON.stringify(['generate-spec', 'validate']), compatibility: 'Claude Code, Cursor',
+    install_count: 140,
+    content: skillMd('openapi-author', 'Draft and refine OpenAPI 3 specs from a description. Use when designing a REST API.', '# OpenAPI Author\n\nCapture resources, methods, and auth; emit a valid OpenAPI 3 document; validate before returning.'),
+  }),
+  registryItem({
+    id: 'reg-terraform-planner', kind: 'agent', name: 'terraform-planner', slug: 'terraform-planner',
+    description: 'Plan and review Terraform changes with an eye on drift, blast radius, and cost.',
+    category: 'Infrastructure', tags: JSON.stringify(['Terraform', 'IaC', 'GCP']),
+    capabilities: JSON.stringify(['plan', 'policy-check']), install_count: 121,
+    content: skillMd('terraform-planner', 'Plan and review Terraform changes. Use before applying infra changes.', '# Terraform Planner\n\nSummarize create/change/destroy, call out blast radius and destroy-recreate risk, flag cost and security.'),
+  }),
+];
+
 export async function seed(db: DatabaseProvider): Promise<void> {
   // MCP servers seed independently of the core data so existing installs (which
   // were seeded before the MCP Register shipped) still get the demo registry.
@@ -167,6 +229,16 @@ export async function seed(db: DatabaseProvider): Promise<void> {
       await db.createMcpServer(server);
     }
     console.log(`  Seeded: ${SEED_MCP_SERVERS.length} MCP servers`);
+  }
+
+  // Registry items seed independently too (added after MCP), so existing dev
+  // databases get the official agents & skills without a wipe.
+  const existingRegistry = await db.getRegistryItems();
+  if (existingRegistry.length === 0) {
+    for (const item of SEED_REGISTRY_ITEMS) {
+      await db.createRegistryItem(item);
+    }
+    console.log(`  Seeded: ${SEED_REGISTRY_ITEMS.length} registry items`);
   }
 
   const existingUsers = await db.getUsers();

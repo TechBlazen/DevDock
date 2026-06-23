@@ -13,7 +13,7 @@ import type { Embedder } from '../embeddings/provider.js';
 import { ChromaWrapper, type ChromaSearchHit } from './chroma-client.js';
 import { chunk } from './chunker.js';
 
-export type ContentKind = 'doc' | 'doc-readme' | 'federated' | 'forum-thread' | 'forum-answer';
+export type ContentKind = 'doc' | 'doc-readme' | 'federated' | 'forum-thread' | 'forum-answer' | 'registry-item';
 
 export interface IndexItem {
   /** Stable id of the parent document (NOT a chunk id). */
