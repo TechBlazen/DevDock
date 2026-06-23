@@ -13,6 +13,7 @@ export const defaultNavigation: NavigationConfig = {
     { id: 'telemetry',  type: 'link', label: 'Observability', icon: 'Activity',       route: '/telemetry', visible: true },
     { id: 'catalog',    type: 'link', label: 'Widgets',       icon: 'Layers',         route: '/catalog',   visible: true },
     { id: 'scaffold',   type: 'link', label: 'Scaffold',      icon: 'Hammer',         route: '/scaffold',  visible: true },
+    { id: 'gallery',    type: 'link', label: 'Gallery',       icon: 'Sparkles',       route: '/gallery',   visible: true },
     {
       id: 'docs',
       type: 'group',

@@ -4,6 +4,7 @@ export type SearchCategory =
   | 'doc'
   | 'plugin'
   | 'scaffold-agent'
+  | 'gallery'
   | 'telemetry'
   | 'activity'
   | 'forum'

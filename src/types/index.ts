@@ -778,6 +778,38 @@ export interface BuilderItem {
   updatedAt: string;
 }
 
+// ─── Agent & Skill Gallery Types ────────────────────────────────────────────
+// A unified view-model for the showcase. In Phase 0 these are assembled
+// client-side from scaffold agents, Agent Builder items, and a curated seed;
+// Phase 1 replaces the source with a server-backed registry. `kind` mirrors
+// the Builder's BuilderItemType, and `source` is the Gemini-style bucket.
+export type GalleryKind = 'agent' | 'skill';
+export type GallerySource = 'official' | 'org' | 'mine' | 'community';
+
+export interface GalleryItem {
+  id: string;
+  kind: GalleryKind;
+  name: string;
+  description: string;
+  source: GallerySource;
+  category?: string;
+  tags: string[];
+  capabilities?: string[];
+  compatibility?: string;
+  /** SKILL.md text (frontmatter + body) when available — rendered in detail. */
+  content?: string;
+  author?: string;
+  verified?: boolean;
+  /** Net vote score / popularity signal (Phase 1 wires this to real votes). */
+  score?: number;
+  installCount?: number;
+  /** Lucide icon name; falls back to a kind-based default. */
+  icon?: string;
+  /** Where "Try it" / "Open" should navigate. */
+  href?: string;
+  updatedAt?: string;
+}
+
 // ─── SQL Tool Types ─────────────────────────────────────────────────────────
 export type DatabaseEngine = 'postgresql' | 'mysql' | 'mariadb' | 'sqlserver' | 'oracle' | 'sqlite';
 

@@ -26,6 +26,7 @@ import {
   ApisPage,
   CatalogPage,
   ScaffoldPage,
+  AgentGalleryPage,
   DevToolsPage,
   JsonValidatorPage,
   ApiTesterPage,
@@ -179,6 +180,7 @@ function PluginRoutes({ editMode }: { editMode: boolean }) {
       <Route path="/grafana"   element={<GrafanaPage />} />
       <Route path="/catalog"   element={<CatalogPage />} />
       <Route path="/scaffold"  element={<ScaffoldPage />} />
+      <Route path="/gallery"   element={<AgentGalleryPage />} />
       <Route path="/devtools"         element={<DevToolsPage />} />
       <Route path="/devtools/json"       element={<JsonValidatorPage />} />
       <Route path="/devtools/api"        element={<ApiTesterPage />} />

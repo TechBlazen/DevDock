@@ -7,6 +7,7 @@ const CATEGORY_LABELS: Record<SearchCategory, string> = {
   'doc': 'Documentation',
   'plugin': 'Plugins',
   'scaffold-agent': 'Scaffold Agents',
+  'gallery': 'Agents & Skills',
   'telemetry': 'Telemetry',
   'activity': 'Activity',
   'forum': 'Forum',
