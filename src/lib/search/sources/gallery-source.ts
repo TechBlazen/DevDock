@@ -1,9 +1,10 @@
 import type { SearchSource, SearchDocument } from '../types';
-import type { BuilderItem } from '../../../types';
+import type { BuilderItem, RegistryItem } from '../../../types';
 import { aggregateGalleryItems } from '../../gallery-adapters';
 
 interface GallerySourceState {
   builderItems: BuilderItem[];
+  registryItems: RegistryItem[];
   userId: string | undefined;
 }
 
@@ -15,8 +16,8 @@ export function createGallerySource(getState: () => GallerySourceState): SearchS
     label: 'Agents & Skills',
     icon: 'Sparkles',
     getDocuments(): SearchDocument[] {
-      const { builderItems, userId } = getState();
-      return aggregateGalleryItems(builderItems, userId).map((item) => ({
+      const { builderItems, registryItems, userId } = getState();
+      return aggregateGalleryItems(builderItems, registryItems, userId).map((item) => ({
         id: `gallery:${item.id}`,
         category: 'gallery',
         title: item.name,

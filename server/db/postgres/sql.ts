@@ -26,6 +26,7 @@ export const JSON_COLUMNS: Record<string, readonly string[]> = {
   feature_requests: ['tags', 'votes', 'attachments'],
   mcp_servers: ['args', 'env', 'capabilities'],
   mcp_tools: ['input_schema'],
+  registry_items: ['tags', 'capabilities', 'votes'],
 } as const;
 
 export const BOOLEAN_COLUMNS: Record<string, readonly string[]> = {
@@ -34,6 +35,7 @@ export const BOOLEAN_COLUMNS: Record<string, readonly string[]> = {
   federated_sources: ['enabled'],
   forum_answers: ['is_accepted'],
   mcp_servers: ['auto_start'],
+  registry_items: ['verified'],
 } as const;
 
 /**

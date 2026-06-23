@@ -109,6 +109,28 @@ export interface DatabaseProvider {
   getMcpToolByName(name: string): Promise<McpToolRow | null>;
   replaceMcpTools(serverId: string, tools: McpToolRow[]): Promise<void>;
   deleteMcpToolsByServer(serverId: string): Promise<void>;
+
+  // ─── Registry items (the Agent & Skill Gallery / unified registry) ──────────
+  // One row per published agent OR skill (kind column). Callers filter the full
+  // list in JS (the dataset is small); slug is unique.
+  getRegistryItems(): Promise<RegistryItemRow[]>;
+  getRegistryItemById(id: string): Promise<RegistryItemRow | null>;
+  getRegistryItemBySlug(slug: string): Promise<RegistryItemRow | null>;
+  createRegistryItem(item: RegistryItemRow): Promise<RegistryItemRow>;
+  updateRegistryItem(id: string, partial: Partial<RegistryItemRow>): Promise<RegistryItemRow | null>;
+  deleteRegistryItem(id: string): Promise<void>;
+  incrementRegistryInstallCount(id: string, delta: number): Promise<void>;
+
+  // ─── Registry versions (first-class versioning + changelog) ─────────────────
+  getRegistryVersions(itemId: string): Promise<RegistryVersionRow[]>;
+  createRegistryVersion(version: RegistryVersionRow): Promise<RegistryVersionRow>;
+
+  // ─── Registry installs (per-user install + usage signal) ────────────────────
+  getRegistryInstalls(userId: string): Promise<RegistryInstallRow[]>;
+  getRegistryInstall(itemId: string, userId: string): Promise<RegistryInstallRow | null>;
+  createRegistryInstall(install: RegistryInstallRow): Promise<RegistryInstallRow>;
+  updateRegistryInstall(id: string, partial: Partial<RegistryInstallRow>): Promise<RegistryInstallRow | null>;
+  deleteRegistryInstall(itemId: string, userId: string): Promise<void>;
 }
 
 // ─── Row types (flat, JSON-serialized for complex fields) ───────────────────
@@ -364,4 +386,56 @@ export interface McpToolRow {
   call_count: number;
   created_at: string;
   updated_at: string;
+}
+
+// A published agent or skill in the unified registry (the Agent & Skill
+// Gallery). `content` is the raw SKILL.md (frontmatter + body), opaque to the
+// server beyond light validation. `source`/`verified`/`visibility` are the
+// hybrid-ready governance fields; `votes` reuses the forum ForumVote[] JSON
+// shape so popularity reuses the same vote mechanics. The client-facing
+// 'mine' source bucket is derived from author_id, not stored here.
+export interface RegistryItemRow {
+  id: string;
+  kind: string;                // 'agent' | 'skill'
+  name: string;
+  slug: string;                // unique, lowercase-hyphen (SKILL.md name)
+  description: string;
+  content: string;             // SKILL.md text
+  author_id: string;
+  author_name: string;
+  source: string;              // 'official' | 'org' | 'community'
+  verified: number;            // 0 or 1
+  visibility: string;          // 'org' | 'public' | 'private'
+  category?: string;
+  tags: string;                // JSON array<string>
+  capabilities: string;        // JSON array<string>
+  compatibility?: string;
+  status: string;              // 'draft' | 'pending' | 'approved' | 'rejected'
+  votes: string;               // JSON array<ForumVote>
+  install_count: number;
+  latest_version?: string;     // semver of the most recent version row
+  reviewed_by?: string;
+  rejection_reason?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// A published version of a registry item — first-class versioning + changelog.
+export interface RegistryVersionRow {
+  id: string;
+  item_id: string;
+  version: string;             // semver
+  content: string;             // SKILL.md snapshot at this version
+  changelog?: string;
+  created_at: string;
+}
+
+// A per-user install of a registry item — the popularity/usage signal.
+export interface RegistryInstallRow {
+  id: string;
+  item_id: string;
+  user_id: string;
+  installed_at: string;
+  last_used?: string;
+  use_count: number;
 }

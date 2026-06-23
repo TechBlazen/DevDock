@@ -1,9 +1,10 @@
 import { createElement } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, BadgeCheck, Download, ArrowBigUp, Play, ExternalLink } from 'lucide-react';
+import { X, BadgeCheck, Download, ArrowBigUp, ArrowBigDown, Check, Play, ExternalLink } from 'lucide-react';
 import { Button, Pill } from '../ui';
 import { ForumMarkdownBody } from '../forum/ForumMarkdownBody';
 import { getIcon } from '../../lib/icon-registry';
+import { useRegistryStore, useAuthStore } from '../../store';
 import type { GalleryItem, GalleryKind } from '../../types';
 
 const KIND_COLOR: Record<GalleryKind, string> = { agent: '#2a6fff', skill: '#00b478' };
@@ -16,13 +17,28 @@ interface GalleryDetailDrawerProps {
 
 export const GalleryDetailDrawer = ({ item, onClose }: GalleryDetailDrawerProps) => {
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const { installItem, uninstallItem, voteItem, isInstalled } = useRegistryStore();
   if (!item) return null;
 
   const color = KIND_COLOR[item.kind];
+  const isRegistry = !!item.registryId;
+  const installed = isRegistry ? (item.installed ?? isInstalled(item.registryId!)) : false;
+  const myVote = item.votes?.find((v) => v.userId === user?.id)?.value ?? 0;
 
   const handleTryIt = () => {
     onClose();
     navigate(item.href ?? '/devtools/agent-builder');
+  };
+
+  const handleInstall = () => {
+    if (!item.registryId) return;
+    if (installed) uninstallItem(item.registryId);
+    else installItem(item.registryId);
+  };
+
+  const handleVote = (value: 1 | -1) => {
+    if (item.registryId && user) voteItem(item.registryId, user.id, value);
   };
 
   return (
@@ -118,11 +134,44 @@ export const GalleryDetailDrawer = ({ item, onClose }: GalleryDetailDrawerProps)
         </div>
 
         {/* Footer actions */}
-        <div className="flex items-center justify-end gap-2 p-4" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-          <Button variant="ghost" size="sm" onClick={onClose}>Close</Button>
-          <Button variant="primary" size="sm" onClick={handleTryIt}>
-            {item.href === '/scaffold' ? <><Play size={12} /> Open in Scaffold</> : <><ExternalLink size={12} /> Open in Builder</>}
-          </Button>
+        <div className="flex items-center justify-between gap-2 p-4" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+          {/* Vote control (registry items only) */}
+          {isRegistry ? (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => handleVote(1)}
+                className="w-7 h-7 flex items-center justify-center rounded transition-colors cursor-pointer"
+                style={{ color: myVote === 1 ? color : 'var(--text-faint)' }}
+                title="Upvote"
+              >
+                <ArrowBigUp size={16} />
+              </button>
+              <span className="text-[12px] font-bold tabular-nums" style={{ minWidth: 16, textAlign: 'center', color: 'var(--text-secondary)' }}>
+                {item.score ?? 0}
+              </span>
+              <button
+                onClick={() => handleVote(-1)}
+                className="w-7 h-7 flex items-center justify-center rounded transition-colors cursor-pointer"
+                style={{ color: myVote === -1 ? '#ef4444' : 'var(--text-faint)' }}
+                title="Downvote"
+              >
+                <ArrowBigDown size={16} />
+              </button>
+            </div>
+          ) : <span />}
+
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={onClose}>Close</Button>
+            {isRegistry ? (
+              <Button variant={installed ? 'outline' : 'primary'} size="sm" onClick={handleInstall}>
+                {installed ? <><Check size={12} /> Installed</> : <><Download size={12} /> Install</>}
+              </Button>
+            ) : (
+              <Button variant="primary" size="sm" onClick={handleTryIt}>
+                {item.href === '/scaffold' ? <><Play size={12} /> Open in Scaffold</> : <><ExternalLink size={12} /> Open in Builder</>}
+              </Button>
+            )}
+          </div>
         </div>
       </aside>
     </>

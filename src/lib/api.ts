@@ -257,6 +257,27 @@ export const directoryApi = {
     api.post('/directory/groups/members', { ...config, groupDn }).then(r => r.data),
 };
 
+// ─── Agent & Skill Registry (the Gallery) ───────────────────────────────────
+export const registryApi = {
+  list: () => api.get('/registry/items').then(r => r.data),
+  get: (id: string) => api.get(`/registry/items/${id}`).then(r => r.data),
+  create: (data: Record<string, unknown>) => api.post('/registry/items', data).then(r => r.data),
+  update: (id: string, data: Record<string, unknown>) => api.put(`/registry/items/${id}`, data).then(r => r.data),
+  remove: (id: string) => api.delete(`/registry/items/${id}`).then(r => r.data),
+
+  submit: (id: string) => api.post(`/registry/items/${id}/submit`).then(r => r.data),
+  approve: (id: string, data?: Record<string, unknown>) => api.post(`/registry/items/${id}/approve`, data ?? {}).then(r => r.data),
+  reject: (id: string, reason: string) => api.post(`/registry/items/${id}/reject`, { reason }).then(r => r.data),
+
+  publishVersion: (id: string, data: Record<string, unknown>) => api.post(`/registry/items/${id}/versions`, data).then(r => r.data),
+  vote: (id: string, votes: unknown[]) => api.put(`/registry/items/${id}/vote`, { votes }).then(r => r.data),
+
+  install: (id: string) => api.post(`/registry/items/${id}/install`).then(r => r.data),
+  uninstall: (id: string) => api.delete(`/registry/items/${id}/install`).then(r => r.data),
+  use: (id: string) => api.post(`/registry/items/${id}/use`).then(r => r.data),
+  installs: () => api.get('/registry/installs').then(r => r.data),
+};
+
 // ─── Server availability check ──────────────────────────────────────────────
 // Returns true if the API server is reachable, false otherwise.
 // Used to decide whether to persist via API or fall back to localStorage.

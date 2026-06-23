@@ -8,6 +8,7 @@ import type {
   PageViewRow, ErrorRow, FederatedSourceRow, FederatedDocumentRow,
   ForumThreadRow, ForumAnswerRow, FeatureRequestRow, ApiRow,
   McpServerRow, McpToolRow,
+  RegistryItemRow, RegistryVersionRow, RegistryInstallRow,
 } from '../provider.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -477,6 +478,83 @@ export class SqliteProvider implements DatabaseProvider {
 
   async deleteMcpToolsByServer(serverId: string): Promise<void> {
     this.db.prepare('DELETE FROM mcp_tools WHERE server_id = ?').run(serverId);
+  }
+
+  // ─── Registry items ─────────────────────────────────────────────────────────
+  async getRegistryItems(): Promise<RegistryItemRow[]> {
+    return this.db.prepare('SELECT * FROM registry_items ORDER BY created_at DESC').all() as RegistryItemRow[];
+  }
+
+  async getRegistryItemById(id: string): Promise<RegistryItemRow | null> {
+    return (this.db.prepare('SELECT * FROM registry_items WHERE id = ?').get(id) as RegistryItemRow) ?? null;
+  }
+
+  async getRegistryItemBySlug(slug: string): Promise<RegistryItemRow | null> {
+    return (this.db.prepare('SELECT * FROM registry_items WHERE slug = ?').get(slug) as RegistryItemRow) ?? null;
+  }
+
+  async createRegistryItem(item: RegistryItemRow): Promise<RegistryItemRow> {
+    this.db.prepare(`INSERT INTO registry_items (id, kind, name, slug, description, content, author_id, author_name, source, verified, visibility, category, tags, capabilities, compatibility, status, votes, install_count, latest_version, reviewed_by, rejection_reason, created_at, updated_at)
+      VALUES (@id, @kind, @name, @slug, @description, @content, @author_id, @author_name, @source, @verified, @visibility, @category, @tags, @capabilities, @compatibility, @status, @votes, @install_count, @latest_version, @reviewed_by, @rejection_reason, @created_at, @updated_at)`).run(nullify(item));
+    return item;
+  }
+
+  async updateRegistryItem(id: string, partial: Partial<RegistryItemRow>): Promise<RegistryItemRow | null> {
+    const existing = await this.getRegistryItemById(id);
+    if (!existing) return null;
+    const keys = Object.keys(partial).filter((k) => k !== 'id');
+    if (keys.length === 0) return existing;
+    const sets = keys.map((k) => `${k} = @${k}`).join(', ');
+    this.db.prepare(`UPDATE registry_items SET ${sets} WHERE id = @id`).run(nullify({ ...partial, id }));
+    return { ...existing, ...partial };
+  }
+
+  async deleteRegistryItem(id: string): Promise<void> {
+    this.db.prepare('DELETE FROM registry_items WHERE id = ?').run(id);
+  }
+
+  async incrementRegistryInstallCount(id: string, delta: number): Promise<void> {
+    this.db.prepare('UPDATE registry_items SET install_count = MAX(0, install_count + ?) WHERE id = ?').run(delta, id);
+  }
+
+  // ─── Registry versions ────────────────────────────────────────────────────────
+  async getRegistryVersions(itemId: string): Promise<RegistryVersionRow[]> {
+    return this.db.prepare('SELECT * FROM registry_versions WHERE item_id = ? ORDER BY created_at DESC').all(itemId) as RegistryVersionRow[];
+  }
+
+  async createRegistryVersion(version: RegistryVersionRow): Promise<RegistryVersionRow> {
+    this.db.prepare(`INSERT INTO registry_versions (id, item_id, version, content, changelog, created_at)
+      VALUES (@id, @item_id, @version, @content, @changelog, @created_at)`).run(nullify(version));
+    return version;
+  }
+
+  // ─── Registry installs ──────────────────────────────────────────────────────
+  async getRegistryInstalls(userId: string): Promise<RegistryInstallRow[]> {
+    return this.db.prepare('SELECT * FROM registry_installs WHERE user_id = ? ORDER BY installed_at DESC').all(userId) as RegistryInstallRow[];
+  }
+
+  async getRegistryInstall(itemId: string, userId: string): Promise<RegistryInstallRow | null> {
+    return (this.db.prepare('SELECT * FROM registry_installs WHERE item_id = ? AND user_id = ?').get(itemId, userId) as RegistryInstallRow) ?? null;
+  }
+
+  async createRegistryInstall(install: RegistryInstallRow): Promise<RegistryInstallRow> {
+    this.db.prepare(`INSERT INTO registry_installs (id, item_id, user_id, installed_at, last_used, use_count)
+      VALUES (@id, @item_id, @user_id, @installed_at, @last_used, @use_count)`).run(nullify(install));
+    return install;
+  }
+
+  async updateRegistryInstall(id: string, partial: Partial<RegistryInstallRow>): Promise<RegistryInstallRow | null> {
+    const existing = (this.db.prepare('SELECT * FROM registry_installs WHERE id = ?').get(id) as RegistryInstallRow) ?? null;
+    if (!existing) return null;
+    const keys = Object.keys(partial).filter((k) => k !== 'id');
+    if (keys.length === 0) return existing;
+    const sets = keys.map((k) => `${k} = @${k}`).join(', ');
+    this.db.prepare(`UPDATE registry_installs SET ${sets} WHERE id = @id`).run(nullify({ ...partial, id }));
+    return { ...existing, ...partial };
+  }
+
+  async deleteRegistryInstall(itemId: string, userId: string): Promise<void> {
+    this.db.prepare('DELETE FROM registry_installs WHERE item_id = ? AND user_id = ?').run(itemId, userId);
   }
 }
 
