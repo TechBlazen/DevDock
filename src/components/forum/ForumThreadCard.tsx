@@ -1,4 +1,4 @@
-import { MessageSquare, Eye, CheckCircle, GitFork, GitBranch, Lock } from 'lucide-react';
+import { MessageSquare, Eye, CheckCircle, GitFork, GitBranch, Lock, Server } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Card } from '../ui';
 import { ForumVoteControl } from './ForumVoteControl';
@@ -45,6 +45,12 @@ export const ForumThreadCard = ({ thread, onClick }: ForumThreadCardProps) => {
               <span className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0" style={{ background: '#7c3aed15', color: '#7c3aed', border: '1px solid #7c3aed30' }}>
                 {thread.repoSource === 'github' ? <GitFork size={9} /> : <GitBranch size={9} />}
                 {thread.repoName}
+              </span>
+            )}
+            {thread.mcpServerName && (
+              <span className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0" style={{ background: '#00b47815', color: '#00b478', border: '1px solid #00b47830' }}>
+                <Server size={9} />
+                {thread.mcpServerName}
               </span>
             )}
             {thread.acceptedAnswerId && (

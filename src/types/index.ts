@@ -668,7 +668,7 @@ export interface PluginSubmission {
 }
 
 // ─── Forum Types ────────────────────────────────────────────────────────────
-export type ForumCategory = 'bug' | 'question' | 'discussion' | 'how-to' | 'repo-comment';
+export type ForumCategory = 'bug' | 'question' | 'discussion' | 'how-to' | 'repo-comment' | 'mcp-comment';
 export type ForumDepartment = 'Engineering' | 'DevOps' | 'Platform' | 'Security' | 'Data';
 export type ForumTechnology =
   | 'React' | 'TypeScript' | 'Python' | 'Go' | 'Rust' | 'Java'
@@ -712,6 +712,8 @@ export interface ForumThread {
   repoId?: string;             // linked repo ID (for repo-comment threads)
   repoName?: string;           // linked repo display name
   repoSource?: 'github' | 'ado';
+  mcpServerId?: string;        // linked MCP server ID (for mcp-comment threads)
+  mcpServerName?: string;      // linked MCP server display name
   createdAt: string;
   updatedAt: string;
 }

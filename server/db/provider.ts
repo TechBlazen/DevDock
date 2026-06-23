@@ -273,6 +273,8 @@ export interface ForumThreadRow {
   repo_id?: string;
   repo_name?: string;
   repo_source?: string;        // 'github' | 'ado'
+  mcp_server_id?: string;      // linked MCP server id (for mcp-comment threads)
+  mcp_server_name?: string;    // linked MCP server display name
   created_at: string;
   updated_at: string;
 }

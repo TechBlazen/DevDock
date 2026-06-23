@@ -310,8 +310,8 @@ export class SqliteProvider implements DatabaseProvider {
   }
 
   async createForumThread(thread: ForumThreadRow): Promise<ForumThreadRow> {
-    this.db.prepare(`INSERT INTO forum_threads (id, title, body, category, tags, author_id, author_name, author_avatar_url, votes, view_count, accepted_answer_id, repo_id, repo_name, repo_source, created_at, updated_at)
-      VALUES (@id, @title, @body, @category, @tags, @author_id, @author_name, @author_avatar_url, @votes, @view_count, @accepted_answer_id, @repo_id, @repo_name, @repo_source, @created_at, @updated_at)`).run(nullify(thread));
+    this.db.prepare(`INSERT INTO forum_threads (id, title, body, category, tags, author_id, author_name, author_avatar_url, votes, view_count, accepted_answer_id, repo_id, repo_name, repo_source, mcp_server_id, mcp_server_name, created_at, updated_at)
+      VALUES (@id, @title, @body, @category, @tags, @author_id, @author_name, @author_avatar_url, @votes, @view_count, @accepted_answer_id, @repo_id, @repo_name, @repo_source, @mcp_server_id, @mcp_server_name, @created_at, @updated_at)`).run(nullify(thread));
     return thread;
   }
 

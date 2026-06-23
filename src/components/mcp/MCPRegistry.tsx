@@ -7,6 +7,7 @@ import {
   FormTitle, FormCard, FormField, FormInput, FormTextarea, FormPrimaryButton, FormSecondaryButton, FormFieldLabel, FormHelpText,
 } from '../ui';
 import type { MCPServer, MCPTool } from '../../types';
+import { McpServerCommentSection } from './McpServerCommentSection';
 
 const transportColor: Record<string, string> = {
   stdio: '#b388ff',
@@ -219,6 +220,9 @@ const ServerCard = ({ server }: { server: MCPServer }) => {
               <Trash2 size={11} /> Remove
             </Button>
           </div>
+
+          {/* Discussion — mirrors the repo comment section, tied to the forum. */}
+          <McpServerCommentSection server={server} />
         </div>
       )}
     </Card>
