@@ -26,6 +26,7 @@ import { registerAiProxyRoutes } from './routes/ai-proxy.js';
 import { registerSemanticSearchRoutes } from './routes/semantic-search.js';
 import { registerApiConverterRoutes } from './routes/api-converter.js';
 import { registerMcpRoutes } from './routes/mcp.js';
+import { registerRegistryRoutes } from './routes/registry.js';
 import { McpManager } from './services/mcp-manager.js';
 import { createVectorRuntime } from './vector/runtime.js';
 
@@ -87,6 +88,7 @@ async function main() {
   registerAiProxyRoutes(app, db, config.jwtSecret, mcpManager);
   registerApiConverterRoutes(app, config.jwtSecret);
   registerMcpRoutes(app, db, config.jwtSecret, mcpManager);
+  registerRegistryRoutes(app, db, config.jwtSecret, vector);
 
   // Serve the built Vite client from the same process when present. In dev,
   // Vite runs its own server on :5173 and proxies /api to us, so `dist/`

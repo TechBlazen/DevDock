@@ -1404,6 +1404,9 @@ export { useSqlToolStore } from './sql-tool-store';
 // ─── Builder Store (re-export) ──────────────────────────────────────────────
 export { useBuilderStore } from './builder-store';
 
+// ─── Registry Store (re-export) ─────────────────────────────────────────────
+export { useRegistryStore } from './registry-store';
+
 // ─── Bookmark Store ──────────────────────────────────────────────────────────
 interface BookmarkStore {
   bookmarks: Bookmark[];

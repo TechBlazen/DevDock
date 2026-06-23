@@ -1,8 +1,40 @@
 import { useMemo } from 'react';
-import type { GalleryItem, ScaffoldAgent, BuilderItem } from '../types';
+import type { GalleryItem, ScaffoldAgent, BuilderItem, RegistryItem } from '../types';
 import { SCAFFOLD_AGENTS } from './scaffold-agents';
 import { REGISTRY_SEED } from './registry-seed';
-import { useBuilderStore, useAuthStore } from '../store';
+import { useBuilderStore, useAuthStore, useRegistryStore } from '../store';
+
+function voteScore(votes: { value: number }[] | undefined): number {
+  return (votes ?? []).reduce((sum, v) => sum + v.value, 0);
+}
+
+/** Server-backed registry items → gallery items. The current user's own items
+ *  surface in the 'mine' bucket regardless of their stored source. */
+function fromRegistry(items: RegistryItem[], userId: string | undefined): GalleryItem[] {
+  return items.map((it) => ({
+    id: `registry:${it.id}`,
+    kind: it.kind,
+    name: it.name,
+    description: it.description,
+    source: it.authorId === userId ? 'mine' : it.source,
+    category: it.category,
+    tags: it.tags,
+    capabilities: it.capabilities,
+    compatibility: it.compatibility,
+    content: it.content,
+    author: it.authorName,
+    verified: it.verified,
+    score: voteScore(it.votes),
+    installCount: it.installCount,
+    icon: it.kind === 'skill' ? 'Sparkles' : 'Bot',
+    href: '/gallery',
+    updatedAt: it.updatedAt,
+    registryId: it.id,
+    status: it.status,
+    installed: it.installed,
+    votes: it.votes,
+  }));
+}
 
 // ─── Gallery adapters (Phase 0) ─────────────────────────────────────────────
 // The Gallery is a unified view over data DevDock already holds client-side.
@@ -45,24 +77,34 @@ function fromBuilder(items: BuilderItem[], currentUserId: string | undefined): G
   }));
 }
 
-/** Pure aggregator (seed + scaffold + builder) — shared by the hook and the
- *  search source so both stay in sync without a hook dependency. */
-export function aggregateGalleryItems(builderItems: BuilderItem[], userId: string | undefined): GalleryItem[] {
+/** Pure aggregator — shared by the hook and the search source so both stay in
+ *  sync without a hook dependency. The registry (server-backed) is the primary
+ *  source; REGISTRY_SEED is only an offline fallback when the registry is empty.
+ *  Scaffold agents and local Builder drafts are always included. */
+export function aggregateGalleryItems(
+  builderItems: BuilderItem[],
+  registryItems: RegistryItem[],
+  userId: string | undefined,
+): GalleryItem[] {
+  const registry = fromRegistry(registryItems, userId);
+  const fallback = registryItems.length === 0 ? REGISTRY_SEED : [];
   return [
-    ...REGISTRY_SEED,
+    ...registry,
+    ...fallback,
     ...fromScaffold(SCAFFOLD_AGENTS),
     ...fromBuilder(builderItems, userId),
   ];
 }
 
-/** Aggregate all sources into one list (seed + scaffold + builder). */
+/** Aggregate all sources into one list (registry + scaffold + builder). */
 export function useGalleryItems(): GalleryItem[] {
   const builderItems = useBuilderStore((s) => s.items);
+  const registryItems = useRegistryStore((s) => s.items);
   const userId = useAuthStore((s) => s.user?.id);
 
   return useMemo(
-    () => aggregateGalleryItems(builderItems, userId),
-    [builderItems, userId],
+    () => aggregateGalleryItems(builderItems, registryItems, userId),
+    [builderItems, registryItems, userId],
   );
 }
 
@@ -80,6 +122,12 @@ export interface GalleryFilters {
 
 export function filterGalleryItems(items: GalleryItem[], f: GalleryFilters): GalleryItem[] {
   let result = items;
+
+  // Outside the "Mine" bucket, only show published (approved) items — drafts,
+  // pending, and rejected registry items stay private to their author.
+  if (f.source !== 'mine') {
+    result = result.filter((i) => !i.status || i.status === 'approved');
+  }
 
   if (f.kind !== 'all') result = result.filter((i) => i.kind === f.kind);
   if (f.source !== 'all') result = result.filter((i) => i.source === f.source);

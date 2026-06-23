@@ -568,6 +568,9 @@ export interface Permission {
   canEditDocs: boolean;
   canAccessTerminal: boolean;
   canAccessNetwork: boolean;
+  canSubmitRegistry: boolean;   // publish agents/skills to the Gallery
+  canApproveRegistry: boolean;  // review/approve registry submissions
+  canInstallRegistry: boolean;  // install agents/skills from the Gallery
 }
 
 export type AppLanguage = 'en' | 'es' | 'fr' | 'de' | 'ja' | 'pt' | 'zh' | 'ko';
@@ -808,6 +811,78 @@ export interface GalleryItem {
   /** Where "Try it" / "Open" should navigate. */
   href?: string;
   updatedAt?: string;
+  // ── Registry-backed items carry their server identity so the detail drawer
+  //    can install / vote / show governance state. Absent for scaffold/builder. ──
+  registryId?: string;
+  status?: RegistryStatus;
+  installed?: boolean;
+  votes?: ForumVote[];
+}
+
+// ─── Registry (server-backed Agent & Skill catalog) ─────────────────────────
+// The persisted entity behind the Gallery. `source` here is the stored value
+// (no 'mine' — that bucket is derived client-side from the current user).
+export type RegistrySource = 'official' | 'org' | 'community';
+export type RegistryStatus = 'draft' | 'pending' | 'approved' | 'rejected';
+
+export interface RegistryItem {
+  id: string;
+  kind: GalleryKind;
+  name: string;
+  slug: string;
+  description: string;
+  content: string;             // SKILL.md
+  authorId: string;
+  authorName: string;
+  source: RegistrySource;
+  verified: boolean;
+  visibility: string;
+  category?: string;
+  tags: string[];
+  capabilities: string[];
+  compatibility?: string;
+  status: RegistryStatus;
+  votes: ForumVote[];
+  installCount: number;
+  latestVersion?: string;
+  reviewedBy?: string;
+  rejectionReason?: string;
+  createdAt: string;
+  updatedAt: string;
+  // Only present on the single-item GET:
+  versions?: RegistryVersion[];
+  installed?: boolean;
+}
+
+export interface RegistryVersion {
+  id: string;
+  itemId: string;
+  version: string;
+  content: string;
+  changelog?: string;
+  createdAt: string;
+}
+
+export interface RegistryInstall {
+  id: string;
+  itemId: string;
+  userId: string;
+  installedAt: string;
+  lastUsed?: string;
+  useCount: number;
+}
+
+/** Fields accepted when creating/submitting a registry item via the API. */
+export interface NewRegistryItemInput {
+  kind: GalleryKind;
+  name: string;
+  description: string;
+  content: string;
+  category?: string;
+  tags?: string[];
+  capabilities?: string[];
+  compatibility?: string;
+  visibility?: string;
 }
 
 // ─── SQL Tool Types ─────────────────────────────────────────────────────────

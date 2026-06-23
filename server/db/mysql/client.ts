@@ -8,6 +8,7 @@ import type {
   PageViewRow, ErrorRow, FederatedSourceRow, FederatedDocumentRow,
   ForumThreadRow, ForumAnswerRow, FeatureRequestRow, ApiRow,
   McpServerRow, McpToolRow,
+  RegistryItemRow, RegistryVersionRow, RegistryInstallRow,
 } from '../provider.js';
 import { namedParams, mapRow, mapRows } from './sql.js';
 
@@ -708,5 +709,98 @@ export class MysqlProvider implements DatabaseProvider {
 
   async deleteMcpToolsByServer(serverId: string): Promise<void> {
     await this.pool.query('DELETE FROM mcp_tools WHERE server_id = ?', [serverId]);
+  }
+
+  // ─── Registry items ─────────────────────────────────────────────────────────
+  async getRegistryItems(): Promise<RegistryItemRow[]> {
+    const [rows] = await this.pool.query<mysql.RowDataPacket[]>('SELECT * FROM registry_items ORDER BY created_at DESC');
+    return mapRows<RegistryItemRow>(rows, 'registry_items');
+  }
+
+  async getRegistryItemById(id: string): Promise<RegistryItemRow | null> {
+    const [rows] = await this.pool.query<mysql.RowDataPacket[]>('SELECT * FROM registry_items WHERE id = ?', [id]);
+    return mapRow<RegistryItemRow>(rows[0], 'registry_items');
+  }
+
+  async getRegistryItemBySlug(slug: string): Promise<RegistryItemRow | null> {
+    const [rows] = await this.pool.query<mysql.RowDataPacket[]>('SELECT * FROM registry_items WHERE slug = ?', [slug]);
+    return mapRow<RegistryItemRow>(rows[0], 'registry_items');
+  }
+
+  async createRegistryItem(item: RegistryItemRow): Promise<RegistryItemRow> {
+    await this.query(
+      `INSERT INTO registry_items (id, kind, name, slug, description, content, author_id, author_name, source, verified, visibility, category, tags, capabilities, compatibility, status, votes, install_count, latest_version, reviewed_by, rejection_reason, created_at, updated_at)
+       VALUES (@id, @kind, @name, @slug, @description, @content, @author_id, @author_name, @source, @verified, @visibility, @category, @tags, @capabilities, @compatibility, @status, @votes, @install_count, @latest_version, @reviewed_by, @rejection_reason, @created_at, @updated_at)`,
+      item as unknown as Record<string, unknown>
+    );
+    return item;
+  }
+
+  async updateRegistryItem(id: string, partial: Partial<RegistryItemRow>): Promise<RegistryItemRow | null> {
+    const existing = await this.getRegistryItemById(id);
+    if (!existing) return null;
+    const keys = Object.keys(partial).filter((k) => k !== 'id');
+    if (keys.length === 0) return existing;
+    const sets = keys.map((k) => `${k} = @${k}`).join(', ');
+    await this.query(`UPDATE registry_items SET ${sets} WHERE id = @id`, { ...partial, id });
+    return { ...existing, ...partial };
+  }
+
+  async deleteRegistryItem(id: string): Promise<void> {
+    await this.pool.query('DELETE FROM registry_items WHERE id = ?', [id]);
+  }
+
+  async incrementRegistryInstallCount(id: string, delta: number): Promise<void> {
+    await this.pool.query('UPDATE registry_items SET install_count = GREATEST(0, install_count + ?) WHERE id = ?', [delta, id]);
+  }
+
+  // ─── Registry versions ────────────────────────────────────────────────────────
+  async getRegistryVersions(itemId: string): Promise<RegistryVersionRow[]> {
+    const [rows] = await this.pool.query<mysql.RowDataPacket[]>('SELECT * FROM registry_versions WHERE item_id = ? ORDER BY created_at DESC', [itemId]);
+    return mapRows<RegistryVersionRow>(rows, 'registry_versions');
+  }
+
+  async createRegistryVersion(version: RegistryVersionRow): Promise<RegistryVersionRow> {
+    await this.query(
+      `INSERT INTO registry_versions (id, item_id, version, content, changelog, created_at)
+       VALUES (@id, @item_id, @version, @content, @changelog, @created_at)`,
+      version as unknown as Record<string, unknown>
+    );
+    return version;
+  }
+
+  // ─── Registry installs ──────────────────────────────────────────────────────
+  async getRegistryInstalls(userId: string): Promise<RegistryInstallRow[]> {
+    const [rows] = await this.pool.query<mysql.RowDataPacket[]>('SELECT * FROM registry_installs WHERE user_id = ? ORDER BY installed_at DESC', [userId]);
+    return mapRows<RegistryInstallRow>(rows, 'registry_installs');
+  }
+
+  async getRegistryInstall(itemId: string, userId: string): Promise<RegistryInstallRow | null> {
+    const [rows] = await this.pool.query<mysql.RowDataPacket[]>('SELECT * FROM registry_installs WHERE item_id = ? AND user_id = ?', [itemId, userId]);
+    return mapRow<RegistryInstallRow>(rows[0], 'registry_installs');
+  }
+
+  async createRegistryInstall(install: RegistryInstallRow): Promise<RegistryInstallRow> {
+    await this.query(
+      `INSERT INTO registry_installs (id, item_id, user_id, installed_at, last_used, use_count)
+       VALUES (@id, @item_id, @user_id, @installed_at, @last_used, @use_count)`,
+      install as unknown as Record<string, unknown>
+    );
+    return install;
+  }
+
+  async updateRegistryInstall(id: string, partial: Partial<RegistryInstallRow>): Promise<RegistryInstallRow | null> {
+    const [rows] = await this.pool.query<mysql.RowDataPacket[]>('SELECT * FROM registry_installs WHERE id = ?', [id]);
+    const existing = mapRow<RegistryInstallRow>(rows[0], 'registry_installs');
+    if (!existing) return null;
+    const keys = Object.keys(partial).filter((k) => k !== 'id');
+    if (keys.length === 0) return existing;
+    const sets = keys.map((k) => `${k} = @${k}`).join(', ');
+    await this.query(`UPDATE registry_installs SET ${sets} WHERE id = @id`, { ...partial, id });
+    return { ...existing, ...partial };
+  }
+
+  async deleteRegistryInstall(itemId: string, userId: string): Promise<void> {
+    await this.pool.query('DELETE FROM registry_installs WHERE item_id = ? AND user_id = ?', [itemId, userId]);
   }
 }

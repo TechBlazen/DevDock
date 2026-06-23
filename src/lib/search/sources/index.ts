@@ -1,5 +1,5 @@
 import type { SearchSource } from '../types';
-import { useRepoStore, useMCPStore, useDocsStore, usePluginStore, useTelemetryStore, useActivityStore, useForumStore, useBuilderStore, useAuthStore } from '../../../store';
+import { useRepoStore, useMCPStore, useDocsStore, usePluginStore, useTelemetryStore, useActivityStore, useForumStore, useBuilderStore, useAuthStore, useRegistryStore } from '../../../store';
 import { createRepoSource } from './repo-source';
 import { createMCPSource } from './mcp-source';
 import { createDocsSource } from './docs-source';
@@ -18,7 +18,7 @@ export function createSearchSources(): SearchSource[] {
     createDocsSource(useDocsStore.getState),
     createPluginSource(usePluginStore.getState),
     createScaffoldSource(),
-    createGallerySource(() => ({ builderItems: useBuilderStore.getState().items, userId: useAuthStore.getState().user?.id })),
+    createGallerySource(() => ({ builderItems: useBuilderStore.getState().items, registryItems: useRegistryStore.getState().items, userId: useAuthStore.getState().user?.id })),
     createTelemetrySource(useTelemetryStore.getState),
     createActivitySource(useActivityStore.getState),
     createForumSource(useForumStore.getState),
