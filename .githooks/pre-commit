@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Get current branch name (e.g. "feature/foo"); --short strips only the
+# refs/heads/ prefix, preserving the type/ segment the validation needs.
+branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+
+# Define allowed patterns
+# Format: <type>/<description>
+# Types: feature, bugfix, hotfix, release, chore, docs
+# Description: lowercase letters, numbers, hyphens, underscores
+
+# Allow main and develop branches
+if [[ $branch == "main" ]] || [[ $branch == "develop" ]]; then
+    exit 0
+fi
+
+# Validate branch name format
+if [[ ! $branch =~ ^(feature|bugfix|hotfix|release|chore|docs)/[a-z0-9._-]+$ ]]; then
+    echo ""
+    echo "❌ ERROR: Branch name '$branch' does not follow naming convention."
+    echo ""
+    echo "Expected format: <type>/<description>"
+    echo ""
+    echo "Valid types:"
+    echo "  • feature/  - New features"
+    echo "  • bugfix/   - Bug fixes"
+    echo "  • hotfix/   - Urgent production fixes"
+    echo "  • release/  - Release preparation"
+    echo "  • chore/    - Maintenance tasks"
+    echo "  • docs/     - Documentation updates"
+    echo ""
+    echo "Examples:"
+    echo "  ✓ feature/user-authentication"
+    echo "  ✓ bugfix/fix-login-error"
+    echo "  ✓ docs/update-readme"
+    echo "  ✓ chore/update-dependencies"
+    echo ""
+    exit 1
+fi
+
+exit 0
