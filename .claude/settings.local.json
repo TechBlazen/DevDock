@@ -54,7 +54,25 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/api/health)",
       "Bash(curl -s -X POST http://localhost:3000/api/auth/login -H \"Content-Type: application/json\" -d '{\"username\":\"admin\",\"password\":\"admin\"}')",
       "Bash(lsof -nP -iTCP -sTCP:LISTEN)",
-      "Bash(lsof -nP -iTCP:3000 -sTCP:LISTEN)"
+      "Bash(lsof -nP -iTCP:3000 -sTCP:LISTEN)",
+      "Bash(gh auth *)",
+      "Bash(echo \"EXIT_APP:$?\")",
+      "Bash(npm test *)",
+      "Bash(sqlite3 data/devdock.db \"DELETE FROM forum_threads WHERE mcp_server_id='fs' AND title='Discussion: filesystem';\")",
+      "Bash(echo \"=== EXIT: $? ===\")",
+      "Bash(chmod +x .githooks/pre-commit)",
+      "Bash(echo \"core.hooksPath = $\\(git config core.hooksPath\\)\")",
+      "Bash(awk '{print $1, $NF}')",
+      "Bash(.githooks/pre-commit)",
+      "WebFetch(domain:docs.cloud.google.com)",
+      "Bash(npx vitest *)",
+      "Bash(lsof -ti:3000)",
+      "Skill(run)",
+      "Bash(lsof -ti:5173)",
+      "Bash(npm run *)",
+      "Bash(echo \"launched npm run dev \\(pid $!\\)\")",
+      "Bash(curl -s -X POST localhost:3000/api/auth/login -H 'Content-Type: application/json' -d '{\"username\":\"admin\",\"password\":\"admin\"}')",
+      "Bash(curl -s -o /dev/null -w \"GET /gallery → HTTP %{http_code}\\\\n\" localhost:5173/gallery)"
     ]
   }
 }

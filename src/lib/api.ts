@@ -278,6 +278,47 @@ export const registryApi = {
   installs: () => api.get('/registry/installs').then(r => r.data),
 };
 
+// ─── Chat History (Neo4j) ───────────────────────────────────────────────────
+import type { ChatSession } from '../types/index.js';
+
+export interface ChatHistoryMessage {
+  id: string;
+  sessionId: string;
+  role: string;
+  content: string;
+  timestamp: string;
+  provider?: string;
+  traceId?: string;
+  chatMode?: string;
+}
+
+export const chatHistoryApi = {
+  /** Check whether the server has Neo4j configured. */
+  status: () =>
+    api.get<{ neo4jEnabled: boolean }>('/chat/status').then(r => r.data),
+
+  /** Create a new session in the graph. Returns the session row. */
+  createSession: (mode: string, pageContext: string) =>
+    api.post<ChatSession>('/chat/sessions', { mode, pageContext }).then(r => r.data),
+
+  /** List the current user's 20 most-recent sessions. */
+  listSessions: () =>
+    api.get<{ sessions: ChatSession[] }>('/chat/sessions').then(r => r.data.sessions),
+
+  /** Fetch all messages for a session (ordered oldest → newest). */
+  getMessages: (sessionId: string) =>
+    api.get<{ messages: ChatHistoryMessage[] }>(`/chat/sessions/${sessionId}/messages`).then(r => r.data.messages),
+
+  /** Append a single message to a session. Fire-and-forget friendly. */
+  appendMessage: (
+    sessionId: string,
+    role: string,
+    content: string,
+    meta?: { provider?: string; traceId?: string; chatMode?: string },
+  ) =>
+    api.post<ChatHistoryMessage>(`/chat/sessions/${sessionId}/messages`, { role, content, ...meta }).then(r => r.data),
+};
+
 // ─── Server availability check ──────────────────────────────────────────────
 // Returns true if the API server is reachable, false otherwise.
 // Used to decide whether to persist via API or fall back to localStorage.

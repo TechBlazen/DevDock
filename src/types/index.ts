@@ -142,6 +142,23 @@ export interface ChatMessage {
   mcpToolCalls?: McpToolCall[];
 }
 
+// ─── Chat History (Neo4j-backed) ─────────────────────────────────────────────
+/**
+ * A persisted chat session stored as a node in the Neo4j graph.
+ * Mirrors the server-side ChatSessionRow (camelCased).
+ */
+export interface ChatSession {
+  id: string;
+  userId: string;
+  mode: string;
+  title: string;
+  /** The page the user was on when the chat was opened. */
+  pageContext: string;
+  messageCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // One MCP tool invocation made by the AI during a turn (for chat display).
 export interface McpToolCall {
   name: string;
