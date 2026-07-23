@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { DatabaseProvider } from '../db/provider.js';
 import type { McpManager } from '../services/mcp-manager.js';
+import { authGuard } from '../middleware/auth.js';
 
 interface ChatRequest {
   provider: string;
@@ -26,8 +27,10 @@ interface ToolCallLog {
 // Cap the agentic loop so a misbehaving model can't spin forever.
 const MAX_TOOL_ITERATIONS = 6;
 
-export function registerAiProxyRoutes(app: FastifyInstance, _db: DatabaseProvider, _jwtSecret: string, manager?: McpManager) {
-  app.post('/api/ai/chat', async (request, reply) => {
+export function registerAiProxyRoutes(app: FastifyInstance, _db: DatabaseProvider, jwtSecret: string, manager?: McpManager) {
+  const guard = authGuard(jwtSecret);
+
+  app.post('/api/ai/chat', { preHandler: [guard] }, async (request, reply) => {
     const body = request.body as ChatRequest;
     const { provider, apiKey, model, enableTools, sessionId } = body;
 

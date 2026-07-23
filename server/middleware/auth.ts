@@ -42,3 +42,16 @@ export function authGuard(secret: string) {
 export function getRequestUser(request: FastifyRequest): JwtPayload {
   return (request as FastifyRequest & { user: JwtPayload }).user;
 }
+
+/**
+ * Role guard — must be chained after authGuard in the preHandler array.
+ * Rejects with 403 if the authenticated user's role is not in `allowed`.
+ */
+export function roleGuard(...allowed: string[]) {
+  return async (request: FastifyRequest, reply: FastifyReply) => {
+    const user = (request as FastifyRequest & { user?: JwtPayload }).user;
+    if (!user || !allowed.includes(user.role)) {
+      return reply.status(403).send({ error: 'Insufficient permissions' });
+    }
+  };
+}
