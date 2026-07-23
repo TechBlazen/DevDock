@@ -21,16 +21,35 @@ export interface VectorConfig {
   geminiApiKey: string;
 }
 
+export interface FeaturesConfig {
+  /**
+   * When false the /api/code/run and /api/code/languages routes return 503.
+   * Defaults to true in development, false when NODE_ENV=production.
+   * Override with DEVDOCK_CODE_RUNNER_ENABLED=true|false.
+   */
+  codeRunnerEnabled: boolean;
+  /**
+   * When false the /api/sql/* proxy routes return 503.
+   * Same production default as codeRunnerEnabled.
+   */
+  sqlToolEnabled: boolean;
+}
+
 export interface ServerConfig {
   port: number;
   db: DbConfig;
   jwtSecret: string;
   vector: VectorConfig;
+  features: FeaturesConfig;
 }
+
+const DEFAULT_JWT_SECRET = 'devdock-dev-secret-change-in-production';
+
+const isDev = process.env.NODE_ENV !== 'production';
 
 const DEFAULT_CONFIG: ServerConfig = {
   port: 3000,
-  jwtSecret: 'devdock-dev-secret-change-in-production',
+  jwtSecret: DEFAULT_JWT_SECRET,
   db: {
     provider: 'sqlite',
     sqlite: { path: resolve(process.cwd(), 'data/devdock.db') },
@@ -43,10 +62,18 @@ const DEFAULT_CONFIG: ServerConfig = {
     chromaUrl: 'http://localhost:8000',
     geminiApiKey: '',
   },
+  features: {
+    codeRunnerEnabled: isDev,
+    sqlToolEnabled: isDev,
+  },
 };
 
 export function loadConfig(): ServerConfig {
-  const config = { ...DEFAULT_CONFIG, db: { ...DEFAULT_CONFIG.db } };
+  const config = {
+    ...DEFAULT_CONFIG,
+    db: { ...DEFAULT_CONFIG.db },
+    features: { ...DEFAULT_CONFIG.features },
+  };
 
   // Try loading config file
   const configPath = resolve(process.cwd(), 'devdock.config.json');
@@ -84,6 +111,28 @@ export function loadConfig(): ServerConfig {
   if (process.env.DEVDOCK_CHROMA_URL) config.vector.chromaUrl = process.env.DEVDOCK_CHROMA_URL;
   if (process.env.GEMINI_API_KEY) config.vector.geminiApiKey = process.env.GEMINI_API_KEY;
   config.vector.enabled = Boolean(config.vector.geminiApiKey);
+
+  // Feature flags — explicit env var wins, then per-mode defaults.
+  if (process.env.DEVDOCK_CODE_RUNNER_ENABLED !== undefined)
+    config.features.codeRunnerEnabled = process.env.DEVDOCK_CODE_RUNNER_ENABLED !== 'false';
+  if (process.env.DEVDOCK_SQL_TOOL_ENABLED !== undefined)
+    config.features.sqlToolEnabled = process.env.DEVDOCK_SQL_TOOL_ENABLED !== 'false';
+
+  // Fail-closed: refuse to start in production with the bundled dev secret.
+  if (!isDev && config.jwtSecret === DEFAULT_JWT_SECRET) {
+    console.error(
+      'FATAL: DEVDOCK_JWT_SECRET is not set (or is the insecure default). ' +
+      'Set a strong secret via the DEVDOCK_JWT_SECRET environment variable before running in production.',
+    );
+    process.exit(1);
+  }
+
+  // Non-fatal warning in dev so developers are aware.
+  if (isDev && config.jwtSecret === DEFAULT_JWT_SECRET) {
+    console.warn(
+      '[security] Using the default JWT secret — set DEVDOCK_JWT_SECRET before deploying.',
+    );
+  }
 
   return config;
 }

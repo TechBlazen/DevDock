@@ -83,8 +83,8 @@ async function main() {
   registerN8nRoutes(app, config.jwtSecret);
   registerSemanticSearchRoutes(app, config.jwtSecret, vector);
   registerDirectoryRoutes(app, db, config.jwtSecret);
-  registerSqlToolRoutes(app, db, config.jwtSecret);
-  registerCodeRunnerRoutes(app, db, config.jwtSecret);
+  registerSqlToolRoutes(app, db, config.jwtSecret, config.features);
+  registerCodeRunnerRoutes(app, db, config.jwtSecret, config.features);
   registerAiProxyRoutes(app, db, config.jwtSecret, mcpManager);
   registerApiConverterRoutes(app, config.jwtSecret);
   registerMcpRoutes(app, db, config.jwtSecret, mcpManager);

@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { DatabaseProvider } from '../db/provider.js';
+import { authGuard, roleGuard } from '../middleware/auth.js';
 import {
   testConnection,
   listUsers,
@@ -22,12 +23,13 @@ function buildLdapConfig(body: Record<string, unknown>): LdapConfig {
   };
 }
 
-export function registerDirectoryRoutes(app: FastifyInstance, _db: DatabaseProvider, _jwtSecret: string) {
-  // Directory routes accept LDAP config in the request body.
-  // Auth is handled client-side (admin-only route guard in React).
+export function registerDirectoryRoutes(app: FastifyInstance, _db: DatabaseProvider, jwtSecret: string) {
+  // All directory routes require an authenticated admin — LDAP credentials
+  // are sensitive and should never be reachable by anonymous callers.
+  const guard = [authGuard(jwtSecret), roleGuard('admin')];
 
   // Test LDAP connection
-  app.post('/api/directory/test', async (request, reply) => {
+  app.post('/api/directory/test', { preHandler: guard }, async (request, reply) => {
     const config = buildLdapConfig(request.body as Record<string, unknown>);
     if (!config.url || !config.baseDn || !config.bindDn) {
       return reply.status(400).send({ error: 'LDAP URL, Base DN, and Bind DN are required' });
@@ -42,7 +44,7 @@ export function registerDirectoryRoutes(app: FastifyInstance, _db: DatabaseProvi
   });
 
   // List directory users
-  app.post('/api/directory/users', async (request) => {
+  app.post('/api/directory/users', { preHandler: guard }, async (request) => {
     const body = request.body as Record<string, unknown>;
     const config = buildLdapConfig(body);
     const search = body.search ? String(body.search) : undefined;
@@ -53,7 +55,7 @@ export function registerDirectoryRoutes(app: FastifyInstance, _db: DatabaseProvi
   });
 
   // List directory groups
-  app.post('/api/directory/groups', async (request) => {
+  app.post('/api/directory/groups', { preHandler: guard }, async (request) => {
     const body = request.body as Record<string, unknown>;
     const config = buildLdapConfig(body);
     const search = body.search ? String(body.search) : undefined;
@@ -64,7 +66,7 @@ export function registerDirectoryRoutes(app: FastifyInstance, _db: DatabaseProvi
   });
 
   // Get group members
-  app.post('/api/directory/groups/members', async (request, reply) => {
+  app.post('/api/directory/groups/members', { preHandler: guard }, async (request, reply) => {
     const body = request.body as Record<string, unknown>;
     const config = buildLdapConfig(body);
     const groupDn = body.groupDn ? String(body.groupDn) : '';

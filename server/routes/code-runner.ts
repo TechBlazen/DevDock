@@ -1,5 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { DatabaseProvider } from '../db/provider.js';
+import type { FeaturesConfig } from '../config.js';
+import { authGuard, roleGuard } from '../middleware/auth.js';
 import { execSync } from 'child_process';
 import { writeFileSync, unlinkSync, mkdtempSync } from 'fs';
 import { join } from 'path';
@@ -85,9 +87,22 @@ const runners: Record<string, (code: string) => RunResult> = {
   bash: (code) => runWithTempFile('sh', (p) => `bash "${p}" 2>&1`, code),
 };
 
-export function registerCodeRunnerRoutes(app: FastifyInstance, _db: DatabaseProvider, _jwtSecret: string) {
+export function registerCodeRunnerRoutes(
+  app: FastifyInstance,
+  _db: DatabaseProvider,
+  jwtSecret: string,
+  features: FeaturesConfig,
+) {
+  // All code-runner endpoints are admin-only and disabled in production by default.
+  // Enable explicitly with DEVDOCK_CODE_RUNNER_ENABLED=true.
+  const guard = [authGuard(jwtSecret), roleGuard('admin')];
+
+  const featureDisabled = (reply: Parameters<Parameters<typeof app.post>[1]>[1]) =>
+    reply.status(503).send({ error: 'Code runner is disabled in this environment' });
+
   // Execute code server-side (for non-browser languages)
-  app.post('/api/code/run', async (request) => {
+  app.post('/api/code/run', { preHandler: guard }, async (request, reply) => {
+    if (!features.codeRunnerEnabled) return featureDisabled(reply);
     const { language, code } = request.body as RunRequest;
 
     if (!code?.trim()) {
@@ -114,7 +129,8 @@ export function registerCodeRunnerRoutes(app: FastifyInstance, _db: DatabaseProv
   });
 
   // Check which languages are available on the server
-  app.get('/api/code/languages', async () => {
+  app.get('/api/code/languages', { preHandler: guard }, async (_request, reply) => {
+    if (!features.codeRunnerEnabled) return featureDisabled(reply);
     const checks: Record<string, string> = {
       python: 'python3 --version',
       ruby: 'ruby --version',

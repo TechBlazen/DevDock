@@ -3,6 +3,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import type { DatabaseProvider, McpServerRow, McpToolRow } from '../../db/provider.js';
 import { McpManager } from '../../services/mcp-manager.js';
 import { registerAiProxyRoutes } from '../ai-proxy.js';
+import { createToken } from '../../middleware/auth.js';
 
 // Verifies the AI proxy's agentic tool loop end-to-end: a (stubbed) provider
 // asks to call an MCP tool, the proxy dispatches it through the real manager +
@@ -42,6 +43,10 @@ process.stdin.on('data', (d) => {
 });
 function send(o) { process.stdout.write(JSON.stringify(o) + '\\n'); }
 `;
+
+const TEST_SECRET = 'secret';
+const TEST_TOKEN = createToken({ userId: '1', username: 'admin', role: 'admin' }, TEST_SECRET);
+const AUTH_HEADERS = { Authorization: `Bearer ${TEST_TOKEN}` };
 
 describe('AI proxy agentic tool loop', () => {
   let app: FastifyInstance;
@@ -90,6 +95,7 @@ describe('AI proxy agentic tool loop', () => {
 
     const res = await app.inject({
       method: 'POST', url: '/api/ai/chat',
+      headers: AUTH_HEADERS,
       payload: {
         provider: 'anthropic', apiKey: 'test-key', model: 'claude-sonnet-4', maxTokens: 1024,
         systemPrompt: 'sys', messages: [{ role: 'user', content: "What's the weather in Seattle?" }],
@@ -112,6 +118,7 @@ describe('AI proxy agentic tool loop', () => {
 
     const res = await app.inject({
       method: 'POST', url: '/api/ai/chat',
+      headers: AUTH_HEADERS,
       payload: {
         provider: 'anthropic', apiKey: 'test-key', model: 'claude-sonnet-4', maxTokens: 1024,
         systemPrompt: 'sys', messages: [{ role: 'user', content: 'hi' }], enableTools: true,
