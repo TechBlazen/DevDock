@@ -28,6 +28,7 @@ import { registerApiConverterRoutes } from './routes/api-converter.js';
 import { registerMcpRoutes } from './routes/mcp.js';
 import { registerRegistryRoutes } from './routes/registry.js';
 import { registerChatHistoryRoutes } from './routes/chat-history.js';
+import { registerSkillFileRoutes } from './routes/skill-files.js';
 import { McpManager } from './services/mcp-manager.js';
 import { Neo4jService } from './services/neo4j-service.js';
 import { createVectorRuntime } from './vector/runtime.js';
@@ -100,6 +101,7 @@ async function main() {
   registerMcpRoutes(app, db, config.jwtSecret, mcpManager);
   registerRegistryRoutes(app, db, config.jwtSecret, vector);
   registerChatHistoryRoutes(app, config.jwtSecret, neo4jService);
+  registerSkillFileRoutes(app, config.jwtSecret);
 
   // Serve the built Vite client from the same process when present. In dev,
   // Vite runs its own server on :5173 and proxies /api to us, so `dist/`
