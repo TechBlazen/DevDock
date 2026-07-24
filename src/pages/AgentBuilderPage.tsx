@@ -213,6 +213,8 @@ export const AgentBuilderPage = () => {
     }
   }, [items, userId, loadFromDisk, setActiveItem]);
 
+  const activeItem = items.find((i) => i.id === activeItemId) ?? null;
+
   const handleReloadFromDisk = useCallback(async () => {
     if (!activeItem?.sourcePath) return;
     try {
@@ -238,8 +240,6 @@ export const AgentBuilderPage = () => {
     () => isAdmin ? getAllItems() : getItemsForUser(userId),
     [isAdmin, getAllItems, getItemsForUser, userId, items]
   );
-
-  const activeItem = items.find((i) => i.id === activeItemId) ?? null;
 
   const aiConfig = useSettingsStore((s) => s.settings.ai);
 
