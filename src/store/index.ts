@@ -117,6 +117,7 @@ interface SettingsStore {
   settings: AppSettings;
   updateAIProvider: (provider: AIProvider) => void;
   updateApiKey: (provider: AIProvider, key: string) => void;
+  updateAILocalEndpoint: (endpoint: string) => void;
   updateOTelConfig: (partial: Partial<AppSettings['otel']>) => void;
   updateGrafanaConfig: (partial: Partial<AppSettings['grafana']>) => void;
   updateGitHubConfig: (partial: Partial<AppSettings['github']>) => void;
@@ -231,6 +232,10 @@ export const useSettingsStore = create<SettingsStore>()(
             ...s.settings,
             ai: { ...s.settings.ai, apiKeys: { ...s.settings.ai.apiKeys, [provider]: key } },
           },
+        })),
+      updateAILocalEndpoint: (endpoint) =>
+        set((s) => ({
+          settings: { ...s.settings, ai: { ...s.settings.ai, localEndpoint: endpoint } },
         })),
       updateOTelConfig: (partial) =>
         set((s) => ({ settings: { ...s.settings, otel: { ...s.settings.otel, ...partial } } })),

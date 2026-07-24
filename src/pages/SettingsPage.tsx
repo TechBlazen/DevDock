@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { useSettingsStore } from '../store';
+import { providerHasKey } from '../lib/ai';
 import { FederatedSourcesPage } from './FederatedSourcesPage';
 import { initOTel } from '../otel';
 import { SectionTitle, Input, Toggle, Button, Card, CardHeader } from '../components/ui';
@@ -420,6 +421,8 @@ export const SettingsPage = () => {
   const {
     settings,
     updateApiKey,
+    updateAIProvider,
+    updateAILocalEndpoint,
     updateOTelConfig,
     updateGitHubConfig,
     updateADOConfig,
@@ -1160,6 +1163,49 @@ export const SettingsPage = () => {
         description="Set API keys for AI providers used by the chat panel. Keys are stored locally and sent directly to each provider."
       >
         <div className="space-y-4">
+          {/* Active AI Provider — which service the chat sends to */}
+          <Card>
+            <CardHeader>
+              <Bot size={14} className="text-[#2a6fff]" />
+              <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Active AI Provider</span>
+            </CardHeader>
+            <div className="p-5 space-y-3">
+              <p className="text-[11px] text-[var(--text-muted)] leading-snug">
+                Choose which service the chat panel uses. Providers without a configured key (or a
+                local endpoint) are greyed out. If the selected provider has no key, the chat
+                automatically falls back to the first one that does.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {providers.map(({ id, label, color }) => {
+                  const active = settings.ai.provider === id;
+                  const ready = providerHasKey(settings.ai, id);
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => updateAIProvider(id)}
+                      title={ready ? `Use ${label}` : `${label} — no API key configured yet`}
+                      className="inline-flex items-center gap-2 rounded-lg transition-all"
+                      style={{
+                        padding: '7px 13px',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        fontFamily: 'Verdana, Geneva, sans-serif',
+                        background: active ? color + '22' : 'transparent',
+                        color: active ? color : ready ? 'var(--text-secondary)' : 'var(--text-faint)',
+                        border: `2px solid ${active ? color : 'var(--border-color)'}`,
+                        opacity: ready || active ? 1 : 0.55,
+                      }}
+                    >
+                      <span className="w-2 h-2 rounded-full" style={{ background: color }} />
+                      {label}
+                      {!ready && id !== 'local' && <span className="text-[9px] font-normal">(no key)</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </Card>
+
           {/* AI Provider Keys */}
           <Card>
             <CardHeader>
@@ -1191,7 +1237,7 @@ export const SettingsPage = () => {
                 <Input
                   label="Local Ollama Endpoint"
                   value={settings.ai.localEndpoint}
-                  onChange={(e) => updateApiKey('local', e.target.value)}
+                  onChange={(e) => updateAILocalEndpoint(e.target.value)}
                   placeholder="http://localhost:11434/v1"
                 />
               </div>

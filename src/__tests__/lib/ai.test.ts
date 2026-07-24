@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { server } from '../fixtures/msw-server';
-import { sendChatMessage } from '../../lib/ai';
+import { sendChatMessage, resolveActiveProvider, providerHasKey } from '../../lib/ai';
 import type { AIConfig, ChatMessage } from '../../types';
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -117,5 +117,44 @@ describe('ai / sendChatMessage — Gemini', () => {
     await sendChatMessage([userMessage], { ...baseConfig, provider: 'gemini' }, cb);
     expect(cb.onError).not.toHaveBeenCalled();
     expect(cb.onDone).toHaveBeenCalledWith('Hello from mock Gemini!', expect.any(String));
+  });
+});
+
+describe('ai / resolveActiveProvider', () => {
+  const cfg = (over: Partial<AIConfig>): AIConfig => ({ ...baseConfig, ...over });
+
+  it('keeps the selected provider when it has a key', () => {
+    expect(resolveActiveProvider(cfg({ provider: 'openai' }))).toBe('openai');
+  });
+
+  it('falls back to the configured provider when the selected one has no key', () => {
+    // Selected anthropic but only openai has a key → use openai.
+    const c = cfg({ provider: 'anthropic', apiKeys: { anthropic: '', openai: 'sk-oai', gemini: '', local: '' } });
+    expect(resolveActiveProvider(c)).toBe('openai');
+  });
+
+  it('honors an explicit local selection (no key required)', () => {
+    const c = cfg({ provider: 'local', apiKeys: { anthropic: '', openai: '', gemini: '', local: '' } });
+    expect(resolveActiveProvider(c)).toBe('local');
+  });
+
+  it('never auto-selects local — returns the selection when no cloud key exists', () => {
+    const c = cfg({ provider: 'anthropic', apiKeys: { anthropic: '', openai: '', gemini: '', local: '' } });
+    expect(resolveActiveProvider(c)).toBe('anthropic');
+  });
+
+  it('treats whitespace-only keys as missing', () => {
+    const c = cfg({ provider: 'anthropic', apiKeys: { anthropic: '   ', openai: 'sk-oai', gemini: '', local: '' } });
+    expect(resolveActiveProvider(c)).toBe('openai');
+    expect(providerHasKey(c, 'anthropic')).toBe(false);
+  });
+
+  it('routes the chat to the keyed provider when the default has no key (the reported bug)', async () => {
+    // Anthropic selected/default, but only OpenAI is configured — should NOT error.
+    const cb = makeCallbacks();
+    const c = cfg({ provider: 'anthropic', apiKeys: { anthropic: '', openai: 'sk-oai', gemini: '', local: '' } });
+    await sendChatMessage([userMessage], c, cb);
+    expect(cb.onError).not.toHaveBeenCalled();
+    expect(cb.onDone).toHaveBeenCalledTimes(1);
   });
 });
