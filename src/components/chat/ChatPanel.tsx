@@ -1,13 +1,63 @@
-import { useState, useRef, useEffect } from 'react';
-import { X, Bot, Send, Trash2, Shield, ChevronDown, Wifi, WifiOff, Sparkles } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { X, Bot, Send, Trash2, Shield, ChevronDown, Wifi, WifiOff, Sparkles, History, Plus } from 'lucide-react';
 import { useChatStore, useSettingsStore, useMCPStore } from '../../store';
 import { sendChatMessage } from '../../lib/ai';
 import { sendOverwatchMessage } from '../../lib/overwatch';
 import { fetchDocsContext } from '../../lib/rag';
+import { chatHistoryApi } from '../../lib/api';
+import { usePageContext } from '../../lib/page-context';
 import { StatusDot, Spinner } from '../ui';
-import type { ChatMessage, ChatMode, RagCitation } from '../../types';
+import type { ChatMessage, ChatMode, ChatSession, RagCitation } from '../../types';
 import { nanoid } from 'nanoid';
 import { providers, MessageBubble, TypingIndicator, OverwatchToolCallProgress, DateSeparator, OVERWATCH_ACCENT, CHAT_ACCENT } from './ChatComponents';
+
+// ─── Session history strip ───────────────────────────────────────────────────
+function SessionHistoryStrip({
+  sessions,
+  currentSessionId,
+  onSelect,
+  onNew,
+}: {
+  sessions: ChatSession[];
+  currentSessionId: string | null;
+  onSelect: (session: ChatSession) => void;
+  onNew: () => void;
+}) {
+  if (sessions.length === 0) return null;
+  return (
+    <div
+      className="flex items-center gap-1.5 px-3 py-2 overflow-x-auto no-scrollbar"
+      style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--bg-inset)' }}
+    >
+      <button
+        onClick={onNew}
+        title="New conversation"
+        className="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono transition-opacity hover:opacity-80"
+        style={{ border: '1px solid var(--border-color)', color: 'var(--text-muted)' }}
+      >
+        <Plus size={10} /> New
+      </button>
+      {sessions.map((s) => {
+        const isActive = s.id === currentSessionId;
+        return (
+          <button
+            key={s.id}
+            onClick={() => onSelect(s)}
+            title={`${s.title}\n${s.pageContext}`}
+            className="flex-shrink-0 max-w-[120px] truncate text-[10px] font-mono px-2 py-1 rounded transition-all hover:opacity-80"
+            style={{
+              background: isActive ? 'var(--accent-bg)' : 'transparent',
+              border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border-color)'}`,
+              color: isActive ? 'var(--accent)' : 'var(--text-muted)',
+            }}
+          >
+            {s.title || 'Untitled'}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 // ─── Main chat panel ─────────────────────────────────────────────────────────────────
 export const ChatPanel = () => {
@@ -15,23 +65,97 @@ export const ChatPanel = () => {
     messages, isLoading, addMessage, clearMessages, setLoading, setOpen,
     chatMode, setChatMode, overwatchToolCalls, overwatchThinking,
     setOverwatchToolCalls, setOverwatchThinking,
+    neo4jSessionId, setNeo4jSessionId, pageContext, setPageContext,
+    historyEnabled, recentSessions, setRecentSessions, loadSessionHistory,
   } = useChatStore();
   const { settings, updateAIProvider, updateAIUseDocsAsContext } = useSettingsStore();
   const useDocs = settings.ai.useDocsAsContext ?? false;
   const servers = useMCPStore((s) => s.servers);
   const runningMCP = servers.filter((s) => s.status === 'running').length;
   const isOverwatch = chatMode === 'overwatch';
+  const currentPageContext = usePageContext();
 
   const [input, setInput] = useState('');
   const [modeDropdownOpen, setModeDropdownOpen] = useState(false);
+  const [historyVisible, setHistoryVisible] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   // Stable id for this chat session — keeps MCP tool routing sticky across turns.
   const sessionIdRef = useRef(nanoid());
 
+  // ── On open: capture page context and (if Neo4j is on) fetch recent sessions
+  // and create a new graph session for this conversation.
+  useEffect(() => {
+    const chatState = useChatStore.getState();
+    if (!chatState.isOpen) return;
+
+    // Always update the current page context.
+    setPageContext(currentPageContext);
+
+    if (!historyEnabled) return;
+
+    // Only start a new Neo4j session once per chat open (avoid re-creating on
+    // re-renders while the panel stays open).
+    if (neo4jSessionId) {
+      // Already have a session — just refresh the recent sessions list.
+      chatHistoryApi.listSessions().then(setRecentSessions).catch(() => {});
+      return;
+    }
+
+    chatHistoryApi.createSession(chatMode, currentPageContext)
+      .then((s) => setNeo4jSessionId(s.id))
+      .catch(() => { /* Neo4j unavailable — continue without history */ });
+
+    chatHistoryApi.listSessions()
+      .then(setRecentSessions)
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [useChatStore.getState().isOpen]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading, overwatchToolCalls]);
+
+  // ── Persist a message pair to Neo4j (fire-and-forget).
+  const persistMessage = useCallback((
+    role: string, content: string, meta?: { provider?: string; traceId?: string; chatMode?: string }
+  ) => {
+    const sid = useChatStore.getState().neo4jSessionId;
+    if (!historyEnabled || !sid) return;
+    chatHistoryApi.appendMessage(sid, role, content, meta).catch(() => {});
+  }, [historyEnabled]);
+
+  // ── Load a prior session into the panel.
+  const handleSelectSession = useCallback(async (session: ChatSession) => {
+    try {
+      const msgs = await chatHistoryApi.getMessages(session.id);
+      const chatMsgs: ChatMessage[] = msgs.map((m) => ({
+        id: m.id,
+        role: m.role as ChatMessage['role'],
+        content: m.content,
+        timestamp: new Date(m.timestamp),
+        provider: m.provider as ChatMessage['provider'],
+        traceId: m.traceId,
+        chatMode: m.chatMode as ChatMode,
+      }));
+      loadSessionHistory(session, chatMsgs);
+      setHistoryVisible(false);
+    } catch {
+      // ignore — stay on current conversation
+    }
+  }, [loadSessionHistory]);
+
+  // ── Start a fresh conversation.
+  const handleNewSession = useCallback(() => {
+    clearMessages();
+    sessionIdRef.current = nanoid();
+    if (historyEnabled) {
+      chatHistoryApi.createSession(chatMode, currentPageContext)
+        .then((s) => setNeo4jSessionId(s.id))
+        .catch(() => {});
+    }
+    setHistoryVisible(false);
+  }, [clearMessages, chatMode, currentPageContext, historyEnabled, setNeo4jSessionId]);
 
   const send = async () => {
     if (!input.trim() || isLoading) return;
@@ -48,6 +172,9 @@ export const ChatPanel = () => {
     addMessage(userMsg);
     setLoading(true);
 
+    // Persist the user message to Neo4j (best-effort).
+    persistMessage('user', text, { chatMode });
+
     if (isOverwatch) {
       // Route to Overwatch agent
       await sendOverwatchMessage([...messages, userMsg], settings.overwatch, {
@@ -61,6 +188,7 @@ export const ChatPanel = () => {
             chatMode: 'overwatch',
             traceId,
           });
+          persistMessage('assistant', fullText, { traceId, chatMode: 'overwatch' });
           setLoading(false);
           setOverwatchToolCalls([]);
           setOverwatchThinking(false);
@@ -95,6 +223,16 @@ export const ChatPanel = () => {
         }
       }
 
+      // Build the system prompt — inject the current page context so the AI
+      // knows where the user is in the app without them having to explain.
+      const pageCtx = useChatStore.getState().pageContext;
+      const pageContextPrefix = pageCtx
+        ? `[Context: The user is currently on the ${pageCtx}.]\n\n`
+        : '';
+      const contextualSystemPrompt = systemPrompt
+        ? pageContextPrefix + systemPrompt
+        : pageContextPrefix || undefined;
+
       await sendChatMessage([...messages, userMsg], settings.ai, {
         onToken: () => {},
         onDone: (fullText, traceId, meta) => {
@@ -109,6 +247,11 @@ export const ChatPanel = () => {
             ragCitations: citations,
             mcpToolCalls: meta?.mcpToolCalls,
           });
+          persistMessage('assistant', fullText, {
+            provider: settings.ai.provider,
+            traceId,
+            chatMode: 'devdock',
+          });
           setLoading(false);
         },
         onError: (error) => {
@@ -121,7 +264,7 @@ export const ChatPanel = () => {
           });
           setLoading(false);
         },
-      }, systemPrompt, { enableTools: runningMCP > 0, sessionId: sessionIdRef.current });
+      }, contextualSystemPrompt, { enableTools: runningMCP > 0, sessionId: sessionIdRef.current });
     }
   };
 
@@ -231,6 +374,16 @@ export const ChatPanel = () => {
         </div>
 
         <div className="flex items-center gap-2 ml-auto">
+          {historyEnabled && (
+            <button
+              onClick={() => setHistoryVisible((v) => !v)}
+              className="p-1.5 transition-colors hover:opacity-80"
+              style={{ color: historyVisible ? 'var(--accent)' : 'var(--text-muted)' }}
+              title="Chat history"
+            >
+              <History size={14} />
+            </button>
+          )}
           <button
             onClick={clearMessages}
             className="p-1.5 transition-colors hover:opacity-80"
@@ -326,6 +479,27 @@ export const ChatPanel = () => {
             <Sparkles size={11} />
             Use my docs
           </button>
+        </div>
+      )}
+
+      {/* Session history strip — shown when user clicks the History icon */}
+      {historyEnabled && historyVisible && (
+        <SessionHistoryStrip
+          sessions={recentSessions}
+          currentSessionId={neo4jSessionId}
+          onSelect={handleSelectSession}
+          onNew={handleNewSession}
+        />
+      )}
+
+      {/* Page context badge */}
+      {pageContext && (
+        <div
+          className="px-3 py-1.5 text-[10px] font-mono truncate"
+          style={{ background: 'var(--bg-inset)', color: 'var(--text-faint)', borderBottom: '1px solid var(--border-color)' }}
+          title={pageContext}
+        >
+          📍 {pageContext}
         </div>
       )}
 

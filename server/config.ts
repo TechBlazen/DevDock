@@ -35,11 +35,24 @@ export interface FeaturesConfig {
   sqlToolEnabled: boolean;
 }
 
+export interface Neo4jConfig {
+  /**
+   * Whether the Neo4j driver is active. True only when all three
+   * connection fields are non-empty.
+   */
+  enabled: boolean;
+  /** Bolt URI, e.g. bolt://localhost:7687 or neo4j+s://xxx.databases.neo4j.io */
+  url: string;
+  username: string;
+  password: string;
+}
+
 export interface ServerConfig {
   port: number;
   db: DbConfig;
   jwtSecret: string;
   vector: VectorConfig;
+  neo4j: Neo4jConfig;
   features: FeaturesConfig;
 }
 
@@ -66,6 +79,12 @@ const DEFAULT_CONFIG: ServerConfig = {
     codeRunnerEnabled: isDev,
     sqlToolEnabled: isDev,
   },
+  neo4j: {
+    enabled: false,
+    url: '',
+    username: 'neo4j',
+    password: '',
+  },
 };
 
 export function loadConfig(): ServerConfig {
@@ -73,6 +92,7 @@ export function loadConfig(): ServerConfig {
     ...DEFAULT_CONFIG,
     db: { ...DEFAULT_CONFIG.db },
     features: { ...DEFAULT_CONFIG.features },
+    neo4j: { ...DEFAULT_CONFIG.neo4j },
   };
 
   // Try loading config file
@@ -111,6 +131,12 @@ export function loadConfig(): ServerConfig {
   if (process.env.DEVDOCK_CHROMA_URL) config.vector.chromaUrl = process.env.DEVDOCK_CHROMA_URL;
   if (process.env.GEMINI_API_KEY) config.vector.geminiApiKey = process.env.GEMINI_API_KEY;
   config.vector.enabled = Boolean(config.vector.geminiApiKey);
+
+  // Neo4j — enabled only when all three connection vars are present.
+  if (process.env.DEVDOCK_NEO4J_URL) config.neo4j.url = process.env.DEVDOCK_NEO4J_URL;
+  if (process.env.DEVDOCK_NEO4J_USER) config.neo4j.username = process.env.DEVDOCK_NEO4J_USER;
+  if (process.env.DEVDOCK_NEO4J_PASSWORD) config.neo4j.password = process.env.DEVDOCK_NEO4J_PASSWORD;
+  config.neo4j.enabled = Boolean(config.neo4j.url && config.neo4j.password);
 
   // Feature flags — explicit env var wins, then per-mode defaults.
   if (process.env.DEVDOCK_CODE_RUNNER_ENABLED !== undefined)

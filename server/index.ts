@@ -27,7 +27,9 @@ import { registerSemanticSearchRoutes } from './routes/semantic-search.js';
 import { registerApiConverterRoutes } from './routes/api-converter.js';
 import { registerMcpRoutes } from './routes/mcp.js';
 import { registerRegistryRoutes } from './routes/registry.js';
+import { registerChatHistoryRoutes } from './routes/chat-history.js';
 import { McpManager } from './services/mcp-manager.js';
+import { Neo4jService } from './services/neo4j-service.js';
 import { createVectorRuntime } from './vector/runtime.js';
 
 async function main() {
@@ -50,6 +52,14 @@ async function main() {
   const mcpManager = new McpManager(db);
   await mcpManager.init();
   console.log('MCP Register ready');
+
+  // Neo4j — optional chat history + context graph.
+  const neo4jService = new Neo4jService(config.neo4j);
+  if (neo4jService.enabled) {
+    await neo4jService.connect();
+  } else {
+    console.log('Neo4j disabled (set DEVDOCK_NEO4J_URL + DEVDOCK_NEO4J_PASSWORD to enable chat history)');
+  }
 
   // Vector / semantic search (no-op if GEMINI_API_KEY is unset).
   const vector = createVectorRuntime(config.vector);
@@ -89,6 +99,7 @@ async function main() {
   registerApiConverterRoutes(app, config.jwtSecret);
   registerMcpRoutes(app, db, config.jwtSecret, mcpManager);
   registerRegistryRoutes(app, db, config.jwtSecret, vector);
+  registerChatHistoryRoutes(app, config.jwtSecret, neo4jService);
 
   // Serve the built Vite client from the same process when present. In dev,
   // Vite runs its own server on :5173 and proxies /api to us, so `dist/`
@@ -112,6 +123,7 @@ async function main() {
     console.log('Shutting down...');
     await app.close();
     await mcpManager.shutdown();
+    await neo4jService.close();
     await db.disconnect();
     process.exit(0);
   };

@@ -8,6 +8,7 @@ import type {
   NavigationConfig,
   MCPServer,
   ChatMessage,
+  ChatSession,
   Repository,
   ActivityEvent,
   TraceSpan,
@@ -28,6 +29,7 @@ import type {
   ThemeId,
   OverwatchToolCall,
 } from '../types';
+import { chatHistoryApi } from '../lib/api';
 import { defaultNavigation } from '../lib/default-navigation';
 import { nanoid } from 'nanoid';
 import { createGuestUser } from '../lib/auth';
@@ -502,6 +504,14 @@ interface ChatStore {
   chatMode: ChatMode;
   overwatchToolCalls: OverwatchToolCall[];
   overwatchThinking: boolean;
+  /** Neo4j session ID for the current conversation. Null when history is off. */
+  neo4jSessionId: string | null;
+  /** Human-readable description of the page where the chat was opened. */
+  pageContext: string;
+  /** Whether the server has Neo4j configured (set from /api/chat/status). */
+  historyEnabled: boolean;
+  /** The 20 most-recent sessions for the current user (from Neo4j). */
+  recentSessions: ChatSession[];
   addMessage: (msg: ChatMessage) => void;
   clearMessages: () => void;
   setLoading: (val: boolean) => void;
@@ -509,6 +519,12 @@ interface ChatStore {
   setChatMode: (mode: ChatMode) => void;
   setOverwatchToolCalls: (calls: OverwatchToolCall[]) => void;
   setOverwatchThinking: (val: boolean) => void;
+  setNeo4jSessionId: (id: string | null) => void;
+  setPageContext: (ctx: string) => void;
+  setHistoryEnabled: (val: boolean) => void;
+  setRecentSessions: (sessions: ChatSession[]) => void;
+  /** Load messages from a prior Neo4j session into the current view. */
+  loadSessionHistory: (session: ChatSession, messages: ChatMessage[]) => void;
 }
 
 export const useChatStore = create<ChatStore>()((set) => ({
@@ -518,10 +534,15 @@ export const useChatStore = create<ChatStore>()((set) => ({
   chatMode: 'devdock' as ChatMode,
   overwatchToolCalls: [],
   overwatchThinking: false,
+  neo4jSessionId: null,
+  pageContext: '',
+  historyEnabled: false,
+  recentSessions: [],
   addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
   clearMessages: () =>
     set((s) => ({
       messages: [s.chatMode === 'overwatch' ? OVERWATCH_WELCOME : DEVDOCK_WELCOME],
+      neo4jSessionId: null,
     })),
   setLoading: (val) => set({ isLoading: val }),
   setOpen: (val) => set({ isOpen: val }),
@@ -532,10 +553,28 @@ export const useChatStore = create<ChatStore>()((set) => ({
       isLoading: false,
       overwatchToolCalls: [],
       overwatchThinking: false,
+      neo4jSessionId: null,
     })),
   setOverwatchToolCalls: (calls) => set({ overwatchToolCalls: calls }),
   setOverwatchThinking: (val) => set({ overwatchThinking: val }),
+  setNeo4jSessionId: (id) => set({ neo4jSessionId: id }),
+  setPageContext: (ctx) => set({ pageContext: ctx }),
+  setHistoryEnabled: (val) => set({ historyEnabled: val }),
+  setRecentSessions: (sessions) => set({ recentSessions: sessions }),
+  loadSessionHistory: (session, messages) =>
+    set({
+      messages,
+      neo4jSessionId: session.id,
+      chatMode: (session.mode as ChatMode) ?? 'devdock',
+      pageContext: session.pageContext,
+      isLoading: false,
+    }),
 }));
+
+// ── side-effect helper: check Neo4j status once on module load ─────────────
+chatHistoryApi.status().then((s) => {
+  useChatStore.getState().setHistoryEnabled(s.neo4jEnabled);
+}).catch(() => { /* server down or Neo4j not configured — stay disabled */ });
 
 // ─── Repo Store ───────────────────────────────────────────────────────────────
 // Repos are SHARED across all users via the backend API. Local state acts as
