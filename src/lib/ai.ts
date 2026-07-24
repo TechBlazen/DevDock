@@ -180,9 +180,15 @@ async function callViaProxy(
 ): Promise<boolean> {
   const tracer = traceAICall(config.provider, config.model || MODELS[config.provider]);
   try {
+    // /api/ai/chat is JWT-guarded (authGuard). This raw fetch bypasses the axios
+    // interceptor in src/lib/api.ts, so attach the token the same way it does.
+    const token = localStorage.getItem('devdock-api-token');
     const res = await fetch('/api/ai/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({
         provider: config.provider,
         apiKey: config.provider === 'local' ? (config.localEndpoint || 'http://localhost:11434/v1') : config.apiKeys[config.provider],

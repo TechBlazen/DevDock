@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Bot, Send, Trash2, Shield, ChevronDown, Wifi, WifiOff, Sparkles, History, Plus } from 'lucide-react';
+import { X, Bot, Trash2, Shield, ChevronDown, Wifi, WifiOff, History, Plus, Search, Mic, ArrowUp } from 'lucide-react';
 import { useChatStore, useSettingsStore, useMCPStore } from '../../store';
 import { sendChatMessage } from '../../lib/ai';
 import { sendOverwatchMessage } from '../../lib/overwatch';
@@ -10,6 +10,19 @@ import { StatusDot, Spinner } from '../ui';
 import type { ChatMessage, ChatMode, ChatSession, RagCitation } from '../../types';
 import { nanoid } from 'nanoid';
 import { providers, MessageBubble, TypingIndicator, OverwatchToolCallProgress, DateSeparator, OVERWATCH_ACCENT, CHAT_ACCENT } from './ChatComponents';
+
+// Minimal shape of the browser SpeechRecognition API (not in the default DOM lib types).
+interface SpeechRecognitionLike {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  start: () => void;
+  stop: () => void;
+  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+}
+type SpeechRecognitionCtor = new () => SpeechRecognitionLike;
 
 // ─── Session history strip ───────────────────────────────────────────────────
 function SessionHistoryStrip({
@@ -77,9 +90,43 @@ export const ChatPanel = () => {
 
   const [input, setInput] = useState('');
   const [modeDropdownOpen, setModeDropdownOpen] = useState(false);
+  const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+  const [composerFocused, setComposerFocused] = useState(false);
+  const [listening, setListening] = useState(false);
   const [historyVisible, setHistoryVisible] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  // Web Speech dictation — feature-detected; the mic button is hidden when unsupported.
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const dictationBaseRef = useRef('');
+  const speechSupported = typeof window !== 'undefined'
+    && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+
+  const toggleDictation = useCallback(() => {
+    if (listening) { recognitionRef.current?.stop(); return; }
+    const Ctor = (window as unknown as {
+      SpeechRecognition?: SpeechRecognitionCtor;
+      webkitSpeechRecognition?: SpeechRecognitionCtor;
+    }).SpeechRecognition ?? (window as unknown as {
+      webkitSpeechRecognition?: SpeechRecognitionCtor;
+    }).webkitSpeechRecognition;
+    if (!Ctor) return;
+    const rec = new Ctor();
+    rec.lang = 'en-US';
+    rec.interimResults = true;
+    rec.continuous = false;
+    dictationBaseRef.current = input ? input.trim() + ' ' : '';
+    rec.onresult = (e) => {
+      let transcript = '';
+      for (let i = 0; i < e.results.length; i++) transcript += e.results[i][0].transcript;
+      setInput(dictationBaseRef.current + transcript);
+    };
+    rec.onend = () => { setListening(false); recognitionRef.current = null; textareaRef.current?.focus(); };
+    rec.onerror = () => { setListening(false); recognitionRef.current = null; };
+    recognitionRef.current = rec;
+    setListening(true);
+    rec.start();
+  }, [listening, input]);
   // Stable id for this chat session — keeps MCP tool routing sticky across turns.
   const sessionIdRef = useRef(nanoid());
 
@@ -402,8 +449,8 @@ export const ChatPanel = () => {
         </div>
       </div>
 
-      {/* Provider selector (DevDock mode) or Overwatch status bar */}
-      {isOverwatch ? (
+      {/* Overwatch status bar (DevDock provider selection now lives in the composer toolbar) */}
+      {isOverwatch && (
         <div
           className="flex items-center gap-3 px-3 py-2.5"
           style={{ borderBottom: `1px solid ${OVERWATCH_ACCENT}30`, background: `${OVERWATCH_ACCENT}08` }}
@@ -425,60 +472,6 @@ export const ChatPanel = () => {
               <span className="text-[10px] font-mono" style={{ color: 'var(--text-faint)' }}>Overwatch not configured — enable in Settings</span>
             </>
           )}
-        </div>
-      ) : (
-        <div
-          className="flex gap-2 px-3 py-2.5 flex-wrap"
-          style={{ borderBottom: '1px solid var(--border-color)' }}
-        >
-          {providers.map((p) => {
-            const active = settings.ai.provider === p.id;
-            const hasKey = p.id === 'local' || settings.ai.apiKeys[p.id]?.trim();
-            return (
-              <button
-                key={p.id}
-                onClick={() => updateAIProvider(p.id)}
-                className="rounded-lg transition-all"
-                style={{
-                  padding: '6px 12px',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  fontFamily: 'Verdana, Geneva, sans-serif',
-                  background: active ? p.color + '25' : 'transparent',
-                  color: active ? p.color : hasKey ? 'var(--text-muted)' : 'var(--text-faint)',
-                  border: active ? `2px solid ${p.color}` : '2px solid var(--border-color)',
-                  cursor: 'pointer',
-                  opacity: hasKey ? 1 : 0.5,
-                }}
-                title={hasKey ? `${p.label} — ${p.model}` : `${p.label} — no API key configured`}
-              >
-                {p.label}
-                {active && <span style={{ fontSize: 9, marginLeft: 4, opacity: 0.7 }}>{p.model}</span>}
-              </button>
-            );
-          })}
-          {/* "Use my docs" RAG toggle — injects semantic-search hits as context
-              on each send. Requires the server's vector runtime to be up. */}
-          <button
-            onClick={() => updateAIUseDocsAsContext(!useDocs)}
-            className="rounded-lg transition-all ml-auto"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 4,
-              padding: '6px 10px',
-              fontSize: 11,
-              fontWeight: 600,
-              background: useDocs ? 'var(--accent-bg)' : 'transparent',
-              color: useDocs ? 'var(--accent)' : 'var(--text-muted)',
-              border: `2px solid ${useDocs ? 'var(--accent)' : 'var(--border-color)'}`,
-              cursor: 'pointer',
-            }}
-            title="Use your indexed docs as context. Requires semantic search to be configured on the server."
-          >
-            <Sparkles size={11} />
-            Use my docs
-          </button>
         </div>
       )}
 
@@ -582,26 +575,28 @@ export const ChatPanel = () => {
         </div>
       )}
 
-      {/* Input area */}
+      {/* Input area — unified composer (textarea on top, toolbar below) */}
       <div className="px-3 pb-3 pt-2">
-        <div className="flex gap-2 rounded-xl p-3 items-end transition-all" style={{
-          background: 'var(--bg-inset)',
-          border: '2px solid var(--border-input)',
-          boxShadow: 'var(--shadow-sm)',
-        }}
-          onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)'; }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border-input)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
+        <div
+          className="rounded-2xl transition-all"
+          style={{
+            background: 'var(--bg-inset)',
+            border: `1.5px solid ${composerFocused ? 'var(--accent)' : 'var(--border-input)'}`,
+            boxShadow: composerFocused ? 'var(--shadow-md)' : 'var(--shadow-sm)',
+          }}
         >
           <textarea
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={isOverwatch ? 'Ask Overwatch anything… (⏎ send, ⇧⏎ newline)' : 'Ask DevDock AI anything… (⏎ send, ⇧⏎ newline)'}
+            onFocus={() => setComposerFocused(true)}
+            onBlur={() => setComposerFocused(false)}
+            placeholder={isOverwatch ? 'Ask Overwatch anything…' : 'Ask anything…'}
             rows={2}
-            className="flex-1 bg-transparent border-none outline-none text-[14px] resize-none max-h-[160px] leading-relaxed chat-block-cursor"
+            className="w-full bg-transparent border-none outline-none text-[14px] resize-none max-h-[160px] leading-relaxed chat-block-cursor px-3.5 pt-3 pb-1"
             style={{
-              minHeight: 44,
+              minHeight: 46,
               caretColor: 'var(--accent)',
               fontFamily: 'Verdana, Geneva, sans-serif',
               color: 'var(--text-primary)',
@@ -612,17 +607,127 @@ export const ChatPanel = () => {
               el.style.height = Math.min(el.scrollHeight, 160) + 'px';
             }}
           />
-          <button
-            onClick={send}
-            disabled={isLoading || !input.trim()}
-            className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ background: input.trim() && !isLoading ? 'var(--accent)' : 'var(--border-color)' }}
-          >
-            {isLoading ? <Spinner size={14} /> : <Send size={13} color="#fff" />}
-          </button>
-        </div>
-        <div className="text-[10px] text-center mt-1.5 font-mono" style={{ color: 'var(--text-faint)' }}>
-          {isOverwatch ? 'Overwatch Agent · Gemini' : `${currentProvider.label} · ${currentProvider.model}`}
+
+          {/* Toolbar */}
+          <div className="flex items-center gap-1.5 px-2 pb-2 pt-0.5">
+            {/* New chat */}
+            <button
+              onClick={() => {
+                if (historyEnabled) handleNewSession(); else clearMessages();
+                setInput('');
+                textareaRef.current?.focus();
+              }}
+              title="New chat"
+              className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors hover:opacity-70"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              <Plus size={17} />
+            </button>
+
+            {/* Search (docs context) toggle — DevDock mode only */}
+            {!isOverwatch && (
+              <button
+                onClick={() => updateAIUseDocsAsContext(!useDocs)}
+                title="Search your indexed docs and use them as context (requires semantic search on the server)"
+                className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-full transition-all"
+                style={{
+                  padding: '5px 11px',
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  fontFamily: 'Verdana, Geneva, sans-serif',
+                  background: useDocs ? 'var(--accent-bg)' : 'transparent',
+                  color: useDocs ? 'var(--accent)' : 'var(--text-secondary)',
+                  border: `1.5px solid ${useDocs ? 'var(--accent)' : 'var(--border-color)'}`,
+                }}
+              >
+                <Search size={13} />
+                Search
+              </button>
+            )}
+
+            <div className="ml-auto flex items-center gap-1">
+              {/* Model selector */}
+              {isOverwatch ? (
+                <span
+                  className="text-[12px] font-semibold px-1.5"
+                  style={{ color: 'var(--text-muted)', fontFamily: 'Verdana, Geneva, sans-serif' }}
+                  title="Overwatch runs on Gemini"
+                >
+                  Gemini
+                </span>
+              ) : (
+                <div className="relative">
+                  <button
+                    onClick={() => setModelDropdownOpen((o) => !o)}
+                    className="flex items-center gap-1 rounded-lg px-2 py-1 transition-colors hover:opacity-80"
+                    style={{ color: 'var(--text-muted)', fontSize: 12.5, fontWeight: 600, fontFamily: 'Verdana, Geneva, sans-serif' }}
+                    title={`Model: ${currentProvider.label} · ${currentProvider.model}`}
+                  >
+                    {currentProvider.label}
+                    <ChevronDown size={13} />
+                  </button>
+                  {modelDropdownOpen && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setModelDropdownOpen(false)} />
+                      <div
+                        className="absolute bottom-full right-0 mb-1.5 w-56 rounded-lg overflow-hidden z-50"
+                        style={{ background: 'var(--bg-elevated)', border: '2px solid var(--border-color)', boxShadow: 'var(--shadow-lg)' }}
+                      >
+                        {providers.map((p) => {
+                          const active = settings.ai.provider === p.id;
+                          const hasKey = p.id === 'local' || settings.ai.apiKeys[p.id]?.trim();
+                          return (
+                            <button
+                              key={p.id}
+                              onClick={() => { updateAIProvider(p.id); setModelDropdownOpen(false); }}
+                              className="w-full flex items-center gap-2.5 px-3 py-2 transition-all cursor-pointer hover:opacity-90"
+                              style={{
+                                background: active ? 'var(--accent-bg)' : 'transparent',
+                                borderLeft: active ? `3px solid ${p.color}` : '3px solid transparent',
+                                opacity: hasKey ? 1 : 0.55,
+                              }}
+                              title={hasKey ? `${p.label} — ${p.model}` : `${p.label} — no API key configured`}
+                            >
+                              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: p.color }} />
+                              <div className="text-left min-w-0">
+                                <div className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{p.label}</div>
+                                <div className="text-[10px] font-mono truncate" style={{ color: 'var(--text-muted)' }}>{p.model}</div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Mic — dictation (only when the browser supports it) */}
+              {speechSupported && (
+                <button
+                  onClick={toggleDictation}
+                  title={listening ? 'Stop dictation' : 'Dictate with your voice'}
+                  className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors hover:opacity-70"
+                  style={{ color: listening ? 'var(--accent)' : 'var(--text-muted)' }}
+                >
+                  <Mic size={16} />
+                </button>
+              )}
+
+              {/* Send */}
+              <button
+                onClick={send}
+                disabled={isLoading || !input.trim()}
+                className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all disabled:cursor-not-allowed"
+                style={{
+                  background: input.trim() && !isLoading ? 'var(--accent)' : 'var(--border-color)',
+                  opacity: input.trim() && !isLoading ? 1 : 0.6,
+                }}
+              >
+                {isLoading ? <Spinner size={14} /> : <ArrowUp size={16} color="#fff" />}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
