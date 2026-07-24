@@ -8,6 +8,32 @@ const MODELS: Record<AIProvider, string> = {
   local: 'llama3.2',
 };
 
+/** A provider is usable if it's local (no key needed) or has a non-empty key. */
+export function providerHasKey(ai: AIConfig, provider: AIProvider): boolean {
+  return provider === 'local' || !!ai.apiKeys[provider]?.trim();
+}
+
+/**
+ * Resolve which provider to actually send to. Honor the user's selection when
+ * it's usable; otherwise fall back to the first cloud provider that has a key
+ * so the user isn't blocked just because the default (anthropic) has none.
+ * If nothing is configured, return the selection unchanged so the truthful
+ * "No API key provided for <provider>" error still surfaces. `local` is never
+ * auto-selected — it's only used when the user explicitly picks it.
+ */
+export function resolveActiveProvider(ai: AIConfig): AIProvider {
+  if (providerHasKey(ai, ai.provider)) return ai.provider;
+  const cloudOrder: AIProvider[] = ['anthropic', 'openai', 'gemini'];
+  return cloudOrder.find((p) => !!ai.apiKeys[p]?.trim()) ?? ai.provider;
+}
+
+/** Effective model for a provider — always derived from the provider, since
+ *  there is no per-provider custom-model UI and the persisted `model` field
+ *  would otherwise pin every provider to Anthropic's default. */
+export function modelForProvider(provider: AIProvider): string {
+  return MODELS[provider];
+}
+
 const SYSTEM_PROMPT = `You are DevDock AI, an expert developer assistant embedded in a developer portal similar to Backstage.io.
 
 You specialize in:
@@ -178,7 +204,14 @@ async function callViaProxy(
   systemPrompt?: string,
   options?: ChatOptions
 ): Promise<boolean> {
-  const tracer = traceAICall(config.provider, config.model || MODELS[config.provider]);
+  // Use whichever provider is actually usable (selected one if it has a key,
+  // else the first configured cloud provider), and derive the model from it.
+  const provider = resolveActiveProvider(config);
+  const model = modelForProvider(provider);
+  const apiKey = provider === 'local'
+    ? (config.localEndpoint || 'http://localhost:11434/v1')
+    : config.apiKeys[provider];
+  const tracer = traceAICall(provider, model);
   try {
     // /api/ai/chat is JWT-guarded (authGuard). This raw fetch bypasses the axios
     // interceptor in src/lib/api.ts, so attach the token the same way it does.
@@ -190,9 +223,9 @@ async function callViaProxy(
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
-        provider: config.provider,
-        apiKey: config.provider === 'local' ? (config.localEndpoint || 'http://localhost:11434/v1') : config.apiKeys[config.provider],
-        model: config.model || MODELS[config.provider],
+        provider,
+        apiKey,
+        model,
         maxTokens: config.maxTokens,
         systemPrompt: systemPrompt ?? SYSTEM_PROMPT,
         messages: messages.filter((m) => m.role !== 'system').map((m) => ({ role: m.role, content: m.content })),
@@ -242,21 +275,25 @@ export async function sendChatMessage(
     // Tools were requested but the server is down; proceed tool-less rather than fail.
     console.warn('MCP tools unavailable — server proxy unreachable, continuing without tools');
   }
-  switch (config.provider) {
+  // Resolve the same effective provider used by the proxy path, and normalize
+  // the config so each helper reads the right model/key for that provider.
+  const provider = resolveActiveProvider(config);
+  const effConfig: AIConfig = { ...config, provider, model: modelForProvider(provider) };
+  switch (provider) {
     case 'anthropic':
-      return callAnthropic(messages, config, callbacks, systemPrompt);
+      return callAnthropic(messages, effConfig, callbacks, systemPrompt);
     case 'openai':
-      return callOpenAICompatible(messages, config, callbacks, systemPrompt);
+      return callOpenAICompatible(messages, effConfig, callbacks, systemPrompt);
     case 'gemini':
-      return callOpenAICompatible(messages, config, callbacks, systemPrompt, {
+      return callOpenAICompatible(messages, effConfig, callbacks, systemPrompt, {
         baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
-        apiKey: config.apiKeys.gemini,
+        apiKey: effConfig.apiKeys.gemini,
         model: MODELS.gemini,
         providerName: 'gemini',
       });
     case 'local':
-      return callLocal(messages, config, callbacks, systemPrompt);
+      return callLocal(messages, effConfig, callbacks, systemPrompt);
     default:
-      callbacks.onError(`Unknown provider: ${config.provider}`);
+      callbacks.onError(`Unknown provider: ${provider}`);
   }
 }
