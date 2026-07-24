@@ -9,7 +9,8 @@
  * writes (save) additionally require the admin role.
  */
 import { existsSync, readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
-import { join, resolve, relative, homedir, dirname, basename } from 'node:path';
+import { join, resolve, relative, dirname, basename } from 'node:path';
+import { homedir } from 'node:os';
 import type { FastifyInstance } from 'fastify';
 import { authGuard, roleGuard, getRequestUser } from '../middleware/auth.js';
 
