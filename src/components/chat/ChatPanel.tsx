@@ -334,7 +334,7 @@ export const ChatPanel = () => {
 
   return (
     <div
-      className="w-[420px] h-full flex flex-col"
+      className="w-full md:w-[420px] h-full flex flex-col"
       style={{ background: 'var(--bg-primary)', borderLeft: '1px solid var(--border-color)' }}
     >
       {/* Header with mode selector */}
