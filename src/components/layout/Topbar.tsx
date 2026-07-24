@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, Bot, ChevronDown } from 'lucide-react';
+import { Bell, Bot, ChevronDown, Menu } from 'lucide-react';
 import { useChatStore, useAuthStore, useUserAccountsStore, useSettingsStore } from '../../store';
 import { Button, Pill } from '../ui';
 import { useUserPreferences } from '../../hooks/useUserPreferences';
@@ -20,7 +20,12 @@ const ROLE_COLORS: Record<string, string> = {
   viewer: '#2e7d32',
 };
 
-export const Topbar = () => {
+interface TopbarProps {
+  /** Opens the mobile nav drawer. The hamburger is only shown below `lg`. */
+  onMenuClick?: () => void;
+}
+
+export const Topbar = ({ onMenuClick }: TopbarProps = {}) => {
   const [showPrefs, setShowPrefs] = useState(false);
   const prefsRef = useRef<HTMLDivElement>(null);
   const setOpen = useChatStore((s) => s.setOpen);
@@ -47,11 +52,25 @@ export const Topbar = () => {
   }, [showPrefs]);
 
   return (
-    <header data-testid="topbar" className="h-[52px] flex items-center px-6 gap-4 flex-shrink-0 relative z-10" style={{
+    <header data-testid="topbar" className="h-[52px] flex items-center px-4 sm:px-6 gap-3 sm:gap-4 flex-shrink-0 relative z-10" style={{
       background: 'var(--bg-surface)',
       borderBottom: '1px solid var(--border-color)',
       boxShadow: 'var(--header-shadow)',
     }}>
+      {/* Hamburger — opens the mobile nav drawer, hidden on desktop */}
+      {onMenuClick && (
+        <button
+          onClick={onMenuClick}
+          className="lg:hidden -ml-1 p-1.5 transition-colors"
+          style={{ color: 'var(--text-secondary)', borderRadius: 'var(--btn-radius)' }}
+          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--btn-hover-bg)'}
+          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          aria-label="Open navigation menu"
+        >
+          <Menu size={20} />
+        </button>
+      )}
+
       {/* Logo */}
       <img src={branding?.logoUrl || '/devdock-logo.svg'} alt={branding?.appName || 'DevDock'} style={{ height: 32, maxWidth: 180, objectFit: 'contain' }} />
 
@@ -92,7 +111,7 @@ export const Topbar = () => {
             onMouseEnter={(e) => { if (!showPrefs) e.currentTarget.style.background = 'var(--btn-hover-bg)'; }}
             onMouseLeave={(e) => { if (!showPrefs) e.currentTarget.style.background = 'transparent'; }}
           >
-            <div className="text-left">
+            <div className="text-left hidden sm:block">
               <div className="text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>
                 {getGreeting(user?.displayName ?? 'User', prefs.greeting)}
               </div>
