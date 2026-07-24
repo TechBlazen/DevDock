@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { Shell } from './components/layout/Shell'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { initOTel } from './otel'
 import { useSettingsStore, useAuthStore, usePluginStore, useUserAccountsStore, useRepoStore, useMCPStore } from './store'
 import { useForumStore } from './store/forum-store'
@@ -167,9 +168,11 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
 // Separated so usePluginExtensions runs inside BrowserRouter context
 function PluginRoutes({ editMode }: { editMode: boolean }) {
   const { pages } = usePluginExtensions()
+  const location = useLocation()
   useTheme() // Apply user's theme preferences
 
   return (
+    <ErrorBoundary resetKey={location.pathname}>
     <Routes>
       <Route path="/"          element={<DashboardPage editMode={editMode} />} />
       <Route path="/github"    element={<GitHubPage />} />
@@ -223,5 +226,6 @@ function PluginRoutes({ editMode }: { editMode: boolean }) {
         <Route key={path} path={path} element={<Component />} />
       ))}
     </Routes>
+    </ErrorBoundary>
   )
 }
