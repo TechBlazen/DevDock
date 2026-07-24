@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
-import type { BuilderItem } from '../types';
+import type { BuilderItem, BuilderItemType } from '../types';
+import type { SkillFileEntry } from '../lib/api';
 
 interface BuilderStore {
   items: BuilderItem[];
@@ -15,6 +16,10 @@ interface BuilderStore {
 
   getItemsForUser: (userId: string) => BuilderItem[];
   getAllItems: () => BuilderItem[];
+  /** Create a BuilderItem pre-populated from a disk skill file. */
+  loadFromDisk: (file: SkillFileEntry, userId: string, content: string) => string;
+  /** Update the originalContent snapshot after a save/reload. */
+  resetOriginalContent: (id: string, content: string) => void;
 }
 
 export const useBuilderStore = create<BuilderStore>()(
@@ -55,6 +60,34 @@ export const useBuilderStore = create<BuilderStore>()(
 
       getItemsForUser: (userId) => get().items.filter((i) => i.userId === userId),
       getAllItems: () => get().items,
+
+      loadFromDisk: (file, userId, content) => {
+        const id = nanoid();
+        const now = new Date().toISOString();
+        const type: BuilderItemType = file.kind === 'agent' ? 'agent' : 'skill';
+        const item: BuilderItem = {
+          id, userId, type,
+          name: file.name || file.relativePath,
+          description: file.description,
+          content,
+          originalContent: content,
+          sourcePath: file.path,
+          sourceType: 'disk',
+          mockConversation: [],
+          tags: [file.provider],
+          createdAt: now,
+          updatedAt: now,
+        };
+        set((s) => ({ items: [...s.items, item], activeItemId: id }));
+        return id;
+      },
+
+      resetOriginalContent: (id, content) =>
+        set((s) => ({
+          items: s.items.map((i) =>
+            i.id === id ? { ...i, originalContent: content, content, updatedAt: new Date().toISOString() } : i
+          ),
+        })),
     }),
     {
       name: 'devdock-builder',

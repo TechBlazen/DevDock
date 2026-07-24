@@ -796,6 +796,12 @@ export interface BuilderItem {
   exportedTo?: string;        // repo fullName if exported
   createdAt: string;
   updatedAt: string;
+  /** Absolute filesystem path when loaded from disk. */
+  sourcePath?: string;
+  /** 'disk' = loaded from a real SKILL.md file on disk; 'custom' = created in the builder. */
+  sourceType?: 'custom' | 'disk';
+  /** Original content at load/reload time — used for diff indicator. */
+  originalContent?: string;
 }
 
 // ─── Agent & Skill Gallery Types ────────────────────────────────────────────

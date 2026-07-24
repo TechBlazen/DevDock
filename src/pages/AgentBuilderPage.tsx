@@ -1,14 +1,17 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import Editor from '@monaco-editor/react';
 import {
   Bot, Zap, Plus, Trash2, Copy, Download, Upload,
   FileText, User, Send, Eye, Code2,
   X, Loader2, PlayCircle, Clock, AlertCircle, Star,
+  HardDrive, ChevronDown, ChevronRight, FolderOpen,
+  RefreshCw, Save, CircleDot,
 } from 'lucide-react';
 import { useAuthStore, useDocsStore, useSettingsStore, useUserAccountsStore } from '../store';
 import { useBuilderStore } from '../store/builder-store';
 import { BUILDER_TEMPLATES } from '../lib/builder-templates';
 import { sendChatMessage } from '../lib/ai';
+import { skillFilesApi, type SkillFileEntry } from '../lib/api';
 import { ForumMarkdownBody } from '../components/forum/ForumMarkdownBody';
 import { SectionTitle, Card, CardHeader, Button, Pill } from '../components/ui';
 import type { BuilderItemType, MockMessage, ChatMessage } from '../types';
@@ -26,6 +29,150 @@ const FavButton = ({ toolId }: { toolId: string }) => {
   );
 };
 
+// ─── Disk Skill Browser ──────────────────────────────────────────────────────
+
+const PROVIDER_LABELS: Record<string, string> = {
+  'codex': 'Codex Skills',
+  'agents': 'Agent Skills',
+  'warp-bundled': 'Warp Built-in',
+  'custom': 'Custom',
+};
+
+function DiskSkillBrowser({
+  onLoad,
+  loadedPaths,
+}: {
+  onLoad: (file: SkillFileEntry) => Promise<void>;
+  loadedPaths: Set<string>;
+}) {
+  const [files, setFiles] = useState<SkillFileEntry[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState(false);
+  const [collapsedProviders, setCollapsedProviders] = useState<Set<string>>(new Set());
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const list = await skillFilesApi.list();
+      setFiles(list);
+    } catch {
+      setError('Could not load skill files — server may be offline');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { refresh(); }, [refresh]);
+
+  const byProvider = useMemo(() => {
+    const map = new Map<string, SkillFileEntry[]>();
+    for (const f of files) {
+      const group = map.get(f.provider) ?? [];
+      group.push(f);
+      map.set(f.provider, group);
+    }
+    return map;
+  }, [files]);
+
+  const toggleProvider = (p: string) =>
+    setCollapsedProviders((prev) => {
+      const next = new Set(prev);
+      if (next.has(p)) next.delete(p); else next.add(p);
+      return next;
+    });
+
+  return (
+    <Card>
+      <div
+        className="flex items-center gap-2 px-4 py-2.5 cursor-pointer"
+        style={{ borderBottom: collapsed ? 'none' : '1px solid var(--border-subtle)' }}
+        onClick={() => setCollapsed((v) => !v)}
+      >
+        <HardDrive size={13} style={{ color: 'var(--accent)' }} />
+        <span className="text-[11px] font-bold uppercase tracking-wider flex-1" style={{ color: 'var(--text-secondary)' }}>
+          Disk Skills
+        </span>
+        <button
+          onClick={(e) => { e.stopPropagation(); refresh(); }}
+          className="p-0.5 cursor-pointer hover:opacity-70"
+          style={{ background: 'none', border: 'none', color: 'var(--text-muted)' }}
+          title="Refresh"
+        >
+          <RefreshCw size={11} className={loading ? 'animate-spin' : ''} />
+        </button>
+        {collapsed ? <ChevronRight size={12} style={{ color: 'var(--text-faint)' }} /> : <ChevronDown size={12} style={{ color: 'var(--text-faint)' }} />}
+      </div>
+
+      {!collapsed && (
+        <div className="max-h-[360px] overflow-y-auto">
+          {error && (
+            <div className="px-4 py-3 text-[11px]" style={{ color: '#dc2626' }}>{error}</div>
+          )}
+          {!error && files.length === 0 && !loading && (
+            <div className="px-4 py-4 text-[11px] text-center" style={{ color: 'var(--text-faint)' }}>
+              No skill files found in<br /><code>~/.codex/skills</code> or<br /><code>~/.agents/skills</code>
+            </div>
+          )}
+          {Array.from(byProvider.entries()).map(([provider, provFiles]) => (
+            <div key={provider}>
+              <button
+                className="w-full flex items-center gap-2 px-4 py-1.5 text-left cursor-pointer"
+                style={{ background: 'var(--bg-inset)', border: 'none' }}
+                onClick={() => toggleProvider(provider)}
+              >
+                {collapsedProviders.has(provider)
+                  ? <ChevronRight size={10} style={{ color: 'var(--text-faint)' }} />
+                  : <ChevronDown size={10} style={{ color: 'var(--text-faint)' }} />}
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                  {PROVIDER_LABELS[provider] ?? provider}
+                </span>
+                <span className="ml-auto text-[9px]" style={{ color: 'var(--text-faint)' }}>{provFiles.length}</span>
+              </button>
+
+              {!collapsedProviders.has(provider) && provFiles.map((file) => {
+                const isLoaded = loadedPaths.has(file.path);
+                return (
+                  <div
+                    key={file.path}
+                    className="flex items-start gap-2 px-4 py-2 cursor-pointer group"
+                    style={{
+                      borderBottom: '1px solid var(--border-subtle)',
+                      background: isLoaded ? 'var(--accent-bg)' : 'transparent',
+                    }}
+                    onMouseEnter={(e) => { if (!isLoaded) e.currentTarget.style.background = 'var(--bg-hover)'; }}
+                    onMouseLeave={(e) => { if (!isLoaded) e.currentTarget.style.background = 'transparent'; }}
+                    onClick={() => onLoad(file)}
+                    title={file.path}
+                  >
+                    {file.kind === 'agent'
+                      ? <Bot size={12} style={{ color: '#7c3aed', flexShrink: 0, marginTop: 2 }} />
+                      : <Zap size={12} style={{ color: '#f59e0b', flexShrink: 0, marginTop: 2 }} />}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[11px] font-semibold truncate" style={{ color: isLoaded ? 'var(--accent)' : 'var(--text-primary)' }}>
+                        {file.name}
+                      </div>
+                      {file.description && (
+                        <div className="text-[10px] line-clamp-1" style={{ color: 'var(--text-faint)' }}>
+                          {file.description}
+                        </div>
+                      )}
+                    </div>
+                    {isLoaded && (
+                      <FolderOpen size={10} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 2 }} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 export const AgentBuilderPage = () => {
   const user = useAuthStore((s) => s.user);
   const userId = user?.id ?? '';
@@ -34,8 +181,57 @@ export const AgentBuilderPage = () => {
   const {
     items, activeItemId, addItem, updateItem, removeItem,
     setActiveItem, duplicateItem, getItemsForUser, getAllItems,
+    loadFromDisk, resetOriginalContent,
   } = useBuilderStore();
   const { addDoc } = useDocsStore();
+
+  // Disk skill loading
+  const [diskLoadingPath, _setDiskLoadingPath] = useState<string | null>(null);
+  void diskLoadingPath; // tracked for future loading indicator
+  const [saveConfirmOpen, setSaveConfirmOpen] = useState(false);
+  const [diskSaving, setDiskSaving] = useState(false);
+
+  const loadedPaths = useMemo(
+    () => new Set(items.filter((i) => i.sourcePath).map((i) => i.sourcePath!)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [items]
+  );
+
+  const handleLoadFromDisk = useCallback(async (file: SkillFileEntry) => {
+    // If already loaded, just activate it.
+    const existing = items.find((i) => i.sourcePath === file.path);
+    if (existing) { setActiveItem(existing.id); return; }
+
+    _setDiskLoadingPath(file.path);
+    try {
+      const { content } = await skillFilesApi.read(file.path);
+      loadFromDisk(file, userId, content);
+    } catch {
+      /* ignore — file read failed */
+    } finally {
+      _setDiskLoadingPath(null);
+    }
+  }, [items, userId, loadFromDisk, setActiveItem]);
+
+  const handleReloadFromDisk = useCallback(async () => {
+    if (!activeItem?.sourcePath) return;
+    try {
+      const { content } = await skillFilesApi.read(activeItem.sourcePath);
+      resetOriginalContent(activeItem.id, content);
+    } catch { /* ignore */ }
+  }, [activeItem, resetOriginalContent]);
+
+  const handleSaveToDisk = useCallback(async () => {
+    if (!activeItem?.sourcePath) return;
+    setDiskSaving(true);
+    try {
+      await skillFilesApi.save(activeItem.sourcePath, activeItem.content);
+      updateItem(activeItem.id, { originalContent: activeItem.content });
+    } catch { /* ignore */ } finally {
+      setDiskSaving(false);
+      setSaveConfirmOpen(false);
+    }
+  }, [activeItem, updateItem]);
 
   // Admins see all items; others see only their own
   const visibleItems = useMemo(
@@ -248,6 +444,12 @@ export const AgentBuilderPage = () => {
             ))}
           </div>
 
+          {/* Disk skill browser */}
+          <DiskSkillBrowser
+            onLoad={handleLoadFromDisk}
+            loadedPaths={loadedPaths}
+          />
+
           {/* Item list */}
           <Card>
             <CardHeader>
@@ -344,22 +546,80 @@ export const AgentBuilderPage = () => {
             <>
               {/* Name + meta bar */}
               <Card>
-                <div style={{ padding: '14px 20px' }} className="flex items-center gap-3">
+                <div style={{ padding: '14px 20px' }} className="flex items-center gap-3 flex-wrap">
                   {activeItem.type === 'agent' ? <Bot size={16} style={{ color: '#7c3aed' }} /> : <Zap size={16} style={{ color: '#f59e0b' }} />}
                   <input
                     value={activeItem.name}
                     onChange={(e) => updateItem(activeItem.id, { name: e.target.value })}
                     className="text-[14px] font-bold bg-transparent border-none outline-none flex-1"
-                    style={{ color: 'var(--text-primary)' }}
+                    style={{ color: 'var(--text-primary)', minWidth: 100 }}
                   />
                   <Pill color={activeItem.type === 'agent' ? '#7c3aed' : '#f59e0b'}>{activeItem.type}</Pill>
+
+                  {/* Disk source badges */}
+                  {activeItem.sourceType === 'disk' && activeItem.sourcePath && (
+                    <span
+                      className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded"
+                      style={{ background: 'var(--bg-inset)', color: 'var(--text-faint)', border: '1px solid var(--border-subtle)', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                      title={activeItem.sourcePath}
+                    >
+                      <HardDrive size={9} /> {activeItem.sourcePath.replace(/.*\/(\.codex|\.agents|\.warp)/, '$1')}
+                    </span>
+                  )}
+                  {activeItem.sourceType === 'disk' && activeItem.content !== activeItem.originalContent && (
+                    <span
+                      className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded"
+                      style={{ background: 'rgba(234,179,8,0.1)', color: '#b45309', border: '1px solid rgba(234,179,8,0.3)' }}
+                    >
+                      <CircleDot size={9} /> Modified
+                    </span>
+                  )}
+
                   <div className="flex gap-1">
+                    {/* Disk-specific controls */}
+                    {activeItem.sourceType === 'disk' && (
+                      <>
+                        <button
+                          onClick={handleReloadFromDisk}
+                          className="p-1 cursor-pointer"
+                          style={{ color: 'var(--text-faint)', background: 'none', border: 'none' }}
+                          title="Reload from disk"
+                        >
+                          <RefreshCw size={13} />
+                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={() => setSaveConfirmOpen(true)}
+                            className="p-1 cursor-pointer"
+                            style={{ color: activeItem.content !== activeItem.originalContent ? '#f59e0b' : 'var(--text-faint)', background: 'none', border: 'none' }}
+                            title="Save to disk"
+                            disabled={diskSaving}
+                          >
+                            {diskSaving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                          </button>
+                        )}
+                      </>
+                    )}
                     <button onClick={() => duplicateItem(activeItem.id)} className="p-1 cursor-pointer" style={{ color: 'var(--text-faint)', background: 'none', border: 'none' }} title="Duplicate"><Copy size={13} /></button>
                     <button onClick={handleExportToFile} className="p-1 cursor-pointer" style={{ color: 'var(--text-faint)', background: 'none', border: 'none' }} title="Export file"><Download size={13} /></button>
                     <button onClick={handleSaveToDocs} className="p-1 cursor-pointer" style={{ color: 'var(--text-faint)', background: 'none', border: 'none' }} title="Save to Docs"><FileText size={13} /></button>
                     <button onClick={() => removeItem(activeItem.id)} className="p-1 cursor-pointer" style={{ color: 'var(--text-faint)', background: 'none', border: 'none' }} title="Delete" onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; }} onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-faint)'; }}><Trash2 size={13} /></button>
                   </div>
                 </div>
+
+                {/* Save-to-disk confirmation */}
+                {saveConfirmOpen && (
+                  <div className="px-5 py-3 flex items-center gap-3" style={{ borderTop: '1px solid var(--border-subtle)', background: 'rgba(234,179,8,0.06)' }}>
+                    <AlertCircle size={13} style={{ color: '#b45309', flexShrink: 0 }} />
+                    <span className="text-[11px] flex-1" style={{ color: 'var(--text-secondary)' }}>
+                      Overwrite <code style={{ fontSize: 10 }}>{activeItem.sourcePath}</code> on disk?
+                    </span>
+                    <Button variant="ghost" size="sm" onClick={() => setSaveConfirmOpen(false)}>Cancel</Button>
+                    <Button variant="primary" size="sm" onClick={handleSaveToDisk}>
+                      {diskSaving ? <Loader2 size={10} className="animate-spin" /> : <Save size={10} />} Save
+                    </Button>
+                  </div>
+                )}
               </Card>
 
               {/* Split: editor + mock preview */}
@@ -485,6 +745,12 @@ export const AgentBuilderPage = () => {
 
                     {previewTab === 'live' && (
                       <div className="flex flex-col" style={{ height: 470 }}>
+                        {/* Modified-content notice */}
+                        {activeItem.sourceType === 'disk' && activeItem.content !== activeItem.originalContent && (
+                          <div className="flex items-center gap-1.5 px-3 py-2 text-[10px] font-semibold" style={{ background: 'rgba(234,179,8,0.08)', borderBottom: '1px solid rgba(234,179,8,0.2)', color: '#b45309' }}>
+                            <CircleDot size={10} /> Testing edited version — not yet saved to disk
+                          </div>
+                        )}
                         {/* Live chat messages */}
                         <div className="flex-1 overflow-y-auto" style={{ padding: '12px 16px' }}>
                           {liveMessages.length === 0 && !liveStreaming && (

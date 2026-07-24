@@ -319,6 +319,31 @@ export const chatHistoryApi = {
     api.post<ChatHistoryMessage>(`/chat/sessions/${sessionId}/messages`, { role, content, ...meta }).then(r => r.data),
 };
 
+// ─── Skill Files (disk browser) ──────────────────────────────────────────────
+
+export interface SkillFileEntry {
+  path: string;
+  relativePath: string;
+  name: string;
+  description: string;
+  provider: string;
+  kind: 'skill' | 'agent';
+}
+
+export const skillFilesApi = {
+  /** List all skill/agent MD files found in the allowed directories. */
+  list: () =>
+    api.get<{ files: SkillFileEntry[] }>('/skill-files').then((r) => r.data.files),
+
+  /** Read the content of a single file by its absolute path. */
+  read: (path: string) =>
+    api.get<{ path: string; content: string }>('/skill-files/content', { params: { path } }).then((r) => r.data),
+
+  /** Save content to a file (admin only). */
+  save: (path: string, content: string) =>
+    api.post<{ ok: boolean; path: string }>('/skill-files/save', { path, content }).then((r) => r.data),
+};
+
 // ─── Server availability check ──────────────────────────────────────────────
 // Returns true if the API server is reachable, false otherwise.
 // Used to decide whether to persist via API or fall back to localStorage.
