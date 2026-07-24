@@ -88,9 +88,15 @@ async function callViaProxy(
   tracer: ReturnType<typeof traceAICall>,
 ): Promise<boolean> {
   try {
+    // Attach the JWT the same way the axios interceptor does — this raw fetch
+    // bypasses it, and the server guards /api routes with authGuard.
+    const token = localStorage.getItem('devdock-api-token');
     const res = await fetch('/api/overwatch/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({
         endpoint: config.endpoint,
         apiKey: config.apiKey,
