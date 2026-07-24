@@ -11,6 +11,7 @@ import { useAuthStore, useDocsStore, useSettingsStore, useUserAccountsStore } fr
 import { useBuilderStore } from '../store/builder-store';
 import { BUILDER_TEMPLATES } from '../lib/builder-templates';
 import { sendChatMessage } from '../lib/ai';
+import { isAxiosError } from 'axios';
 import { skillFilesApi, type SkillFileEntry } from '../lib/api';
 import { ForumMarkdownBody } from '../components/forum/ForumMarkdownBody';
 import { SectionTitle, Card, CardHeader, Button, Pill } from '../components/ui';
@@ -38,6 +39,20 @@ const PROVIDER_LABELS: Record<string, string> = {
   'custom': 'Custom',
 };
 
+/** Map an API failure to a message that names the actual cause instead of always blaming the server. */
+function describeSkillFileError(err: unknown): string {
+  if (isAxiosError(err)) {
+    const status = err.response?.status;
+    if (status === undefined) return 'Could not reach the server — it may be offline';
+    if (status === 401) return 'Session expired — sign in again to load skill files';
+    if (status === 403) return 'You do not have permission to load skill files';
+    if (status === 404) return 'Skill-files endpoint not found (404)';
+    const detail = (err.response?.data as { error?: string } | undefined)?.error;
+    return `Could not load skill files — server error ${status}${detail ? `: ${detail}` : ''}`;
+  }
+  return 'Could not load skill files — unexpected error';
+}
+
 function DiskSkillBrowser({
   onLoad,
   loadedPaths,
@@ -57,8 +72,8 @@ function DiskSkillBrowser({
     try {
       const list = await skillFilesApi.list();
       setFiles(list);
-    } catch {
-      setError('Could not load skill files — server may be offline');
+    } catch (err) {
+      setError(describeSkillFileError(err));
     } finally {
       setLoading(false);
     }
