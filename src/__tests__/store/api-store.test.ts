@@ -29,7 +29,13 @@ vi.mock('../../lib/api', () => {
     update: vi.fn(async () => ({})),
     delete: vi.fn(async () => ({})),
   };
-  return { apisApi };
+  // src/store/index.ts runs `chatHistoryApi.status()` as a module-load
+  // side-effect; without this export the import chain throws and the whole
+  // suite fails to register (0 tests). Resolve it as "Neo4j disabled".
+  const chatHistoryApi = {
+    status: vi.fn(async () => ({ neo4jEnabled: false })),
+  };
+  return { apisApi, chatHistoryApi };
 });
 
 const SAMPLE_SPEC = `
