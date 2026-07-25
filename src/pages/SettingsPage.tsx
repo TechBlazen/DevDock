@@ -215,7 +215,7 @@ const ActiveDirectorySettings = ({
           {/* Azure AD fields */}
           {config.mode === 'azure-ad' && (
             <>
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label style={adLabel}>Azure AD Tenant ID</label>
                   <input value={config.tenantId} onChange={(e) => onUpdate({ tenantId: e.target.value })} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style={adInput} />
@@ -225,7 +225,7 @@ const ActiveDirectorySettings = ({
                   <input value={config.domain} onChange={(e) => onUpdate({ domain: e.target.value })} placeholder="contoso.com" style={adInput} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label style={adLabel}>Client ID (App Registration)</label>
                   <input value={config.clientId} onChange={(e) => onUpdate({ clientId: e.target.value })} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style={adInput} />
@@ -244,7 +244,7 @@ const ActiveDirectorySettings = ({
           {/* On-Prem AD / LDAP fields */}
           {config.mode === 'on-prem' && (
             <>
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label style={adLabel}>LDAP Server URL</label>
                   <input value={config.ldapUrl} onChange={(e) => onUpdate({ ldapUrl: e.target.value })} placeholder="ldaps://dc.contoso.com:636" style={adInput} />
@@ -256,7 +256,7 @@ const ActiveDirectorySettings = ({
                   <p style={{ ...adFont, fontSize: 10, color: 'var(--text-faint)', marginTop: 4 }}>The root of the directory tree to search</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label style={adLabel}>Bind DN (Service Account)</label>
                   <input value={config.bindDn} onChange={(e) => onUpdate({ bindDn: e.target.value })} placeholder="CN=svc-portal,OU=Service Accounts,DC=contoso,DC=com" style={adInput} />
@@ -269,7 +269,7 @@ const ActiveDirectorySettings = ({
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label style={adLabel}>Domain</label>
                   <input value={config.domain} onChange={(e) => onUpdate({ domain: e.target.value })} placeholder="contoso.com" style={adInput} />
@@ -288,7 +288,7 @@ const ActiveDirectorySettings = ({
                 <div style={{ ...adFont, fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 14 }}>
                   LDAP Search Filters
                 </div>
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
                     <label style={adLabel}>User Search Filter</label>
                     <input value={config.userSearchFilter} onChange={(e) => onUpdate({ userSearchFilter: e.target.value })} placeholder="(&(objectClass=user)(sAMAccountName={username}))" style={adInput} />
@@ -298,7 +298,7 @@ const ActiveDirectorySettings = ({
                     <input value={config.groupSearchFilter} onChange={(e) => onUpdate({ groupSearchFilter: e.target.value })} placeholder="(&(objectClass=group)(member={userDn}))" style={adInput} />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-5 mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-4">
                   <div>
                     <label style={adLabel}>Display Name Attribute</label>
                     <input value={config.userDisplayNameAttr} onChange={(e) => onUpdate({ userDisplayNameAttr: e.target.value })} placeholder="displayName" style={adInput} />
@@ -374,7 +374,7 @@ const ActiveDirectorySettings = ({
               Add Security Group
             </div>
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label style={adLabel}>Group Name</label>
                   <input value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="e.g. SG-Portal-Admins" style={adInput} />
@@ -998,7 +998,7 @@ export const SettingsPage = () => {
               placeholder="http://localhost:4317"
             />
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="rounded-xl p-3" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)' }}>
                 <Toggle
                   checked={settings.otel.exportTraces}

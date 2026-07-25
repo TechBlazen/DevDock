@@ -428,9 +428,9 @@ export const AgentBuilderPage = () => {
         <FavButton toolId="agent-builder" />
       </div>
 
-      <div className="flex gap-6 items-start" style={{ marginTop: 24 }}>
+      <div className="flex flex-col lg:flex-row gap-6 items-start" style={{ marginTop: 24 }}>
         {/* Left sidebar: item list */}
-        <div className="w-[280px] shrink-0 space-y-4">
+        <div className="w-full lg:w-[280px] lg:shrink-0 space-y-4">
           {/* Actions */}
           <div className="flex gap-2">
             <Button variant="primary" size="sm" onClick={() => setShowTemplates(true)} className="flex-1">
@@ -529,7 +529,7 @@ export const AgentBuilderPage = () => {
                 </div>
 
                 <div className="text-[10px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>Or start from a template</div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {BUILDER_TEMPLATES.map((tpl) => (
                     <button
                       key={tpl.id}
@@ -638,7 +638,7 @@ export const AgentBuilderPage = () => {
               </Card>
 
               {/* Split: editor + mock preview */}
-              <div className="flex gap-4">
+              <div className="flex flex-col lg:flex-row gap-4">
                 {/* Editor */}
                 <div className="flex-1 min-w-0">
                   <Card>
@@ -669,7 +669,7 @@ export const AgentBuilderPage = () => {
                 </div>
 
                 {/* Mock Preview */}
-                <div className="w-[380px] shrink-0">
+                <div className="w-full lg:w-[380px] lg:shrink-0">
                   <Card>
                     <CardHeader className="justify-between">
                       <div className="flex gap-1">

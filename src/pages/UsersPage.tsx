@@ -209,7 +209,7 @@ export const UsersPage = () => {
 
             {/* Manual entry fields */}
             {addMode === 'manual' && (
-              <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                 <input value={newUsername} onChange={(e) => setNewUsername(e.target.value)} placeholder="Username" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
                 <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Password" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
                 <input value={newDisplayName} onChange={(e) => setNewDisplayName(e.target.value)} placeholder="Display Name" className="rounded-2xl px-3 py-2 text-xs outline-none" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }} />
@@ -604,7 +604,7 @@ export const UsersPage = () => {
                     {account.role !== 'admin' && (
                       <div>
                         <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Capabilities</div>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <Toggle checked={account.permissions.canEditDocs} onChange={(v) => handlePermToggle(account.id, account.permissions, 'canEditDocs', v)} label="Edit Docs" />
                           <Toggle checked={account.permissions.canAccessTerminal} onChange={(v) => handlePermToggle(account.id, account.permissions, 'canAccessTerminal', v)} label="Terminal" />
                           <Toggle checked={account.permissions.canAccessNetwork} onChange={(v) => handlePermToggle(account.id, account.permissions, 'canAccessNetwork', v)} label="Network Scan" />

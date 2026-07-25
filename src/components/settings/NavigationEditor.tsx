@@ -52,7 +52,7 @@ const IconPicker = ({ value, onChange }: { value: string; onChange: (v: string) 
             className="w-full rounded-md px-2.5 py-1.5 text-[12px] outline-none mb-2"
             style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
           />
-          <div className="grid grid-cols-6 gap-1 overflow-y-auto" style={{ maxHeight: 190 }}>
+          <div className="grid grid-cols-4 sm:grid-cols-6 gap-1 overflow-y-auto" style={{ maxHeight: 190 }}>
             {filtered.map((name) => {
               const I = getIcon(name);
               return (

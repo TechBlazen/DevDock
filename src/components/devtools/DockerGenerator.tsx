@@ -220,7 +220,7 @@ export const DockerGenerator = () => {
       {/* Form */}
       <div className="flex-1 overflow-auto p-4 space-y-4">
         {/* Image / Container name row */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {['run', 'pull', 'push', 'images'].includes(operation) && (
             <div>
               <label className="block text-[11px] font-semibold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
@@ -257,7 +257,7 @@ export const DockerGenerator = () => {
 
         {/* Build-specific fields */}
         {operation === 'build' && (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-semibold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                 Tag (-t)
@@ -383,7 +383,7 @@ export const DockerGenerator = () => {
 
         {/* Network & Restart */}
         {(showNetwork || showRestart) && (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {showNetwork && (
               <div>
                 <label className="block text-[11px] font-semibold mb-1.5" style={{ color: 'var(--text-secondary)' }}>

@@ -205,7 +205,7 @@ export const CodePlaygroundPage = () => {
         ))}
       </div>
 
-      <div className="flex gap-5 items-start">
+      <div className="flex flex-col lg:flex-row gap-5 items-start">
         {/* Editor */}
         <div className="flex-1 min-w-0">
           <Card>
@@ -262,7 +262,7 @@ export const CodePlaygroundPage = () => {
         </div>
 
         {/* Output */}
-        <div className="w-[400px] shrink-0">
+        <div className="w-full lg:w-[400px] lg:shrink-0">
           <Card>
             <CardHeader>
               {(lang.id === 'html' || lang.id === 'css') ? (

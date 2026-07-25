@@ -64,7 +64,7 @@ export const FederatedSourceForm = ({ initial, onSave, onCancel, saving }: Props
           <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Source Type</span>
         </CardHeader>
         <div className="p-4">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {SOURCE_TYPES.map((st) => {
               const Icon = st.icon;
               return (
@@ -148,7 +148,7 @@ export const FederatedSourceForm = ({ initial, onSave, onCancel, saving }: Props
             Map fields from the API response to search document fields. Use dot notation for nested paths (e.g. "data.results").
           </p>
           <Input label="Results Path (required)" value={resultMapping.resultsPath} onChange={(e) => updateMapping('resultsPath', e.target.value)} placeholder="data.items" />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input label="Title Field (required)" value={resultMapping.titleField} onChange={(e) => updateMapping('titleField', e.target.value)} placeholder="title" />
             <Input label="Description Field" value={resultMapping.descriptionField} onChange={(e) => updateMapping('descriptionField', e.target.value)} placeholder="summary" />
             <Input label="URL Field" value={resultMapping.urlField} onChange={(e) => updateMapping('urlField', e.target.value)} placeholder="url" />
