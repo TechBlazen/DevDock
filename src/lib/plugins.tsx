@@ -359,9 +359,9 @@ const ObsidianPageComponent = () => {
         Obsidian Vault
       </SectionTitle>
 
-      <div className="flex gap-4" style={{ height: 'calc(100vh - 200px)' }}>
+      <div className="flex flex-col lg:flex-row gap-4" style={{ height: 'calc(100vh - 200px)' }}>
         {/* Sidebar */}
-        <div className="w-[260px] flex-shrink-0 flex flex-col rounded-xl overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)' }}>
+        <div className="w-full lg:w-[260px] lg:flex-shrink-0 flex flex-col rounded-xl overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)' }}>
           {/* Search */}
           <div className="p-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
             <div className="relative">

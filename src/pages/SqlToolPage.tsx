@@ -95,7 +95,7 @@ const ConnectionForm = ({ onSave, onCancel, initial }: { onSave: (conn: Omit<Dat
           ) : (
             <>
               {engine !== 'sqlite' && (
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <Input label="Host" value={host} onChange={(e) => setHost(e.target.value)} placeholder="localhost" />
                   <Input label="Port" type="number" value={port} onChange={(e) => setPort(e.target.value)} />
                   <Input label="Database" value={database} onChange={(e) => setDatabase(e.target.value)} placeholder="mydb" />
@@ -105,7 +105,7 @@ const ConnectionForm = ({ onSave, onCancel, initial }: { onSave: (conn: Omit<Dat
                 <Input label="Database File Path" value={database} onChange={(e) => setDatabase(e.target.value)} placeholder="/path/to/database.db" />
               )}
               {engine !== 'sqlite' && (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Input label="Username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="admin" />
                   <div>
                     <label className="text-[10px] uppercase tracking-widest mb-1 block" style={{ color: 'var(--text-muted)' }}>Password</label>
@@ -342,9 +342,9 @@ export const SqlToolPage = () => {
         <FavButton toolId="sql" />
       </div>
 
-      <div className="flex gap-6 items-start" style={{ marginTop: 24 }}>
+      <div className="flex flex-col lg:flex-row gap-6 items-start" style={{ marginTop: 24 }}>
         {/* Left sidebar: connections + schema */}
-        <div className="w-[280px] shrink-0 space-y-4">
+        <div className="w-full lg:w-[280px] lg:shrink-0 space-y-4">
           {/* Connections */}
           <Card>
             <CardHeader className="justify-between">

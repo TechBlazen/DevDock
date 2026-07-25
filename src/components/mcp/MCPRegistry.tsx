@@ -292,7 +292,7 @@ const AddServerModal = ({ onClose }: { onClose: () => void }) => {
 
             <div>
               <FormFieldLabel>Transport</FormFieldLabel>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {(['stdio', 'sse', 'websocket'] as const).map((t) => {
                   const active = transport === t;
                   return (

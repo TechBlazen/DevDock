@@ -108,7 +108,7 @@ export const GallerySubmitForm = ({ onDone }: GallerySubmitFormProps) => {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <label className="flex flex-col gap-1">
           <span className={labelCls} style={{ color: 'var(--text-muted)' }}>Name</span>
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="my-skill" className="text-[13px] px-3 py-2 rounded-lg outline-none" style={inputStyle} />
@@ -124,7 +124,7 @@ export const GallerySubmitForm = ({ onDone }: GallerySubmitFormProps) => {
         <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What it does, and when to use it." className="text-[13px] px-3 py-2 rounded-lg outline-none" style={inputStyle} />
       </label>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <label className="flex flex-col gap-1">
           <span className={labelCls} style={{ color: 'var(--text-muted)' }}>Tags (comma-separated)</span>
           <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="review, git" className="text-[13px] px-3 py-2 rounded-lg outline-none" style={inputStyle} />

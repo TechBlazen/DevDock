@@ -11,7 +11,7 @@ const actions = [
 ];
 
 export const QuickActionsWidget = () => (
-  <div className="grid grid-cols-3 gap-2">
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
     {actions.map(({ label, icon: Icon, color, action }) => (
       <button
         key={label}
@@ -37,7 +37,7 @@ const aiStats = [
 ];
 
 export const AIMetricsWidget = () => (
-  <div className="grid grid-cols-2 gap-2">
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
     {aiStats.map(({ label, value, icon: Icon, color }) => (
       <div key={label} className="rounded-xl p-3" style={{
         background: `${color}08`,

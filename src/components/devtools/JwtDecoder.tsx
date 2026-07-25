@@ -215,9 +215,9 @@ export const JwtDecoder = () => {
 
       <div className="flex-1 overflow-auto p-4">
         {mode === 'decode' ? (
-          <div className="flex gap-4 h-full">
+          <div className="flex flex-col lg:flex-row gap-4 h-full">
             {/* Input */}
-            <div className="w-[400px] shrink-0 flex flex-col gap-3">
+            <div className="w-full lg:w-[400px] lg:shrink-0 flex flex-col gap-3">
               <div className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                 <Key size={12} className="inline mr-1" />Paste JWT Token
               </div>
@@ -336,7 +336,7 @@ export const JwtDecoder = () => {
           </div>
         ) : (
           /* Encode mode */
-          <div className="flex gap-4 h-full">
+          <div className="flex flex-col lg:flex-row gap-4 h-full">
             <div className="flex-1 space-y-3">
               <div className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                 <Shield size={12} className="inline mr-1" />Header (JSON)
@@ -349,7 +349,7 @@ export const JwtDecoder = () => {
               <textarea value={encPayload} onChange={(e) => setEncPayload(e.target.value)} style={{ ...inputStyle, minHeight: 180 }} />
             </div>
 
-            <div className="w-[400px] shrink-0 space-y-3">
+            <div className="w-full lg:w-[400px] lg:shrink-0 space-y-3">
               <div className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                 <Key size={12} className="inline mr-1" />Encoded Token (unsigned)
               </div>

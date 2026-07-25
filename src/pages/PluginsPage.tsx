@@ -87,7 +87,7 @@ const PluginSubmitForm = () => {
               style={{ background: 'var(--bg-input)', border: '1px solid var(--border-input)', color: 'var(--text-primary)' }}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input label="Version" value={version} onChange={(e) => setVersion(e.target.value)} placeholder="1.0.0" />
             <div className="flex flex-col gap-1.5">
               <label className="text-[12px] font-medium" style={{ color: 'var(--text-secondary)' }}>Category</label>

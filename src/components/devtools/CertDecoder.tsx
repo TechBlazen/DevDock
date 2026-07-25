@@ -298,9 +298,9 @@ export const CertDecoder = () => {
 
   return (
     <div className="h-full flex flex-col overflow-hidden" style={{ fontFamily: 'Verdana, Geneva, sans-serif' }}>
-      <div className="flex gap-4 flex-1 overflow-hidden p-4">
+      <div className="flex flex-col lg:flex-row gap-4 flex-1 overflow-auto lg:overflow-hidden p-4">
         {/* Input panel */}
-        <div className="w-[420px] shrink-0 flex flex-col gap-3">
+        <div className="w-full lg:w-[420px] lg:shrink-0 flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold cursor-pointer transition-all" style={{ background: 'var(--bg-inset)', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>
               <Upload size={12} /> Upload .pem / .crt
@@ -408,7 +408,7 @@ export const CertDecoder = () => {
                   <CalendarDays size={13} style={{ color: '#22c55e' }} />
                   <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Validity</span>
                 </CardHeader>
-                <div style={{ padding: '12px 20px' }} className="grid grid-cols-2 gap-4">
+                <div style={{ padding: '12px 20px' }} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <span className="text-[10px] font-bold uppercase" style={{ color: 'var(--text-faint)' }}>Not Before</span>
                     <div className="text-[13px] font-semibold mt-1" style={{ color: 'var(--text-primary)' }}>{cert.validFrom}</div>

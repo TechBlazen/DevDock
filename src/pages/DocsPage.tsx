@@ -69,7 +69,7 @@ export const DocsPage = () => {
 
   return (
     <div
-      className="flex h-full relative"
+      className="flex flex-col lg:flex-row h-full relative"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -114,7 +114,7 @@ export const DocsPage = () => {
       )}
 
       {/* Sidebar doc list */}
-      <div className="w-[260px] flex-shrink-0 h-full" style={{
+      <div className="w-full lg:w-[260px] lg:flex-shrink-0 h-auto lg:h-full" style={{
         background: 'var(--bg-elevated)',
         borderRight: '1px solid var(--border-subtle)',
         paddingLeft: 12,

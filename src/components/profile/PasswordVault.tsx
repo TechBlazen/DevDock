@@ -116,7 +116,7 @@ const EntryForm = ({ initial, onSave, onCancel }: { initial?: VaultEntry; onSave
       </div>
 
       <div className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="text-[10px] font-semibold uppercase tracking-wider mb-1 block" style={{ color: 'var(--text-muted)' }}>Title</label>
             <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. GitHub Account" style={inputStyle} />
